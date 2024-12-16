@@ -1,0 +1,9 @@
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+*{
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+#root{
+    background-color: white;
+}

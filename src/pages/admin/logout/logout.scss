@@ -1,0 +1,65 @@
+@use "sass:color";
+
+// Color palette
+$primary-color: #47645a;
+$background-color: #9bac9c;
+$border-color: #E9EDF7;
+$text-primary: #2b3632;
+$text-secondary: #1c211f;
+
+// Global styles
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: $background-color;
+  color: $text-primary;
+}
+
+// Logout page styles
+.logout-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.logout-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid $border-color;
+
+  h1 {
+    color: $text-primary;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: $text-secondary;
+    margin-bottom: 2rem;
+  }
+}
+
+.logout-button {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: color.scale($primary-color, $lightness: -10%);
+  }
+
+  &:disabled {
+    background-color: color.scale($primary-color, $lightness: 20%);
+    cursor: not-allowed;
+  }
+}
+

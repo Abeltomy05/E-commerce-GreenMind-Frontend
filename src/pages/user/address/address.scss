@@ -1,0 +1,361 @@
+.address-management {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    height: 80vh;
+  
+    .header {
+      margin-bottom: 2rem;
+      text-align: center;
+  
+      h1 {
+        display: inline-block;
+        font-size: 2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        position: relative;
+        padding-bottom: 0.5rem;
+  
+        &::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          height: 3px;
+          background: linear-gradient(
+            to right,
+            #3498db,
+            #2ecc71
+          );
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 0.3s ease;
+        }
+  
+        &:hover::after {
+          transform: scaleX(1);
+        }
+      }
+    }
+  
+    .addresses-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+  
+    .address-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      min-width: 250px;
+      min-height: 350px;
+  
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .heading{
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .name-info{
+        display: flex;
+
+      }
+      .address-actions {
+        display: flex;
+        gap: 0.5rem;
+
+      .new-btns{
+        color: #3498db;
+        cursor: pointer;
+
+        &:hover {
+          color: #30678b;
+        }
+        &.delete-btn:hover {
+          color: #e74c3c;
+        }
+      }
+    }
+
+      
+  
+      h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e0e0e0;
+      }
+  
+      .address-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+  
+      .name {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #707377;
+      }
+  
+      .address-details {
+        display: flex;
+        gap: 0.75rem;
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+  
+        svg {
+          flex-shrink: 0;
+          margin-top: 0.25rem;
+          color: #3498db;
+        }
+      }
+  
+      .contact-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: #666;
+  
+        .phone, .email {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+  
+          svg {
+            color: #3498db;
+          }
+        }
+      }
+  
+      .view-button {
+        margin-top: 1rem;
+        padding: 0.75rem 1.5rem;
+        border: 2px solid #2ecc71;
+        border-radius: 6px;
+        color: #2ecc71;
+        font-weight: 500;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+  
+        &:hover {
+          background: #2ecc71;
+          color: white;
+        }
+      }
+    }
+  
+    .add-address-card {
+      min-width: 250px;
+      min-height: 350px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      background: #f8f9fa;
+      border: 2px dashed #cbd5e0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+  
+      svg {
+        color: #3498db;
+      }
+  
+      span {
+        font-size: 1rem;
+        color: #2c3e50;
+        font-weight: 500;
+      }
+  
+      &:hover {
+        background: #fff;
+        border-color: #3498db;
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .add-address-modal {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+  
+    .close-button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #7f8c8d;
+      transition: color 0.2s ease;
+  
+      &:hover {
+        color: #34495e;
+      }
+    }
+  
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+  
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+  
+        label {
+          font-size: 0.9rem;
+          font-weight: 500;
+          color: #34495e;
+        }
+  
+        input {
+          padding: 0.75rem;
+          border: 1px solid #bdc3c7;
+          border-radius: 6px;
+          font-size: 1rem;
+          color: #2c3e50;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  
+          &:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+          }
+        }
+  
+        &.checkbox {
+          flex-direction: row;
+          align-items: center;
+  
+          input {
+            margin-right: 0.5rem;
+          }
+  
+          label {
+            font-size: 1rem;
+          }
+        }
+      }
+  
+      .submit-button {
+        margin-top: 1rem;
+        padding: 0.75rem 1.5rem;
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+  
+        &:hover {
+          background-color: #2980b9;
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    .address-management {
+      .address-card, .add-address-card {
+        flex: 1 0 calc(33.333% - 1.33rem);
+        max-width: calc(33.333% - 1.33rem);
+      }
+    }
+  }
+  
+  @media (max-width: 992px) {
+    .address-management {
+      .address-card, .add-address-card {
+        flex: 1 0 calc(50% - 1rem);
+        max-width: calc(50% - 1rem);
+      }
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .address-management {
+      padding: 1rem;
+  
+      .header h1 {
+        font-size: 1.5rem;
+      }
+  
+      .address-card, .add-address-card {
+        flex: 1 0 100%;
+        max-width: 100%;
+      }
+    }
+  
+    .add-address-modal {
+      width: 95%;
+      padding: 1.5rem;
+  
+      h2 {
+        font-size: 1.3rem;
+      }
+  
+      .form-group {
+        label {
+          font-size: 0.85rem;
+        }
+  
+        input {
+          padding: 0.6rem;
+        }
+      }
+  
+      .submit-button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+  

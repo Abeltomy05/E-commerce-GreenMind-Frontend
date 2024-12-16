@@ -1,0 +1,243 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+$primary-color: #3d5e52;
+$secondary-color: #1a2c25;
+$accent-color: #375d51;
+$background-color: #778e85;
+$text-color: #333;
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cart-page {
+  font-family: 'Poppins', sans-serif;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: $background-color;
+  color: $text-color;
+  animation: fadeIn 0.5s ease-out;
+  min-height: 85vh;
+
+  h1 {
+    color: $primary-color;
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+    text-align: start;
+    font-weight: 600;
+  }
+  p{
+    margin-left: 5px;
+    color: #47645a;
+    margin-bottom: 30px;
+  }
+
+  .cart-content {
+    display: flex;
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+  }
+
+  .cart-items {
+    flex: 2;
+  }
+
+  .cart-item {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .item-checkbox {
+      margin-right: 1rem;
+      
+      input[type="checkbox"] {
+        display: none;
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border: 2px solid $accent-color;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        svg {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          color: white;
+        }
+      }
+
+      input[type="checkbox"]:checked + label {
+        background-color: $accent-color;
+        border-color: $accent-color;
+
+        svg {
+          opacity: 1;
+        }
+      }
+    }
+
+    .item-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 1rem;
+    }
+
+    .item-details {
+      flex: 1;
+
+      h3 {
+        margin: 0 0 0.5rem;
+        color: $primary-color;
+      }
+
+      .item-price {
+        color: $secondary-color;
+        font-weight: 500;
+      }
+      .item-size{
+        font-weight: 600;
+      }
+    }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      margin: 0 1rem;
+
+      button {
+        background-color: $accent-color;
+        border: none;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: darken($accent-color, 10%);
+        }
+      }
+
+      span {
+        margin: 0 0.5rem;
+        font-weight: 500;
+      }
+    }
+
+    .item-total {
+      font-weight: 600;
+      color: $primary-color;
+      margin: 0 1rem;
+    }
+
+    .remove-item {
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #e74c3c;
+      }
+    }
+  }
+
+  .cart-summary {
+    flex: 1;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    padding-bottom: 50px;
+
+    h2 {
+      color: $primary-color;
+      margin-bottom: 1rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+
+      &.total {
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid $accent-color;
+      }
+    }
+
+    .checkout-btn, .continue-shopping-btn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        margin-right: 0.5rem;
+      }
+
+      &:active {
+        transform: translateY(1px);
+      }
+    }
+
+    .checkout-btn {
+      background-color: #21666e;
+      color: white;
+
+      &:hover {
+        background-color: #1b4d53;
+      }
+    }
+
+    .continue-shopping-btn {
+      background-color: #297356;
+      color: white;
+
+      &:hover {
+        background-color: #1f533e;
+      }
+    }
+  }
+}
+

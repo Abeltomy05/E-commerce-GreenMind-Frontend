@@ -1,0 +1,130 @@
+@use "sass:color";
+
+$primary-color: #47645a;
+$background-color: #9bac9c;
+$border-color: #949599;
+$text-primary: #2b3632;
+$text-secondary: #1c211f;
+
+.edit-category {
+  width: autto;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #9bac9c;
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 14px;
+
+    a {
+      color: #435348;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .separator {
+      color: $text-secondary;
+    }
+
+    .current {
+      color: $text-secondary;
+    }
+  }
+
+  .form-card {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px color.scale($text-secondary, $alpha: -85%);
+    padding: 24px;
+    width: 700px;
+
+    h2 {
+      color: $text-primary;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+
+      label {
+        display: block;
+        color: $text-primary;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        font-size: 14px;
+        color: $text-primary;
+        background-color: #ffffff;
+        transition: border-color 0.2s ease;
+        margin-bottom: 20px;
+
+        &::placeholder {
+          color: color.scale($text-secondary, $alpha: -40%);
+        }
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px color.scale($primary-color, $alpha: -80%);
+        }
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+
+      button {
+        padding: 10px 25px;
+        border-radius: 4px;
+        width: 130px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &.btn-submit {
+          background-color: $primary-color;
+          color: white;
+          border: none;
+
+          &:hover {
+            background-color: color.scale($primary-color, $lightness: -10%);
+          }
+        }
+
+        &.btn-cancel {
+          background-color: white;
+          color: $text-primary;
+          border: 1px solid $border-color;
+
+          &:hover {
+            background-color: color.scale(#ffffff, $lightness: -5%);
+          }
+        }
+      }
+    }
+  }
+}
+

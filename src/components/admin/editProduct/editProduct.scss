@@ -1,0 +1,240 @@
+@use "sass:color";
+$primary-color: #47645a;
+$background-color: #9bac9c;
+$border-color: #E9EDF7;
+$text-primary: #2b3632;
+$text-secondary: #1c211f;
+
+.edit-product-container {
+  width: auto;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: color.scale($background-color, $lightness: 5%);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba($text-secondary, 0.1);
+
+  .edit-product-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .form-title {
+      color: $primary-color;
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background-color: $primary-color;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        color: $text-primary;
+        font-weight: 500;
+        margin-left: 0.25rem;
+      }
+
+      input, 
+      select, 
+      textarea {
+        padding: 0.75rem;
+        border: 1px solid $border-color;
+        border-radius: 8px;
+        background-color: white;
+        color: $text-secondary;
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+        }
+      }
+
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+    }
+
+    .image-upload-placeholder {
+      border: 2px dashed #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 150px; 
+      width: 150px; 
+    }
+      
+    .add-image-btn {
+      background-color: #f0f0f0;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+
+      .image-item {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba($text-secondary, 0.1);
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .remove-image-btn {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          background-color: rgba($text-primary, 0.7);
+          color: white;
+          border: none;
+          padding: 0.5rem;
+          text-align: center;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: color.scale($primary-color, $lightness: -10%);
+          }
+        }
+      }
+    }
+
+    .variants-section {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid $border-color;
+
+      h3 {
+        color: $primary-color;
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+
+      .variant-group {
+        margin-bottom: 1rem;
+
+        .variant-inputs {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+
+          input {
+            flex: 1;
+            padding-left: 10px;
+          }
+
+          .remove-variant-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+              background-color: color.scale(#ff6b6b, $lightness: -10%);
+            }
+          }
+        }
+      }
+
+      .add-variant-btn {
+        background-color: $primary-color;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: color.scale($primary-color, $lightness: -10%);
+        }
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+
+      .cancel-btn, 
+      .submit-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .cancel-btn {
+        background-color: transparent;
+        color: $text-primary;
+        border: 1px solid $text-primary;
+
+        &:hover {
+          background-color: rgba($text-primary, 0.1);
+        }
+      }
+
+      .submit-btn {
+        background-color: $primary-color;
+        color: white;
+        border: none;
+
+        &:hover {
+          background-color: color.scale($primary-color, $lightness: -10%);
+        }
+      }
+    }
+  }
+}
+
+// Responsive Adjustments
+@media screen and (max-width: 768px) {
+  .edit-product-container {
+    padding: 1rem;
+
+    .variants-section .variant-group .variant-inputs {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-actions {
+      flex-direction: column;
+      gap: 1rem;
+
+      .cancel-btn, 
+      .submit-btn {
+        width: 100%;
+      }
+    }
+  }
+}

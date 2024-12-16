@@ -1,0 +1,129 @@
+@use "sass:color";
+
+$primary-color: #47645a;
+$background-color: #9bac9c;
+$border-color: #949599;
+$text-primary: #2b3632;
+$text-secondary: #1c211f;
+
+.add-category {
+  width: auto;
+  height: 93vh;
+  margin: 0 auto;
+  padding: 30px 20px 20px;
+  background-color: $background-color;
+  color: $text-primary;
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 20px;
+
+    a {
+      color: $primary-color;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .separator {
+      margin: 0 8px;
+      color: #000;
+
+    }
+
+    .current {
+      color: $text-secondary;
+    }
+  }
+
+  .form-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    width: 700px;
+    margin-top: 40px;
+    height: vh;
+
+    h2 {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: $text-primary;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+
+      label {
+        display: block;
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: $text-secondary;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid $border-color;
+        border-radius: 4px;
+        font-size: 14px;
+        color: $text-primary;
+        margin-bottom: 20px;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px color.scale($primary-color, $alpha: -70%);
+        }
+      }
+
+      textarea {
+        min-height: 150px;
+        resize: vertical;
+      }
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+
+      button {
+        padding: 12px 20px;
+        width: 130px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &.btn-submit {
+          background-color: $primary-color;
+          color: #ffffff;
+          border: none;
+
+          &:hover {
+            background-color: color.scale($primary-color, $lightness: -10%);
+          }
+        }
+
+        &.btn-cancel {
+          background-color: #ffffff;
+          color: $text-secondary;
+          border: 1px solid $border-color;
+
+          &:hover {
+            background-color: color.scale(#ffffff, $lightness: -5%);
+          }
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,122 @@
+@use "sass:color";
+
+// Color palette
+$primary-color: #47645a;
+$background-color: #9bac9c;
+$border-color: #E9EDF7;
+$accent-color-1: color.scale($primary-color, $lightness: -20%);
+$accent-color-2: color.scale($primary-color, $lightness: 20%);
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: $background-color;
+}
+
+.not-found-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.content {
+  text-align: center;
+  z-index: 10;
+}
+
+.error-code {
+  font-size: 15rem;
+  font-weight: bold;
+  margin: 0;
+  background: linear-gradient(45deg, $primary-color, $accent-color-1, $accent-color-2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: gradientAnimation 10s ease infinite;
+}
+
+.error-message {
+  font-size: 3rem;
+  color: $primary-color;
+  margin: 0;
+}
+
+.error-description {
+  font-size: 1.2rem;
+  color: #47645a;
+  margin: 1rem 0 2rem;
+}
+
+.home-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: $primary-color;
+  color: $border-color;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    background-color: $accent-color-1;
+    transform: translateY(-2px);
+  }
+}
+
+.background-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+}
+
+.shape-1 {
+  width: 300px;
+  height: 300px;
+  background-color: $accent-color-1;
+  top: -150px;
+  left: -150px;
+}
+
+.shape-2 {
+  width: 200px;
+  height: 200px;
+  background-color: $accent-color-2;
+  bottom: -100px;
+  right: -100px;
+}
+
+.shape-3 {
+  width: 150px;
+  height: 150px;
+  background-color: $border-color;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+

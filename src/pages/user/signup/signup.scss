@@ -1,0 +1,187 @@
+@use "sass:color";
+
+$primary-color: #47645a; 
+$secondary-color: #e0f2ee; 
+$secondary-hover: #cde8e2; 
+$font-family: "Arial, sans-serif"; 
+$text-color: #333333; 
+$border-color: #ddd; 
+$icon-color: #888; 
+$link-color: $primary-color; 
+$link-hover: underline;   
+
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.signup-container {   
+  display: flex;   
+  font-family: $font-family;   
+  min-height: 100vh;   
+  background-color: #f5f5f7; 
+  padding: 0; 
+  align-items: center;
+  justify-content: center;
+
+  .left-section {     
+    flex: 1;     
+    background: #f9f9f9;     
+    display: flex;     
+    justify-content: center; // Center the image
+    align-items: center; // Center the image
+    margin: 0 10px; // Reduce margin
+    padding: 20px 0; // Add some padding if needed  
+       
+
+    .signup-image {       
+      width: 90%; // Responsive width
+      height: auto; // Maintain aspect ratio          
+    }   
+  }    
+
+  .right-section {     
+    flex: 1;     
+    padding: 20px; // Reduce padding
+    background: #f9f9f9;     
+    display: flex;     
+    flex-direction: column;     
+    align-items: center;
+    justify-content: center; // Vertically center the form 
+
+    .signup-form {       
+      display: flex;       
+      flex-direction: column;       
+      gap: 15px;
+      width: 78%; // Match the width of inputs and buttons                    
+
+      .form-group {         
+        display: flex;         
+        align-items: center;         
+        position: relative;           
+
+        .error-message {           
+          color: red;           
+          font-size: 0.8rem;           
+          margin-top: 5px;           
+          position: absolute;           
+          left: 10px;            
+          bottom: -12px;          
+        }              
+
+        input {           
+          margin-bottom: 7px;         
+        }          
+
+        .icon {           
+          position: absolute;           
+          left: 10px;           
+          font-size: 18px;           
+          color: $icon-color;         
+        }          
+
+        input {           
+          width: 100%;           
+          padding: 10px 10px 10px 40px;           
+          font-size: 16px;           
+          border: 1px solid $border-color;           
+          border-radius: 5px;                    
+        }       
+      }     
+    }      
+
+    .signup-btn {       
+      width: 100%;       
+      margin-top: -6px;       
+      padding: 10px;       
+      background-color: $primary-color;       
+      color: white;       
+      border: none;       
+      border-radius: 5px;       
+      cursor: pointer;       
+      font-size: 16px;        
+
+      &:hover {         
+        background-color: color.scale($primary-color, $lightness: 10%);     
+      }     
+    }          
+
+    .login-link {       
+      text-align: center;       
+      font-size: 14px;       
+      margin-top: 10px;        
+
+      a {         
+        color: $link-color;         
+        text-decoration: none;         
+
+        &:hover {           
+          text-decoration: $link-hover;         
+        }       
+      }     
+    }      
+
+    .or-divider-signup {       
+      position: relative;
+      text-align: center;
+      width: 75%;
+      margin: 10px 0;
+      font-size: 14px;
+      color: #807d7d;
+
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 45%;
+        height: 1px;
+        background-color: #6b6868;
+      }
+
+      &::before {
+        left: 0;
+      }
+
+      &::after {
+        right: 0;
+      }
+    }      
+
+    .google-btn-signup { 
+     
+      width: 78%;       
+      padding: 10px;       
+      background-color: $secondary-color;       
+      color: $primary-color;       
+      border: none;       
+      border-radius: 5px;       
+      cursor: pointer;       
+      font-size: 16px;       
+      display: flex;       
+      align-items: center;       
+      justify-content: center;        
+
+      i {         
+        margin-right: 10px;       
+      }        
+
+      &:hover {         
+        background-color: $secondary-hover;       
+      }     
+    }   
+  } 
+}

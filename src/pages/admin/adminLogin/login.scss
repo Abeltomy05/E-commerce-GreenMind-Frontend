@@ -1,0 +1,186 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+// Color Variables
+$primary-color: #47645a;
+$secondary-color: #354842;
+$text-color: #333;
+$error-color: #dc2626;
+$background-color: #f3f4f6;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin transition-smooth {
+  transition: all 0.3s ease-in-out;
+}
+
+// Base Styles
+.admin-login-container {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 20%));
+  min-height: 100vh;
+  @include flex-center;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .login-card {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    padding: 0;
+    overflow: hidden;
+
+    &-header {
+      background-color: $primary-color;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+
+      .admin-icon {
+        @include flex-center;
+        margin-bottom: 1rem;
+      }
+
+      h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+    }
+
+    &-form {
+      padding: 2rem;
+      background-color: white;
+
+      .form-group {
+        margin-bottom: 1.25rem;
+        position: relative;
+
+        .input-icon {
+          position: absolute;
+          left: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9ca3af;
+          @include transition-smooth;
+        }
+
+        input {
+          width: 100%;
+          padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+          border: 2px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 1rem;
+          @include transition-smooth;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+
+            & + .input-icon {
+              color: $primary-color;
+            }
+          }
+        }
+
+        .error-message {
+          color: $error-color;
+          font-size: 0.875rem;
+          margin-top: 0.5rem;
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        .password-toggle {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #9ca3af;
+          @include transition-smooth;
+
+          &:hover {
+            color: $primary-color;
+          }
+        }
+      }
+
+      .submit-button {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: $primary-color;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        @include flex-center;
+        gap: 0.5rem;
+        @include transition-smooth;
+
+        &:hover {
+          background-color: color.adjust($primary-color, $lightness: -10%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        &:active {
+          transform: translateY(1px);
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Adjustments
+@media screen and (max-width: 480px) {
+  .admin-login-container {
+    .login-card {
+      margin: 1rem;
+      
+      &-header {
+        padding: 1.5rem;
+
+        h2 {
+          font-size: 1.5rem;
+        }
+      }
+
+      &-form {
+        padding: 1.5rem;
+
+        .form-group input {
+          font-size: 0.95rem;
+        }
+      }
+    }
+  }
+}

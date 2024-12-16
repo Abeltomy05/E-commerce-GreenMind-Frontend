@@ -1,0 +1,180 @@
+@use "sass:color";
+
+$primary-color: #47645a;
+$secondary-color: #e0f2ee;
+$secondary-hover: #cde8e2;
+$font-family: "Arial, sans-serif";
+$text-color: #333333;
+$border-color: #ddd;
+$icon-color: #888;
+$link-color: $primary-color;
+$link-hover: underline;
+
+.login-container {
+  display: flex;
+  font-family: $font-family;
+  height: 90vh; // Changed to full viewport height
+  background: #f5f5f7;
+  align-items: center; // Vertically center the content
+  justify-content: center; // Horizontally center the content
+  padding: 0 20px; // Add some padding on smaller screens
+
+  .login-left-section {
+    flex: 1;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: center; // Center the image horizontally
+    align-items: center; // Center the image vertically
+    max-width: 50%; // Limit width on larger screens
+    padding: 20px;
+
+    .login-image {
+      width: 90%;
+      height: auto;
+      object-fit: contain; // Ensure image is fully visible
+    }
+  }
+
+  .login-right-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; // Center form elements
+    background: #f9f9f9;
+    padding: 30px;
+    max-width: 50%; // Limit width on larger screens
+
+    .login-form {
+      width: 100%; // Full width of the container
+      max-width: 400px; // Maximum width for the form
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      .form-group-login {
+        width: 100%; // Full width
+        display: flex;
+        align-items: center;
+        position: relative;
+        margin-bottom: 20px;
+
+        &.error {
+          margin-bottom: 35px;
+        }
+
+        .icon {
+          position: absolute;
+          left: 10px;
+          font-size: 18px;
+          color: $icon-color;
+          z-index: 1;
+        }
+
+        input {
+          width: 100%; // Full width of the form group
+          padding: 10px 10px 10px 40px;
+          font-size: 16px;
+          border: 1px solid $border-color;
+          border-radius: 5px;
+        }
+
+        .error-message {
+          position: absolute;
+          bottom: -20px;
+          left: 0;
+          color: #ff4d4d;
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .login-btn, .google-btn-login {
+      width: 100%; // Full width of the form
+      max-width: 400px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .login-btn {
+      background-color: $primary-color;
+      color: white;
+      margin-top: 20px;
+
+      &:hover {
+        background-color: color.scale($primary-color, $lightness: 10%);
+      }
+    }
+
+    .signup-link {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+
+      a {
+        color: $link-color;
+        text-decoration: none;
+        &:hover {
+          text-decoration: $link-hover;
+        }
+      }
+    }
+
+    .or-divider-login {
+      margin: 15px 0;
+      font-size: 14px;
+      color: #aaa;
+      position: relative;
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+
+      &:before, &:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 45%;
+        height: 1px;
+        background-color: #ddd;
+      }
+
+      &:before {
+        left: 0;
+      }
+
+      &:after {
+        right: 0;
+      }
+    }
+
+    .google-btn-login {
+      background-color: $secondary-color;
+      color: $primary-color;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      i {
+        margin-right: 10px;
+      }
+
+      &:hover {
+        background-color: $secondary-hover;
+      }
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    
+    .login-left-section, 
+    .login-right-section {
+      max-width: 100%;
+      margin: 20px 0;
+    }
+  }
+}
