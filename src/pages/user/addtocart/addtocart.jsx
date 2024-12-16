@@ -96,7 +96,7 @@ const CartPage = () => {
   return (
     <>
     <HeaderLogin/>
-    <div className="cart-page">
+    {/* <div className="cart-page"> */}
       <div className="cart-content">
         <div className="cart-items">
           {cartItems.map((item) => (
