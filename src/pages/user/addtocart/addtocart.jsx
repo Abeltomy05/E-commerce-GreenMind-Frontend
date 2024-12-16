@@ -23,6 +23,7 @@ const CartPage = () => {
 
       const formattedItems = response.data.data.map(item => ({
         ...item,
+        quantity: item.quantity < 1 ? 1 : item.quantity, 
         checked: true 
       }));
      console.log(formattedItems)
@@ -51,23 +52,44 @@ const CartPage = () => {
 
 
   const updateQuantity = async (id, newQuantity) => {
+    if (newQuantity < 1) return;
     try {
-      await axios.patch(`http://localhost:3000/user/updatequantity/${id}`, 
+      const response = await axios.patch(`http://localhost:3000/user/updatequantity/${id}`, 
         {
-           quantity: newQuantity,
-           userId: user.id
+          quantity: newQuantity,
+          userId: user.id
         }
       );
-
-      setCartItems(cartItems.map(item =>
-        item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
-      ));
+  
+      if (response.data.success) {
+        setCartItems(cartItems.map(item =>
+          item.id === id 
+            ? { 
+                ...item, 
+                quantity: response.data.data.quantity,
+                availableStock: response.data.availableStock 
+              } 
+            : item
+        ));
+  
+        if (response.data.availableStock <= 5) {
+          toast.warning(`Only ${response.data.availableStock} items left in stock!`);
+        }
+      } else {
+        toast.error(response.data.message || 'Failed to update quantity');
+      }
+  
     } catch (error) {
       console.error('Error updating quantity:', error);
-      
+      if (error.response) {
+        toast.error(error.response.data.message || 'Failed to update quantity');
+      } else if (error.request) {
+        toast.error('No response from server');
+      } else {
+        toast.error('Error updating quantity');
+      }
     }
   };
-
 
   const removeItem = async (id) => {
     try {
@@ -161,4 +183,3 @@ const CartPage = () => {
 };
 
 export default CartPage;
-
