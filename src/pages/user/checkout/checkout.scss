@@ -1,0 +1,349 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+$primary-color: #4a6163;
+$secondary-color: #f8f1e9;
+$accent-color: #e28f83;
+$text-color: #333;
+$border-radius: 8px;
+
+@function color-scale($color, $lightness) {
+  @return scale-color($color, $lightness: $lightness);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.checkout-page {
+  font-family: 'Poppins', sans-serif;
+  color: $text-color;
+  background-color: white;
+  border-radius: $border-radius;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 5px 40px;
+  width: 100%;
+  margin: 10px auto;
+  animation: fadeIn 0.5s ease-out;
+
+  h1 {
+    color: $primary-color;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    font-weight: 700;
+  }
+
+  .checkout-content {
+    display: flex;
+    gap: 30px;
+  }
+
+  .checkout-left, .checkout-right {
+    flex: 1;
+  }
+
+  .checkout-section {
+    background-color: $secondary-color;
+    border-radius: $border-radius;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    h2 {
+      color: $primary-color;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid color-scale($primary-color, 80%);
+    }
+  }
+
+  .address-item, .payment-option {
+    background-color: white;
+    border-radius: $border-radius;
+    padding: 15px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    &.selected {
+      border: 2px solid $accent-color;
+      background-color: color-scale($accent-color, 90%);
+    }
+  }
+
+  .address-checkbox {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-right: 15px;
+    cursor: pointer;
+    font-size: 22px;
+    user-select: none;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .checkmark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 25px;
+      width: 25px;
+      background-color: #eee;
+      border-radius: 4px;
+
+      &:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 9px;
+        top: 5px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        transform: rotate(45deg);
+      }
+    }
+
+    &:hover input ~ .checkmark {
+      background-color: #ccc;
+    }
+
+    input:checked ~ .checkmark {
+      background-color: $accent-color;
+    }
+
+    input:checked ~ .checkmark:after {
+      display: block;
+    }
+  }
+  .defaulttagbox{
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .default-tag {
+    background-color: #bd8080;
+    color: #fff;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 13px;
+    margin-left: 5px;
+    height: 23px;
+  }
+
+  .address-details {
+    flex-grow: 1;
+  }
+
+  .show-more-btn {
+    background: none;
+    border: none;
+    color: $primary-color;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    margin-top: 10px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    svg {
+      margin-right: 5px;
+    }
+  }
+
+  .payment-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    svg, img {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .credit-card-form {
+    margin-top: 20px;
+    display: grid;
+    gap: 10px;
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid color-scale($primary-color, 70%);
+      border-radius: $border-radius;
+      font-size: 1rem;
+
+      &:focus {
+        outline: none;
+        border-color: $accent-color;
+      }
+    }
+
+    .card-extra-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+  }
+
+  .cod-message {
+    margin-top: 20px;
+    font-style: italic;
+    color: color-scale($primary-color, 20%);
+  }
+
+  .cart-items {
+    margin-bottom: 20px;
+
+    .cart-item {
+    display: grid;
+    grid-template-columns: 1fr 100px 100px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid color-scale($primary-color, 80%);
+
+    &-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    &-quantity {
+      text-align: center;
+      justify-self: center;
+    }
+    &-price {
+      text-align: right;
+    }
+    
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .coupon-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+
+    input {
+      flex-grow: 1;
+      padding: 10px;
+      border: 1px solid color-scale($primary-color, 70%);
+      border-radius: $border-radius;
+      font-size: 1rem;
+
+      &:focus {
+        outline: none;
+        border-color: $accent-color;
+      }
+    }
+
+    .apply-coupon {
+      background-color: $accent-color;
+      color: white;
+      border: none;
+      border-radius: $border-radius;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      &:hover {
+        background-color: color-scale($accent-color, $lightness: -10%);
+      }
+    }
+  }
+
+  .order-totals {
+    > div {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .total {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: $primary-color;
+      border-top: 2px solid color-scale($primary-color, 80%);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .free-shipping {
+      color: $accent-color;
+      font-weight: 600;
+    }
+  }
+
+  .proceed-payment {
+    background: linear-gradient(135deg, $accent-color, color-scale($accent-color, $lightness: -10%));
+    color: white;
+    border: none;
+    border-radius: $border-radius;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    width: 100%;
+    margin-top: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    &:active {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px;
+
+    .checkout-content {
+      flex-direction: column;
+    }
+
+    .credit-card-form {
+      .card-extra-details {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .coupon-section {
+      flex-direction: column;
+
+      .apply-coupon {
+        width: 100%;
+      }
+    }
+  }
+}
+

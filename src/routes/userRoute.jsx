@@ -11,6 +11,7 @@ import AccountDashboard from '../pages/user/yourAccount/userAccount';
 import ProfileSettings from '../pages/user/profile/profile'
 import AddressManagement from '../pages/user/address/address';
 import CartPage from '../pages/user/addtocart/addtocart';
+import CheckoutPage from '../pages/user/checkout/checkout';
 
 function UserRoute() {
  
@@ -32,6 +33,7 @@ function UserRoute() {
         <Route path="/profile" element={<ProfileSettings/>} />
         <Route path="/address" element={<AddressManagement/>} />
         <Route path="/cart" element={<CartPage/>} />
+        <Route path="/checkout" element={<CheckoutPage/>} />
       </Route>
       </Routes>
     )

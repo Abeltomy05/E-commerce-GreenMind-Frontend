@@ -4,8 +4,12 @@ import './addtocart.scss';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { setSelectedItems } from '../../../redux/cartSlice';
+
 
 const CartPage = () => {
  
@@ -14,7 +18,19 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const navigate = useNavigate();
+
   const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
+
+  const handleNavigate = (path) => {
+    
+    const selectedItems = cartItems.filter(item => item.checked);
+    const total = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    dispatch(setSelectedItems({ selectedItems, total })); 
+
+    navigate(path);
+  };
 
   const fetchCartItems = async () => {
     try {
@@ -91,19 +107,19 @@ const CartPage = () => {
     }
   };
 
-  const removeItem = async (id) => {
-    try {
-      const response = await axios.delete(`http://localhost:3000/user/removecartitem/${id}`);
-
-      setCartItems(cartItems.filter(item => item.id !== id));
-      if(response.data.success){
-        toast.info(response.data.message || "Product removed from cart")
-      }
-      
-    } catch (error) {
-      console.error('Error removing item:', error);
-      toast.error("Error removing cart item")
-    }
+  const removeItem = async (id) => {     
+    try {       
+      const response = await axios.delete(`http://localhost:3000/user/removecartitem/${id}`, {
+        data: { userId: user.id }  // Correctly pass userId in the request body
+      });        
+      setCartItems(cartItems.filter(item => item.id !== id));       
+      if(response.data.success){         
+        toast.info(response.data.message || "Product removed from cart")       
+      }            
+    } catch (error) {       
+      console.error('Error removing item:', error);       
+      toast.error("Error removing cart item")     
+    }   
   };
 
   const toggleItemCheck = (id) => {
@@ -117,67 +133,82 @@ const CartPage = () => {
 
   return (
     <>
-    <HeaderLogin/>
-    <div className="cart-page">
-      <div className="cart-content">
-        <div className="cart-items">
-          {cartItems.map((item) => (
-            <div key={item.id} className="cart-item">
-              <div className="item-checkbox">
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() => toggleItemCheck(item.id)}
-                  id={`checkbox-${item.id}`}
-                />
-                <label htmlFor={`checkbox-${item.id}`}>
-                  <Check size={16} />
-                </label>
-              </div>
-              <img src={item.image} alt={item.name} className="item-image" />
-              <div className="item-details">
-                <h3>{item.name}</h3>
-                <p className="item-price">${item.price.toFixed(2)}</p>
-                <p className="item-size">Size:{item.size}</p>
-              </div>
-              <div className="quantity-control">
-                <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                  <Minus size={16} />
-                </button>
-                <span>{item.quantity}</span>
-                <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                  <Plus size={16} />
+      <HeaderLogin/>
+      <div className="cart-page">
+        <div className="cart-content">
+          <div className="cart-items">
+            <h1>Shopping Cart</h1>
+            
+            {cartItems.length === 0 ? (
+              <div className="empty-cart">
+                <p>No items in your cart</p>
+                <button className="continue-shopping-btn">
+                  <ArrowLeft size={20} />
+                  Continue Shopping
                 </button>
               </div>
-              <p className="item-total">${(item.price * item.quantity).toFixed(2)}</p>
-              <button className="remove-item" onClick={() => removeItem(item.id)}>
-                <X size={20} />
+            ) : (
+              cartItems.map((item) => (
+                <div key={item.id} className="cart-item">
+                  <div className="item-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      onChange={() => toggleItemCheck(item.id)}
+                      id={`checkbox-${item.id}`}
+                    />
+                    <label htmlFor={`checkbox-${item.id}`}>
+                      <Check size={16} />
+                    </label>
+                  </div>
+                  <img src={item.image} alt={item.name} className="item-image" />
+                  <div className="item-details">
+                    <h3>{item.name}</h3>
+                    <p className="item-price">${item.price.toFixed(2)}</p>
+                    <p className="item-size">Size:{item.size}</p>
+                  </div>
+                  <div className="quantity-control">
+                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                      <Minus size={16} />
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <p className="item-total">${(item.price * item.quantity).toFixed(2)}</p>
+                  <button className="remove-item" onClick={() => removeItem(item.id)}>
+                    <X size={20} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+          
+          {cartItems.length > 0 && (
+            <div className="cart-summary">
+              <h2>Cart Total</h2>
+              <div className="summary-row">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="summary-row total">
+                <span>Total</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <button className="checkout-btn" onClick={()=>handleNavigate('/user/checkout')}>
+                <ShoppingBag size={20} />
+                Proceed to Checkout
+              </button>
+              <button className="continue-shopping-btn">
+                <ArrowLeft size={20} />
+                Continue Shopping
               </button>
             </div>
-          ))}
-        </div>
-        <div className="cart-summary">
-          <h2>Cart Total</h2>
-          <div className="summary-row">
-            <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
-          </div>
-          <div className="summary-row total">
-            <span>Total</span>
-            <span>${subtotal.toFixed(2)}</span>
-          </div>
-          <button className="checkout-btn">
-            <ShoppingBag size={20} />
-            Proceed to Checkout
-          </button>
-          <button className="continue-shopping-btn">
-            <ArrowLeft size={20} />
-            Continue Shopping
-          </button>
+          )}
         </div>
       </div>
-    </div>
-    <Footer/>
+      <Footer/>
     </>
   );
 };
