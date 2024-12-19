@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { UserCircle2, LogOut, User, Settings } from 'lucide-react'
+import { UserCircle2, LogOut, User, Settings, Search, Heart,ShoppingCartIcon } from 'lucide-react'
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../redux/authSlice"
 import { useSelector, useDispatch } from 'react-redux';
@@ -88,15 +88,10 @@ const HeaderLogin = () => {
         {/* Icons Section */}
         {user && (
           <div className="header-icons">
-            <a href="#" className="icon">
-              <i className="fas fa-search"></i>
-            </a>
-            <a href="#" className="icon">
-              <i className="far fa-heart"></i>
-            </a>
-            <a href="#" className="icon" onClick={() => handleNavigate('/user/cart')}>
-              <i className="fas fa-shopping-cart"></i>
-            </a>
+           <Search className="icon"/>
+           <Heart className="icon"/>
+           <ShoppingCartIcon className="icon" onClick={() => handleNavigate('/user/cart')}/>
+
 
             <div className="profile-dropdown" ref={dropdownRef}>
               <UserCircle2 className="profile-icon" onClick={(e)=>toggleDropdown(e)} />

@@ -28,7 +28,7 @@ const CartPage = () => {
     const selectedItems = cartItems.filter(item => item.checked);
     const total = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     dispatch(setSelectedItems({ selectedItems, total })); 
-
+  
     navigate(path);
   };
 
@@ -142,7 +142,7 @@ const CartPage = () => {
             {cartItems.length === 0 ? (
               <div className="empty-cart">
                 <p>No items in your cart</p>
-                <button className="continue-shopping-btn">
+                <button className="continue-shopping-btn" onClick={()=>navigate('/user/shop')}>
                   <ArrowLeft size={20} />
                   Continue Shopping
                 </button>

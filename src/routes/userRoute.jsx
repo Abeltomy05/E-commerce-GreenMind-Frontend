@@ -12,6 +12,10 @@ import ProfileSettings from '../pages/user/profile/profile'
 import AddressManagement from '../pages/user/address/address';
 import CartPage from '../pages/user/addtocart/addtocart';
 import CheckoutPage from '../pages/user/checkout/checkout';
+import OrderHistory from '../pages/user/yourorders/yourorders';
+import OrderDetails from '../pages/user/orderdetails/orderdetails';
+
+
 
 function UserRoute() {
  
@@ -34,6 +38,8 @@ function UserRoute() {
         <Route path="/address" element={<AddressManagement/>} />
         <Route path="/cart" element={<CartPage/>} />
         <Route path="/checkout" element={<CheckoutPage/>} />
+        <Route path="/orders" element={<OrderHistory/>} />
+        <Route path="/orderdetails/:orderId" element={<OrderDetails/>} />
       </Route>
       </Routes>
     )

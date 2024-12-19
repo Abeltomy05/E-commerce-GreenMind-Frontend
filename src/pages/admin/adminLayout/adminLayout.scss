@@ -70,9 +70,8 @@ $text-secondary: #1c211f;
   overflow-y: auto;
   padding: 20px;
   background-color: $background-color;
-  color: white;
+  color: rgb(26, 25, 25);
 
-  // Ensure the content takes up the full height
   min-height: 100vh;
 }
 

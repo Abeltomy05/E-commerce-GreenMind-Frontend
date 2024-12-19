@@ -1,4 +1,6 @@
 import React from "react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import "./footer.scss";
 
 const Footer = () => {
@@ -10,14 +12,14 @@ const Footer = () => {
           <h1 className="footer-logo">GREENMIND</h1>
           <p className="footer-description">We help you find your dream plant</p>
           <div className="footer-socials">
-            <a href="#" className="social-icon">
-              <i className="fab fa-facebook-f"></i>
+          <a href="https://facebook.com" className="social-icon" target="_blank" rel="noopener noreferrer">
+                <FontAwesomeIcon icon={faFacebook} />
             </a>
-            <a href="#" className="social-icon">
-              <i className="fab fa-twitter"></i>
+            <a href="https://twitter.com" className="social-icon"  target="_blank" rel="noopener noreferrer">
+                <FontAwesomeIcon icon={faTwitter} />
             </a>
-            <a href="#" className="social-icon">
-              <i className="fab fa-instagram"></i>
+            <a href="https://instagram.com" className="social-icon"  target="_blank" rel="noopener noreferrer">
+                <FontAwesomeIcon icon={faInstagram} />
             </a>
           </div>
         </div>

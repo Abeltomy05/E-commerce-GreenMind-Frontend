@@ -1,18 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, Tag, ChevronDown, ChevronUp } from 'lucide-react';
+import { CreditCard, Truck, Tag, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
 import './checkout.scss';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import razorpaylogo from '../../../assets/images/Razorpay_logo.webp'
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearSelectedItems } from '../../../redux/cartSlice';
+import { toast } from 'react-toastify';
+import Loader from '../../../components/loader/loader';
+
+const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewOrderDetails, onClose }) => {
+  return (
+    <div className="order-success-overlay">
+      <div className="order-success-content">
+        <CheckCircle size={100} color="green" className='checkcircle'/>
+        <h1>Order Placed Successfully!</h1>
+        <div className="order-details">
+          <p>Order Number: <strong>{orderId}</strong></p>
+          <p>Total Amount: <strong>${totalAmount.toFixed(2)}</strong></p>
+        </div>
+        <div className="order-success-actions">
+          <button 
+            className="continue-shopping-btn" 
+            onClick={onContinueShopping}
+          >
+            Continue Shopping
+          </button>
+          <button 
+            className="view-order-details-btn" 
+            onClick={onViewOrderDetails}
+          >
+            View Order Details
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [addresses, setAddresses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOrderProcessing, setIsOrderProcessing] = useState(false);
+  const [orderSuccessData, setOrderSuccessData] = useState(null);
   const [error, setError] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -25,20 +60,18 @@ const CheckoutPage = () => {
   const [couponCode, setCouponCode] = useState('');
   const [showAllAddresses, setShowAllAddresses] = useState(false);
 
-
   const { selectedItems, total } = useSelector((state) => state.cart);
-  const user = useSelector((state)=>state.auth.user)
-
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     if (!selectedItems || selectedItems.length === 0) {
       navigate('/user/cart');
     }
-  }, [selectedItems,navigate]);
+  }, [selectedItems, navigate]);
 
-  useEffect(()=>{
-    const fetchUserAddresses = async() =>{
-      try{
+  useEffect(() => {
+    const fetchUserAddresses = async () => {
+      try {
         const response = await axios.get(`http://localhost:3000/user/addressdata/${user.id}`);
         const sortedAddresses = response.data.sort((a, b) => b.isDefault - a.isDefault);
         setAddresses(sortedAddresses);
@@ -50,7 +83,7 @@ const CheckoutPage = () => {
         } else if (sortedAddresses.length > 0) {
           setSelectedAddress(sortedAddresses[0]);
         }
-      }catch(err){
+      } catch (err) {
         setError(err.message);
         setIsLoading(false);
         console.error('Failed to fetch addresses:', err);
@@ -60,12 +93,9 @@ const CheckoutPage = () => {
     if (user?.id) {
       fetchUserAddresses();
     }
-
-  },[user])
-
+  }, [user]);
 
   const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  // const total = subtotal; 
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
@@ -83,10 +113,78 @@ const CheckoutPage = () => {
     setCouponCode(e.target.value);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Order submitted', { selectedAddress, paymentMethod, cardDetails, couponCode });
+  const handleContinueShopping = () => {
+    navigate('/user/shop');
+    dispatch(clearSelectedItems());
   };
+
+  const handleViewOrderDetails = () => {
+ navigate(`/user/orderdetails/${orderSuccessData.orderId}`)
+  };
+
+  // const handleCloseOrderSuccess = () => {
+  //   setOrderSuccessData(null);
+  // };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+
+    if (!selectedAddress) {
+      toast.info('Please select a shipping address');
+      return;
+    }
+
+    if (!paymentMethod) {
+      toast.info('Please select a payment method');
+      return;
+    }
+
+    if (paymentMethod === 'credit-card') {
+      if (!cardDetails.number || !cardDetails.name || !cardDetails.expiry || !cardDetails.cvv) {
+        toast.info('Please fill in all credit card details');
+        return;
+      }
+    }
+
+    setIsOrderProcessing(true);
+    try {
+      const orderData = {
+        userId: user.id,
+        products: selectedItems.map(item => ({
+          product: item.productId,
+          quantity: item.quantity,
+          size: item.size,
+          cartItemId: item.id
+        })),
+        addressId: selectedAddress._id,
+        totalPrice: total,
+        paymentMethod: paymentMethod,
+        couponCode: couponCode || null,
+      };
+      const response = await axios.post('http://localhost:3000/user/placeorder', orderData);
+      setOrderSuccessData({ 
+        orderId: response.data.orderId,
+        totalAmount: total 
+      });
+    } catch (error) {
+      console.error('Order placement failed:', error);
+      toast.error('Failed to place order. Please try again.');
+    } finally {
+      setTimeout(()=>{
+        setIsOrderProcessing(false);
+      },3000)
+      
+    }
+  };
+
+  if (isOrderProcessing) {
+    return (
+     <div className="loader-layout">
+        <Loader/>
+        </div>
+    );
+  }
 
   if (isLoading) {
     return <div>Loading addresses...</div>;
@@ -102,10 +200,19 @@ const CheckoutPage = () => {
     <>
       <HeaderLogin />
       <div className="checkout-page">
+        {orderSuccessData && (
+          <OrderSuccessOverlay
+            orderId={orderSuccessData.orderId}
+            totalAmount={orderSuccessData.totalAmount}
+            onContinueShopping={handleContinueShopping}
+            onViewOrderDetails={handleViewOrderDetails}
+          />
+        )}
         <h1>Checkout</h1>
         
         <div className="checkout-content">
           <div className="checkout-left">
+            {/* Address section */}
             <section className="checkout-section">
               <h2>Shipping Address</h2>
               <div className="address-list">
@@ -121,27 +228,18 @@ const CheckoutPage = () => {
                         onChange={() => handleAddressSelect(address)}
                       />
                       <span className="checkmark"></span>
-                      
                     </label>
                     <div className="address-details">
-                        <div className="defaulttagbox">
-                          <h3>{address.fullName}</h3>
-                          {address.isDefault && <span className="default-tag">Default</span>}
-                          </div>
-                          <p>{address.Address}</p>
-                          <p>
-                            {address.city}, {address.district}
-                          </p>
-                          <p>
-                            {address.state} - {address.pincode}
-                          </p>
-                          <p>
-                            Phone: {address.phone}
-                          </p>
-                          <p>
-                            Country: {address.country}
-                          </p>
-                        </div>
+                      <div className="defaulttagbox">
+                        <h3>{address.fullName}</h3>
+                        {address.isDefault && <span className="default-tag">Default</span>}
+                      </div>
+                      <p>{address.Address}</p>
+                      <p>{address.city}, {address.district}</p>
+                      <p>{address.state} - {address.pincode}</p>
+                      <p>Phone: {address.phone}</p>
+                      <p>Country: {address.country}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -165,6 +263,7 @@ const CheckoutPage = () => {
               )}
             </section>
 
+            {/* Payment method section */}
             <section className="checkout-section">
               <h2>Payment Method</h2>
               <div className="payment-options">
