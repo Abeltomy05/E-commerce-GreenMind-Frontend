@@ -9,7 +9,8 @@ import "./verifyOTP.scss";
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import { useDispatch } from 'react-redux';
-import {login} from "../../../redux/authSlice"
+import {login} from '../../../redux/userSlice'
+import Spinner from '../../../components/spinner/spinner';
 
 export default function VerifyOTP() {
    const {userId, email} = useParams();
@@ -21,11 +22,24 @@ export default function VerifyOTP() {
     const [otp, setOtp] = useState(new Array(4).fill(""));
     const [timer, setTimer] = useState(30);
     const [resendVisible, setResendVisible] = useState(false);
+    // const [isLoading,setIsLoading] = useState(false);
 
     if (!userId) {
         console.error("UserId not passed to VerifyOTP page");
         return null;
     }
+
+    // if(isLoading){
+    //     return(
+    //       <>
+    //        <div className="spinner-loader-layout">
+    //         <Spinner/>
+    //        </div>
+    //       </>
+    //     )
+    //   }
+
+
 
     useEffect(() => {
         let interval;
@@ -81,6 +95,7 @@ export default function VerifyOTP() {
           alert("Please enter a valid 4-digit OTP");
           return;
         }
+        // setIsLoading(true);
       
         try {
           const response = await axios.post(
@@ -97,7 +112,7 @@ export default function VerifyOTP() {
           if (response.data.status === "VERIFIED") {
             toast.success(response.data.message, {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 1000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -108,15 +123,17 @@ export default function VerifyOTP() {
     
                 if(user){
                     setTimeout(() => {
-                      dispatch(login({user}));
+                      dispatch(login({user, role:'user'}));
                       Navigate('/user/home');
-                    }, 2000);
+                    }, 3000);
                     }else{
                       console.error("Error dispatch login");
+                    //   setIsLoading(false)
                     }
                
           } else {
-            alert(response.data.message || "OTP verification failed");
+            toast.error(response.data.message || "OTP verification failed");
+            // setIsLoading(false)
           }
         } catch (error) {
             toast.error(error.response?.data?.message || "Something went wrong", {
@@ -167,6 +184,7 @@ export default function VerifyOTP() {
         });    }
     }
 
+ 
     return (
         <>
         <HeaderLogin/>

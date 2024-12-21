@@ -11,7 +11,7 @@ import EditAddressModal from './editAddress.jsx';
 import DeleteConfirmationModal from './confirmdelete.jsx';
 
 const AddressManagement = () => {
-    const user = useSelector((state) => state.auth.user);
+    const user = useSelector((state) => state.user.user);
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

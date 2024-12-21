@@ -16,9 +16,11 @@ import axios from "axios";
 import { useSelector } from 'react-redux'
 
 export default function UserHome() {
-  const userdetail = useSelector((state) => state.auth.user);
+  const userdetail = useSelector((state) => state.user.user);
 
   const [user,setUser] = useState()
+  // const [loading,setLoading] = useState(true)
+
   useEffect(() => {
     fetchUser();
   }, [])
@@ -26,17 +28,20 @@ export default function UserHome() {
   const fetchUser = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/user/getuserdata/${userdetail.id}`);
-      console.log(response.data)
       const fetchedUser = response.data;
       setUser(fetchedUser);
-      // setIsLoading(false);
+      // setTimeout(()=>{
+      //   setLoading(false);
+      // },3000)
+
     } catch (err) {
-      
       // setError('Failed to fetch user in home');
-      // setIsLoading(false);
+      setLoading(false);
       console.error('Error fetching user:', err);
     }
   };
+
+
 
   return (
     <>

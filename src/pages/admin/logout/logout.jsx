@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import {logout} from "../../../redux/authSlice";
+import {logout} from "../../../redux/adminSlice";
 import "./logout.scss"
 
 const LogoutPage = () => {

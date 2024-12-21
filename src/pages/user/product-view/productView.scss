@@ -15,6 +15,7 @@
 
 .product-gallery {
   flex: 1;
+  min-width: 550px;
   
   .main-image-container {
     position: relative;
@@ -271,6 +272,7 @@
     
     .product-gallery {
       flex: 1;
+      min-width: 550px;
       
       .main-image-container {
         position: relative;
@@ -522,6 +524,7 @@
         .buy-now-btn {
           background-color: #4a6163;
           color: #fff;
+          width: 150px;
           
           &:hover {
             background-color: #218838;
@@ -531,6 +534,7 @@
         .add-to-cart-btn {
           background-color: #536763;
           color: #fff;
+          width: 150px;
           
           &:hover {
             background-color: #5a6268;
@@ -573,6 +577,8 @@
     .buy-now-btn {
       background-color: #197d59;
       color: #fff;
+      padding: 0 20px;
+      width: 300px;
       
       &:hover {
         background-color: rgb(26, 90, 40);
@@ -582,6 +588,7 @@
     .add-to-cart-btn {
       background-color: #2f618d;
       color: #fff;
+      width: 150px;
       
       &:hover {
         background-color: rgb(21, 58, 86);

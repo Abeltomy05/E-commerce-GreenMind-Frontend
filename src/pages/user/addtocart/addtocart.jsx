@@ -8,8 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
-import { setSelectedItems } from '../../../redux/cartSlice';
-
+import { setSelectedItems,updateCartCount} from '../../../redux/cartSlice';
+import BasicPagination from '../../../components/pagination/pagination';
 
 const CartPage = () => {
  
@@ -17,11 +17,22 @@ const CartPage = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [ordersPerPage] = useState(3);
 
   const navigate = useNavigate();
 
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const pageCount = Math.ceil(cartItems.length / ordersPerPage);
+  const startIndex = (page - 1) * ordersPerPage;
+  const currentOrders = cartItems.slice(startIndex, startIndex + ordersPerPage);
+
 
   const handleNavigate = (path) => {
     
@@ -36,13 +47,13 @@ const CartPage = () => {
     try {
       setLoading(true);
       const response = await axios.get(`http://localhost:3000/user/getcartdataforcartpage/${user.id}`);
-
+      const cartCount = response.data.data.length;
+      dispatch(updateCartCount(cartCount))
       const formattedItems = response.data.data.map(item => ({
         ...item,
         quantity: item.quantity < 1 ? 1 : item.quantity, 
         checked: true 
       }));
-     console.log(formattedItems)
       setCartItems(formattedItems);
       setLoading(false);
     } catch (err) {
@@ -78,7 +89,7 @@ const CartPage = () => {
       );
   
       if (response.data.success) {
-        setCartItems(cartItems.map(item =>
+        const updatedItems = cartItems.map(item =>
           item.id === id 
             ? { 
                 ...item, 
@@ -86,7 +97,9 @@ const CartPage = () => {
                 availableStock: response.data.availableStock 
               } 
             : item
-        ));
+        );
+
+        setCartItems(updatedItems);
   
         if (response.data.availableStock <= 5) {
           toast.warning(`Only ${response.data.availableStock} items left in stock!`);
@@ -111,9 +124,13 @@ const CartPage = () => {
     try {       
       const response = await axios.delete(`http://localhost:3000/user/removecartitem/${id}`, {
         data: { userId: user.id }  // Correctly pass userId in the request body
-      });        
-      setCartItems(cartItems.filter(item => item.id !== id));       
-      if(response.data.success){         
+      });  
+
+      const updatedItems = cartItems.filter(item => item.id !== id);
+      setCartItems(updatedItems);    
+      dispatch(setCartItems(updatedItems));
+
+    if(response.data.success){         
         toast.info(response.data.message || "Product removed from cart")       
       }            
     } catch (error) {       
@@ -139,7 +156,7 @@ const CartPage = () => {
           <div className="cart-items">
             <h1>Shopping Cart</h1>
             
-            {cartItems.length === 0 ? (
+            {currentOrders.length === 0 ? (
               <div className="empty-cart">
                 <p>No items in your cart</p>
                 <button className="continue-shopping-btn" onClick={()=>navigate('/user/shop')}>
@@ -148,7 +165,7 @@ const CartPage = () => {
                 </button>
               </div>
             ) : (
-              cartItems.map((item) => (
+              currentOrders.map((item) => (
                 <div key={item.id} className="cart-item">
                   <div className="item-checkbox">
                     <input
@@ -185,7 +202,7 @@ const CartPage = () => {
             )}
           </div>
           
-          {cartItems.length > 0 && (
+          {currentOrders.length > 0 && (
             <div className="cart-summary">
               <h2>Cart Total</h2>
               <div className="summary-row">
@@ -207,6 +224,11 @@ const CartPage = () => {
             </div>
           )}
         </div>
+        {pageCount > 1 && (
+                  <div className="mt-6 flex justify-center">
+                    <BasicPagination count={pageCount} onChange={handlePageChange} />
+                  </div>
+                )}
       </div>
       <Footer/>
     </>

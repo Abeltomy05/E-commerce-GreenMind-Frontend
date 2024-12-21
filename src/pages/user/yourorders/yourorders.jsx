@@ -5,14 +5,18 @@ import Footer from '../../../components/footer/footer';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import BasicPagination from '../../../components/pagination/pagination';
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [ordersPerPage] = useState(4);
 
-  const user = useSelector(state => state.auth.user);
+  const user = useSelector(state => state.user.user);
   const navigate = useNavigate()
+
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user || !user.id) {
@@ -72,18 +76,28 @@ const OrderHistory = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'CONFIRMED':
-        return 'bg-green-100 text-green-700';
-      case 'CANCELED':
-        return 'bg-red-100 text-red-700';
       case 'PENDING':
-        return 'bg-orange-100 text-orange-700'; 
-     case 'DELIVERED':
-        return 'bg-green-100 text-green-700'; 
+        return 'bg-yellow-100 text-yellow-800';
+      case 'CONFIRMED':
+        return 'bg-blue-100 text-blue-800';
+      case 'ON THE ROAD':
+        return 'bg-purple-100 text-purple-800';
+      case 'DELIVERED':
+        return 'bg-green-100 text-green-800';
+      case 'CANCELED':
+        return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const pageCount = Math.ceil(orders.length / ordersPerPage);
+  const startIndex = (page - 1) * ordersPerPage;
+  const currentOrders = orders.slice(startIndex, startIndex + ordersPerPage);
 
   if (isLoading) {
     return (
@@ -118,7 +132,7 @@ const OrderHistory = () => {
             <h2 className="text-xl font-semibold text-gray-800 mb-6">
               ORDER HISTORY
             </h2>
-            {orders.length === 0 ? (
+            {currentOrders.length === 0 ? (
               <div className="text-center text-gray-600 py-10">
                 No orders found.
               </div>
@@ -136,7 +150,7 @@ const OrderHistory = () => {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  {orders.map((order) => (
+                  {currentOrders.map((order) => (
                     <div
                       key={order.id}
                       className="flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors"
@@ -184,6 +198,11 @@ const OrderHistory = () => {
             )}
           </div>
         </div>
+        {pageCount > 1 && (
+                  <div className="mt-6 flex justify-center">
+                    <BasicPagination count={pageCount} onChange={handlePageChange} />
+                  </div>
+                )}
       </div>
       <Footer/>
     </>

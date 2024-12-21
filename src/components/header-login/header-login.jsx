@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UserCircle2, LogOut, User, Settings, Search, Heart,ShoppingCartIcon } from 'lucide-react'
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../redux/authSlice"
+import { logout } from "../../redux/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
 import axios from "axios";
+import Badge from '@mui/material/Badge';
 import "./header-login.scss";
 
 const HeaderLogin = () => {
@@ -12,7 +13,8 @@ const HeaderLogin = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user.user);
+  const cartCount = useSelector((state)=>state.cart.cartCount)
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -90,8 +92,9 @@ const HeaderLogin = () => {
           <div className="header-icons">
            <Search className="icon"/>
            <Heart className="icon"/>
+           <Badge badgeContent={cartCount} color="primary">
            <ShoppingCartIcon className="icon" onClick={() => handleNavigate('/user/cart')}/>
-
+           </Badge>
 
             <div className="profile-dropdown" ref={dropdownRef}>
               <UserCircle2 className="profile-icon" onClick={(e)=>toggleDropdown(e)} />

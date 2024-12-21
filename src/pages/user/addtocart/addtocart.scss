@@ -23,7 +23,7 @@ $text-color: #333;
   font-family: 'Poppins', sans-serif;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 10px 2rem;
   background-color: $background-color;
   color: $text-color;
   animation: fadeIn 0.5s ease-out;
@@ -32,7 +32,6 @@ $text-color: #333;
   h1 {
     color: $primary-color;
     font-size: 2.5rem;
-    margin-bottom: 5px;
     text-align: start;
     font-weight: 600;
   }
@@ -105,7 +104,7 @@ $text-color: #333;
     align-items: center;
     background-color: white;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 10px;
     margin-bottom: 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;

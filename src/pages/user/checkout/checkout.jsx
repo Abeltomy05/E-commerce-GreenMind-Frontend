@@ -61,7 +61,7 @@ const CheckoutPage = () => {
   const [showAllAddresses, setShowAllAddresses] = useState(false);
 
   const { selectedItems, total } = useSelector((state) => state.cart);
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
     if (!selectedItems || selectedItems.length === 0) {
@@ -114,7 +114,7 @@ const CheckoutPage = () => {
   };
 
   const handleContinueShopping = () => {
-    navigate('/user/shop');
+    navigate('/user/cart');
     dispatch(clearSelectedItems());
   };
 

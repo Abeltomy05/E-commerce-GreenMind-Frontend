@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios'; 
 
 function ProductList({ products }) {
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user.user);
   const navigate = useNavigate();
   
   // State to track cart items for each product

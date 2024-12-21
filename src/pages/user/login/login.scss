@@ -10,6 +10,15 @@ $icon-color: #888;
 $link-color: $primary-color;
 $link-hover: underline;
 
+.spinner-loader-layout{
+  display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    width: 100%; /* Full width */
+
+}
+
 .login-container {
   display: flex;
   font-family: $font-family;
@@ -156,7 +165,7 @@ $link-hover: underline;
       align-items: center;
       justify-content: center;
 
-      i {
+      .google-icon {
         margin-right: 10px;
       }
 

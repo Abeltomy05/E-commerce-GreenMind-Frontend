@@ -39,7 +39,7 @@ const OrderDetails = () => {
       case 'CONFIRMED':
         activeStages = 2;
         break;
-      case 'SHIPPED':
+      case 'ON THE ROAD':
         activeStages = 3;
         break;
       case 'DELIVERED':

@@ -7,7 +7,7 @@ import './customer.scss';
 import EditUser from '../edituser/edituser';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import BasicPagination from '../../pagination/pagination';
 
 const Customer = () => {
   const [allUsers, setAllUsers] = useState([])
@@ -20,6 +20,8 @@ const Customer = () => {
   const [selectedUser, setSelectedUser] = useState(null); 
   const [editTab,setEditTab] = useState(false)
   const actionMenuRefs = useRef({});
+  const [page, setPage] = useState(1);
+  const [ordersPerPage] = useState(4);
 
   const navigate = useNavigate();
 
@@ -196,6 +198,15 @@ const Customer = () => {
     };
   }, []);
 
+
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+  
+  const pageCount = Math.ceil(user.length / ordersPerPage);
+  const startIndex = (page - 1) * ordersPerPage;
+  const currentOrders = user.slice(startIndex, startIndex + ordersPerPage);
   
     if(!editTab){
       return (
@@ -269,7 +280,7 @@ const Customer = () => {
             </tr>
           </thead>
           <tbody>
-            {user.map((customer) => (
+            {currentOrders.map((customer) => (
               <tr key={customer._id}>
                 <td>
                   <div className="customer-name">
@@ -337,7 +348,11 @@ const Customer = () => {
           </tbody>
         </table>
       </div>
-     
+      {pageCount > 1 && (
+                  <div className="mt-6 flex justify-center">
+                    <BasicPagination count={pageCount} onChange={handlePageChange} />
+                  </div>
+                )}
     </div>
     </>
       );

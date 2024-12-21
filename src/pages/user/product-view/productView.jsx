@@ -26,7 +26,7 @@ const ProductView = () => {
 
   // Predefined sizes to always show
   const STANDARD_SIZES = ['S', 'M', 'L'];
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user.user);
 
  useEffect(() => {
     const fetchCartItems = async () => {

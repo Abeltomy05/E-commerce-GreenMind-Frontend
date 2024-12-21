@@ -5,6 +5,15 @@ $text-color: #333;
 $button-bg-color: #425b52;
 $button-hover-bg-color: #2f433c;
 
+.spinner-loader-layout{
+    display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh; 
+      width: 100%; 
+  
+  }
+
 .otp-container {
     display: flex;
     min-height: 89vh;

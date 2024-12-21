@@ -3,7 +3,7 @@
   max-width: 1400px;
   margin: 0 auto;
   background: #9bac9c;
-  height:95vh;
+  min-height:95vh;
 
   .dashboard-header {
     display: flex;
@@ -116,7 +116,7 @@
     border: 1px solid #e5e7eb;
     overflow: hidden;
     overflow: auto; 
-    height: 350px;
+    height: fit-content;
     z-index: 5;
 
     table {

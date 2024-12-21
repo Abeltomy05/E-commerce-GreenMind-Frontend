@@ -1,4 +1,5 @@
 import React, { useState,useEffect } from "react";
+import { FcGoogle } from 'react-icons/fc';
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,15 +8,16 @@ import Footer from "../../../components/footer/footer";
 import HeaderLogin from "../../../components/header-login/header-login";
 import axios from "axios";
 import { useDispatch } from 'react-redux';
-import {login} from "../../../redux/authSlice"
+import {login} from "../../../redux/userSlice"
 import "./login.scss"
+import Spinner from "../../../components/spinner/spinner";
 
 function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+  const [isLoading,setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const Navigate = useNavigate();
 
@@ -67,13 +69,17 @@ useEffect(() => {
   checkLoginStatus();
 }, [dispatch,Navigate]);
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitted(true);
+    setIsLoading(true)
    
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      setIsLoading(false);
       return;
     }
     
@@ -85,26 +91,28 @@ useEffect(() => {
         },
       });
 
-     console.log(response.data)
       
      toast.success(response.data.message, {
       position: "top-right",
-      autoClose: 3000,
+      autoClose: 1000,
       theme: "colored"
     });
+   
       const {user,role} = response.data
       if(user){
       setTimeout(() => {
         dispatch(login({user,role}));
         Navigate('/user/home');
-      }, 2000);
+      }, 3000);
       }else{
         console.error("Error dispatch login");
+        setIsLoading(false)
       }
     } catch(error) {
+      setIsLoading(false)
       toast.error(error.response?.data?.message || "Something went wrong", {
         position: "top-right",
-        autoClose: 3000,
+        autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -129,6 +137,16 @@ useEffect(() => {
       setErrors(newErrors);
     }
   }, [email, password, isSubmitted]);
+
+  if(isLoading){
+    return(
+      <>
+       <div className="spinner-loader-layout">
+        <Spinner/>
+       </div>
+      </>
+    )
+  }
 
   return (
     <>
@@ -176,7 +194,7 @@ useEffect(() => {
           <div className="or-divider-login">OR</div>
           
           <button className="google-btn-login" onClick={googleAuth}>
-            <i className="fab fa-google"></i> Signin with Google
+          <FcGoogle  size={24} className="google-icon" />Signin with Google
           </button>
         </div>
         <ToastContainer

@@ -164,6 +164,7 @@ $accent-color: #f0a04b;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 30px;
     flex: 1;
+    margin: 10px 80px 20px;
 
     .product-card {
       background-color: white;

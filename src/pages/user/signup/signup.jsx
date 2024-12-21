@@ -1,5 +1,6 @@
 import "./signup.scss"
 import React, { useState } from "react";
+import { FcGoogle } from 'react-icons/fc';
 import { Link, useNavigate } from "react-router-dom"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -263,7 +264,7 @@ function UserSignup() {
           <div className="or-divider-signup">OR</div>
          
           <button className="google-btn-signup" onClick={googleAuth}>
-            <i className="fab fa-google"></i> Continue with Google
+            <FcGoogle  size={24} className="google-icon" /> Continue with Google
           </button>
         </div>
         <ToastContainer

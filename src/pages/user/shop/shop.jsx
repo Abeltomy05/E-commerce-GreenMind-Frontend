@@ -12,7 +12,6 @@ import axios from 'axios';
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState(products);
   const [activeFilters, setActiveFilters] = useState({
     category: [],
     type: [],
@@ -33,7 +32,6 @@ export default function Shop() {
       
       const fetchedProducts = response.data;
       setProducts(fetchedProducts);
-      setFilteredProducts(fetchedProducts);
       setIsLoading(false);
     } catch (err) {
       
@@ -43,46 +41,15 @@ export default function Shop() {
     }
   };
 
-  const handleFilterChange = (filterType, value) => {
-    const newFilters = { ...activeFilters };
-
-    if (filterType === 'priceSort') {
-      newFilters.priceSort = value;
-    } else {
-      if (newFilters[filterType].includes(value)) {
-        newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
-      } else {
-        newFilters[filterType] = [...newFilters[filterType], value];
-      }
-    }
-
-    setActiveFilters(newFilters);
-    applyFilters(newFilters);
+  const handleProductsUpdate = (updatedProducts) => {
+    setProducts(updatedProducts);
   };
 
-  const applyFilters = (filters) => {
-    let result = [...products];
-
-    if (filters.category.length > 0) {
-      result = result.filter(product => filters.category.includes(product.category));
-    }
-
-    if (filters.type.length > 0) {
-      result = result.filter(product => filters.type.includes(product.type));
-    }
-
-    if (filters.priceSort) {
-      result.sort((a, b) => {
-        return filters.priceSort === 'lowToHigh' ? a.price - b.price : b.price - a.price;
-      });
-    }
-
-    setFilteredProducts(result);
-  };
 
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
   };
+
   if (isLoading) {
     return (
       <>
@@ -120,10 +87,10 @@ export default function Shop() {
         <div className="shop-content">
           <FilterSection 
             activeFilters={activeFilters} 
-            onFilterChange={handleFilterChange} 
+            onProductsUpdate={handleProductsUpdate} 
             isOpen={isFilterOpen}
           />
-          <ProductList products={filteredProducts} />
+          <ProductList products={products} />
         </div>
       </div>
       <Footer />

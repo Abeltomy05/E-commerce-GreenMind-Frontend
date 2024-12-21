@@ -8,7 +8,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AddProduct from '../addProduct/addProduct';
 import EditProduct from '../editProduct/editProduct';
-
+import BasicPagination from '../../pagination/pagination';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([])
@@ -22,7 +22,8 @@ const Products = () => {
   const [editTab,setEditTab] = useState(false)
   const [addTab,setAddTab] = useState(false)
   const actionMenuRefs = useRef({});
-
+  const [page, setPage] = useState(1);
+  const [ordersPerPage] = useState(3);
 
   useEffect(() => {
     async function fetchData() {
@@ -176,6 +177,15 @@ const Products = () => {
     };
   }, []);
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const pageCount = Math.ceil(products.length / ordersPerPage);
+  const startIndex = (page - 1) * ordersPerPage;
+  const currentOrders = products.slice(startIndex, startIndex + ordersPerPage);
+
+
   const renderContent = () => {
     if (addTab) {
       return (
@@ -191,6 +201,8 @@ const Products = () => {
         />
       );
     }
+
+
 
     if (editTab) {
       return (
@@ -276,7 +288,7 @@ const Products = () => {
           </tr>
         </thead>
           <tbody>
-            {products.map((product) => (
+            {currentOrders.map((product) => (
               <tr key={product._id}>
                 <td>
                   <div className="product-name">
@@ -374,7 +386,12 @@ const Products = () => {
           </tbody>
         </table>
       </div>
-     
+
+     {pageCount > 1 && (
+                  <div className="mt-6 flex justify-center">
+                    <BasicPagination count={pageCount} onChange={handlePageChange} />
+                  </div>
+                )}
     </div>
     </>
       );

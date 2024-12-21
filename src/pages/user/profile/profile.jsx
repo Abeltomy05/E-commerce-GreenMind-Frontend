@@ -10,7 +10,7 @@ import Footer from '../../../components/footer/footer';
 
 const ProfileSettings = () => {
   
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.user.user);
 
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [formData, setFormData] = useState({

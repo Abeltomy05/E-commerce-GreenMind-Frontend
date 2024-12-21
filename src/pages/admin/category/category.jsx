@@ -8,6 +8,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AddCategory from '../../../components/admin/addCategory/addCategory';
 import EditCategory from '../../../components/admin/editCategory/editCategory';
+import BasicPagination from '../../../components/pagination/pagination';
 
 const Category = () => {
   const [category, setCategory] = useState([]);
@@ -19,6 +20,8 @@ const Category = () => {
   const [editTab, setEditTab] = useState(false);
   const [addTab, setAddTab] = useState(false);
   const actionMenuRefs = useRef({});
+  const [page, setPage] = useState(1);
+  const [ordersPerPage] = useState(4);
 
   useEffect(() => {
     async function fetchData() {
@@ -42,6 +45,11 @@ const Category = () => {
     fetchData();
   }, []);
 
+
+
+
+
+
   const filteredCategories = useMemo(() => {
     return category.filter(cat => {
       // Search filter
@@ -62,6 +70,14 @@ const Category = () => {
     });
   }, [category, searchQuery, activeFilter, selectedDate]);
 
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const pageCount = Math.ceil(filteredCategories.length / ordersPerPage);
+  const startIndex = (page - 1) * ordersPerPage;
+  const currentOrders = filteredCategories.slice(startIndex, startIndex + ordersPerPage);
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -227,7 +243,7 @@ const Category = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredCategories.map((item) => (
+              {currentOrders.map((item) => (
                 <tr key={item._id}>
                   <td>
                     <div className="product-name">
@@ -297,6 +313,11 @@ const Category = () => {
             </tbody>
           </table>
         </div>
+        {pageCount > 1 && (
+                  <div className="mt-6 flex justify-center">
+                    <BasicPagination count={pageCount} onChange={handlePageChange} />
+                  </div>
+                )}
       </div>
     );
   };

@@ -5,11 +5,12 @@ import { Navigate, Outlet  } from 'react-router-dom';
  const ProtectedRoute = () => {
 
 
-  const { isAuthenticated} = useSelector((state) => state.auth);
-  console.log(isAuthenticated);
+  const { isUserAuthenticated} = useSelector((state) => state.user);
+  console.log(isUserAuthenticated);
 
 
-  if (!isAuthenticated) {
+
+  if (!isUserAuthenticated) {
     return <Navigate to="/user/login"  replace />;
   }
 
@@ -25,10 +26,10 @@ import { Navigate, Outlet  } from 'react-router-dom';
 };
 
  const  LoginProtect = () => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isUserAuthenticated, role } = useSelector((state) => state.user);
 
 
-  if (isAuthenticated) {
+  if (isUserAuthenticated && role == 'user' ) {
     return <Navigate to="/user/home"  replace />;
   }
 
@@ -45,10 +46,10 @@ import { Navigate, Outlet  } from 'react-router-dom';
 
 const AdminProtectRoute = () => {
 
-  const {isAuthenticated} = useSelector((state) => state.auth);
+  const {isAdminAuthenticated} = useSelector((state) => state.admin);
 
  
-  if (!isAuthenticated) {
+  if (!isAdminAuthenticated) {
     return <Navigate to="/admin/login" replace />;
   }
 
@@ -57,10 +58,10 @@ const AdminProtectRoute = () => {
 };
 
 const AdminProtectRouteLogin= () => {
-  const { isAuthenticated, role } = useSelector((state) => state.auth);
+  const { isAdminAuthenticated, role } = useSelector((state) => state.admin);
   
   
-  if (isAuthenticated ) {
+  if (isAdminAuthenticated && role == 'admin' ) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
