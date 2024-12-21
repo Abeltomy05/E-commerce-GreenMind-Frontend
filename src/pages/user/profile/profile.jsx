@@ -58,7 +58,7 @@ const ProfileSettings = () => {
           lastname: userData.lastname || '',
           email: userData.email || '',
           phone: userData.phone || '',
-          profileImage: userData.profileImage || {ProfileImg}
+          profileImage: userData.profileImage || ''
         });
 
         setAddress({
@@ -182,9 +182,9 @@ const ProfileSettings = () => {
     }
   
     // Check file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Only JPEG, PNG, and GIF files are allowed');
+      toast.error('Only JPEG, PNG, and webp files are allowed');
       return;
     }
   
@@ -240,13 +240,10 @@ const ProfileSettings = () => {
         <h2>Account Settings</h2>
         <form onSubmit={handleProfileUpdate}>
           <div className="profile-header">
-            <div className="profile-image">
-            <img 
-                  src={
-                    formData.profileImage 
-                    ? formData.profileImage 
-                    : "/assets/images/user.png"
-                  } 
+            <div className="profile-image-container">
+              {formData.profileImage ? (
+                <img 
+                  src={formData.profileImage}
                   alt="Profile" 
                   className="profile-image-preview"
                   onError={(e) => {
@@ -254,6 +251,12 @@ const ProfileSettings = () => {
                     e.target.src = "/assets/images/user.png"; 
                   }}
                 />
+              ) : (
+                <div className="profile-image-placeholder">
+                  <Camera size={40} />
+                  <span>Choose an image</span>
+                </div>
+              )}
               <input 
                 type="file" 
                 id="profileImageUpload" 
@@ -263,10 +266,10 @@ const ProfileSettings = () => {
               />
               <button 
                 type="button" 
-                className="change-photo"
+                className="change-photo-button"
                 onClick={() => document.getElementById('profileImageUpload').click()}
               >
-                <Camera size={20} />
+                <Camera size={25} className='camera-icon'/>
                 <span>Change Photo</span>
               </button>
             </div>
@@ -448,3 +451,4 @@ const ProfileSettings = () => {
 };
 
 export default ProfileSettings;
+

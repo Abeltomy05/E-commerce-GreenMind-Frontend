@@ -6,6 +6,7 @@ import HeaderLogin from "../../../components/header-login/header-login";
 import Footer from "../../../components/footer/footer";
 import { FiMenu, FiX } from 'react-icons/fi';
 import axios from 'axios';
+import SpinnerNormal from "../../../components/normalSpinner/normalspinner";
 
 
 
@@ -32,7 +33,10 @@ export default function Shop() {
       
       const fetchedProducts = response.data;
       setProducts(fetchedProducts);
-      setIsLoading(false);
+      setTimeout(()=>{
+        setIsLoading(false);
+      },1000)
+     
     } catch (err) {
       
       setError('Failed to fetch products');
@@ -50,16 +54,16 @@ export default function Shop() {
     setIsFilterOpen(!isFilterOpen);
   };
 
-  if (isLoading) {
-    return (
+  if(isLoading){
+    return(
       <>
-        <HeaderLogin />
-        <div className="shop">
-          <div className="shop-loading">Loading products...</div>
-        </div>
-        <Footer />
+      <HeaderLogin />
+       <div className="spinner-loader-layout">
+        <SpinnerNormal/>
+       </div>
+       <Footer />
       </>
-    );
+    )
   }
 
   if (error) {

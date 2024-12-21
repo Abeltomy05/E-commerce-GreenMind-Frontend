@@ -35,7 +35,7 @@
     gap: 2rem;
     margin-bottom: 2rem;
   
-    .profile-image {
+    .profile-image-container {
       flex-shrink: 0;
       position: relative;
       width: 120px;
@@ -44,34 +44,54 @@
       overflow: hidden;
       box-shadow: 0 1px 8px rgba(0, 0, 0, 0.1);
   
-      img {
+      .profile-image-preview {
         width: 100%;
         height: 100%;
         object-fit: cover;
         padding: 2px;
       }
 
-      .change-photo {
+      .profile-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #ecf0f1;
+        color: #7f8c8d;
+
+        span {
+          margin-top: 0.5rem;
+          font-size: 0.8rem;
+        }
+      }
+
+
+      .change-photo-button {
         position: absolute;
-        top: 0;
         bottom: 0;
         left: 0;
         right: 0;
+        background: rgba(255, 255, 255, 0.607);
         border: none;
-        color: black;
-        padding: 0.5rem;
+        color: #2c3e50;
+        padding: 7px;
         font-size: 0.8rem;
-        text-align: center;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &:hover {
-          background: rgb(171, 176, 179);
+          background: rgba(255, 255, 255, 0.9);
+        }
+ 
+        .camera-icon{
+          margin-left: 15px;
         }
 
-        span {
-          margin-left: 0.5rem;
-        }
       }
     }
   
@@ -81,7 +101,6 @@
       flex: 1;
     }
   }
-  
   
   .form-group {
     margin-bottom: 1.5rem;
@@ -114,7 +133,7 @@
       }
     }
  
-    .password-toggle-button{
+    .password-toggle-button {
       margin-top: 5px;
       background: #34db87;
       display: flex;
@@ -136,7 +155,7 @@
     gap: 1rem;
   }
 
-  .password-section{
+  .password-section {
     width: 500px;
     height: 500px;
   }
@@ -175,8 +194,7 @@
     }
   }
  
-
-  .password-button{
+  .password-button {
     margin-top: 5px;
     background: #3498db;
     color: #fff;

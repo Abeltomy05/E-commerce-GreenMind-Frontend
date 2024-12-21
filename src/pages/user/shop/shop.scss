@@ -5,6 +5,16 @@ $secondary-color: #3a4d4f;
 $bg-color: #f5f5f5;
 $accent-color: #f0a04b;
 
+
+.spinner-loader-layout{
+  display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    width: 100%; /* Full width */
+
+}
+
 .shop {
   background-color: $bg-color;
   color: $secondary-color;
