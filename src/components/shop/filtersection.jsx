@@ -83,7 +83,7 @@ function FilterSection({ isOpen, onProductsUpdate }) {
 
   return (
     <div className={`filter-section bg-[] rounded-lg shadow-md p-6 ${isOpen ? 'open' : ''}`}>
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Filters</h2>
+      <h2 className="text-2xl font-bold mb-6 text-white-800">Filters</h2>
       
       <div className="filter-group mb-6">
         <h3 
