@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import BasicPagination from '../../../components/pagination/pagination';
+import axioInstence from '../../../utils/axiosConfig';
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
@@ -27,7 +28,9 @@ const OrderHistory = () => {
 
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:3000/user/getorderdata/${user.id}`);
+        const response = await axioInstence.get(`/user/getorderdata/${user.id}`);
+
+
        
         if (response.data && response.data.success && Array.isArray(response.data.orders)) {
 
@@ -110,6 +113,8 @@ const OrderHistory = () => {
       </>
     );
   }
+
+ 
 
   if (error) {
     return (

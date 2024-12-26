@@ -7,6 +7,7 @@ import Footer from "../../../components/footer/footer";
 import { FiMenu, FiX } from 'react-icons/fi';
 import axios from 'axios';
 import SpinnerNormal from "../../../components/normalSpinner/normalspinner";
+import axioInstence from "../../../utils/axiosConfig";
 
 
 
@@ -29,7 +30,7 @@ export default function Shop() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/user/getproductdata');
+      const response = await axioInstence.get('/user/getproductdata');
       
       const fetchedProducts = response.data;
       setProducts(fetchedProducts);

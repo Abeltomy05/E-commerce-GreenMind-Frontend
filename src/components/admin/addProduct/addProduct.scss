@@ -20,6 +20,11 @@ $text-secondary: #1c211f;
     text-align: center;
   }
 
+  .wrapper-head{
+    display: flex;
+    gap: 14rem;
+  }
+
   .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

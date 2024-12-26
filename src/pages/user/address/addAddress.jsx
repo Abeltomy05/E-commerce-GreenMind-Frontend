@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import './address.scss';
 import axios from 'axios';
+import axioInstence from '../../../utils/axiosConfig';
 
 const AddAddressModal = ({ onClose, userId}) => {
     const [formData, setFormData] = useState({
@@ -28,7 +29,7 @@ const AddAddressModal = ({ onClose, userId}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`http://localhost:3000/user/addnewaddress/${userId}`, formData)
+            const response = await axioInstence.post(`/user/addnewaddress/${userId}`, formData)
             toast.success("Successfully Added New Address")
             console.log('New address added:', response.data);
             onClose();

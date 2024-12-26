@@ -9,6 +9,7 @@ import Footer from '../../../components/footer/footer';
 import AddAddressModal from './addAddress.jsx';
 import EditAddressModal from './editAddress.jsx';
 import DeleteConfirmationModal from './confirmdelete.jsx';
+import axioInstence from '../../../utils/axiosConfig.jsx';
 
 const AddressManagement = () => {
     const user = useSelector((state) => state.user.user);
@@ -33,7 +34,7 @@ const AddressManagement = () => {
                 return;
             }
 
-            const response = await axios.get(`http://localhost:3000/user/addressdata/${user.id}`);
+            const response = await axioInstence.get(`/user/addressdata/${user.id}`);
             console.log('Addresses response:', response.data);
             setAddresses(response.data);
             setLoading(false);
@@ -61,7 +62,7 @@ const AddressManagement = () => {
 
     const handleDeleteConfirm = async () => {
         try {
-            await axios.delete(`http://localhost:3000/user/deleteaddress/${addressToDelete}`);
+            await axioInstence.delete(`/user/deleteaddress/${addressToDelete}`);
             toast.success('Address deleted successfully');
             fetchAddresses();
         } catch (err) {

@@ -7,11 +7,11 @@ import './profile.scss';
 import ProfileImg from "../../../assets/images/user.png"
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
+import axioInstence from '../../../utils/axiosConfig';
 
 const ProfileSettings = () => {
   
   const user = useSelector((state) => state.user.user);
-
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [formData, setFormData] = useState({
     firstname: '',
@@ -48,7 +48,7 @@ const ProfileSettings = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/user/profile/${user.id}`);
+        const response = await axioInstence.get(`/user/profile/${user.id}`);
 
         console.log('Full response:', response);
         const {  userData, address } = response.data;
@@ -115,7 +115,7 @@ const ProfileSettings = () => {
     e.preventDefault();
     try {
 
-      await axios.put(`http://localhost:3000/user/profileupdate/${user.id}`, {
+      await axioInstence.put(`/user/profileupdate/${user.id}`, {
         formData,
         address
       });
@@ -147,7 +147,7 @@ const ProfileSettings = () => {
 
     try {
       
-      const response = await axios.put(`http://localhost:3000/user/change-password/${user.id}`, 
+      const response = await axioInstence.put(`/user/change-password/${user.id}`, 
         {
           currentPassword: passwords.currentPassword,
           newPassword: passwords.newPassword
@@ -190,7 +190,7 @@ const ProfileSettings = () => {
   
     try {
       // First, get the Cloudinary signature
-      const signatureResponse = await axios.get('http://localhost:3000/admin/generate-upload-url');
+      const signatureResponse = await axioInstence.get('/admin/generate-upload-url');
       const { signature, timestamp, uploadPreset, apiKey, cloudName } = signatureResponse.data;
   
       // Create FormData for Cloudinary upload
@@ -217,7 +217,7 @@ const ProfileSettings = () => {
         ...prev,
         profileImage: imageUrl
       }));
-      await axios.put(`http://localhost:3000/user/profileImageupdate/${user.id}`, {
+      await axioInstence.put(`/user/profileImageupdate/${user.id}`, {
           profileImage: imageUrl
       });
   

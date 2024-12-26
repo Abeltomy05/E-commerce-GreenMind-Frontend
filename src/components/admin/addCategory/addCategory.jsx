@@ -3,6 +3,7 @@ import './addCategory.scss';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
 
 const AddCategory = ({onUpdateSuccess,onCancel}) => {
   const [categoryName, setCategoryName] = useState('');
@@ -49,13 +50,12 @@ const AddCategory = ({onUpdateSuccess,onCancel}) => {
 
   return (
     <div className="add-category">
-      <nav className="breadcrumb">
-        <a href="/dashboard">Dashboard</a>
-        <span className="separator">/</span>
-        <a href="/categories">Categories</a>
-        <span className="separator">/</span>
-        <span className="current">Add Category</span>
-      </nav>
+        <div className="wrapper-head">
+      <div className="breadcrumb">
+      <AdminBreadcrumbs additionalCrumb="Add Category" />
+      </div>
+      <h2>Add New Category</h2>
+      </div>
 
       <div className="form-card">
         <h2>General Information</h2>

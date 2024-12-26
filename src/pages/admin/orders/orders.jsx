@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Loader } from 'lucide-react';
 import BasicPagination from '../../../components/pagination/pagination';
+import AdminBreadcrumbs from '../../../components/breadcrumbs/breadcrumbs';
 
 const Orders = () => {
   const [selectedStatus, setSelectedStatus] = useState('All Status');
@@ -35,6 +36,7 @@ const Orders = () => {
       document.removeEventListener('mousedown', handleGlobalClick);
     };
   }, []);
+
 
 
 
@@ -126,6 +128,31 @@ const Orders = () => {
     }
   };
 
+  // const renderCustomerName = (order) => {
+  //   if (!order.user) return 'User Deleted';
+  //   return order.user.firstname && order.user.lastname 
+  //     ? `${order.user.firstname} ${order.user.lastname}`
+  //     : 'Unknown User';
+  // };
+
+  // const renderProductInfo = (order) => {
+  //   if (!order.products || order.products.length === 0) {
+  //     return (
+  //       <div>
+  //         <div className="font-medium text-[#2b3632]">Product Unavailable</div>
+  //       </div>
+  //     );
+  //   }
+
+  //   const firstProduct = order.products[0];
+  //   if (!firstProduct.product) {
+  //     return (
+  //       <div>
+  //         <div className="font-medium text-[#2b3632]">Product Deleted</div>
+  //       </div>
+  //     );
+  //   }
+
   
   if (loading) {
     return <div className="p-6 text-center"><Loader/></div>;
@@ -140,7 +167,7 @@ const Orders = () => {
       <div className="mb-6">
         <h1 className="text-[#47645a] font-medium">Orders</h1>
         <div className="text-sm text-[#1c211f] mb-4">
-          <span className="text-[#2b3632]">Dashboard</span> {'/'} Order List
+         <AdminBreadcrumbs/>
         </div>
         <div className="flex justify-between items-center">
           <div className="flex space-x-1">

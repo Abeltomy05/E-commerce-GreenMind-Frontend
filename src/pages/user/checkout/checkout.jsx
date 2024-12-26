@@ -10,6 +10,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { clearSelectedItems } from '../../../redux/cartSlice';
 import { toast } from 'react-toastify';
 import Loader from '../../../components/loader/loader';
+import axioInstence from '../../../utils/axiosConfig';
 
 const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewOrderDetails, onClose }) => {
   return (
@@ -72,7 +73,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     const fetchUserAddresses = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/user/addressdata/${user.id}`);
+        const response = await axioInstence.get(`/user/addressdata/${user.id}`);
         const sortedAddresses = response.data.sort((a, b) => b.isDefault - a.isDefault);
         setAddresses(sortedAddresses);
         setIsLoading(false);
@@ -162,7 +163,7 @@ const CheckoutPage = () => {
         paymentMethod: paymentMethod,
         couponCode: couponCode || null,
       };
-      const response = await axios.post('http://localhost:3000/user/placeorder', orderData);
+      const response = await axioInstence.post('/user/placeorder', orderData);
       setOrderSuccessData({ 
         orderId: response.data.orderId,
         totalAmount: total 
@@ -218,7 +219,7 @@ const CheckoutPage = () => {
               <div className="address-list">
                 {visibleAddresses.map(address => (
                   <div
-                    key={address.id}
+                    key={address._id || address.id}
                     className={`address-item ${selectedAddress === address ? 'selected' : ''}`}
                   >
                     <label className="address-checkbox">

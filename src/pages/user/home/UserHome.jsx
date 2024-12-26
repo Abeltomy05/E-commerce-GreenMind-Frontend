@@ -14,11 +14,15 @@ import cato3 from "../../../assets/images/catogery 3.png"
 import { useParams } from 'react-router-dom';
 import axios from "axios";
 import { useSelector } from 'react-redux'
+import axioInstence from '../../../utils/axiosConfig'
 
 export default function UserHome() {
   const userdetail = useSelector((state) => state.user.user);
+  // console.log(userdetail)
 
   const [user,setUser] = useState()
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   // const [loading,setLoading] = useState(true)
 
   useEffect(() => {
@@ -27,18 +31,21 @@ export default function UserHome() {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/user/getuserdata/${userdetail.id}`);
+      setLoading(true);
+      if (!userdetail?.id) {
+        navigate('/user/login');
+        return;
+      }
+      const response = await axioInstence.get(`/user/getuserdata/${userdetail.id}`);
       const fetchedUser = response.data;
+      setError(null);
       setUser(fetchedUser);
-      // setTimeout(()=>{
-      //   setLoading(false);
-      // },3000)
-
     } catch (err) {
-      // setError('Failed to fetch user in home');
-      setLoading(false);
+      setError('Failed to fetch user data');
       console.error('Error fetching user:', err);
-    }
+    }finally {
+      setLoading(false);
+  }
   };
 
 

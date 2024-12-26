@@ -1,13 +1,15 @@
 import "./signup.scss"
 import React, { useState } from "react";
-import { FcGoogle } from 'react-icons/fc';
+import { FcGoogle,FcLock, FcInvite,FcBusinessman, FcManager, FcPhone } from 'react-icons/fc';
 import { Link, useNavigate } from "react-router-dom"
+import { Eye, EyeOff } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import loginImg from "../../../assets/images/login-img.png"
 import Footer from "../../../components/footer/footer"
 import HeaderLogin from "../../../components/header-login/header-login"
 import axios from "axios";
+import axiosInstence from "../../../utils/axiosConfig"
 
 function UserSignup() {
   const [firstname, setFirstname] = useState("");
@@ -17,6 +19,10 @@ function UserSignup() {
   const [password, setPassword] = useState("");
   const [confirmpassword, setConfirmpassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [showPassword, setShowPassword] = useState({
+    normal: false,
+    confirm: false
+  });
   
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
@@ -46,8 +52,8 @@ function UserSignup() {
 
     if (!trimmedUsername) {
       newErrors.username = "UserName is required";
-    } else if (!/^[A-Za-z\s]+$/.test(trimmedUsername)) {
-      newErrors.username = "Username can only contain letters"
+    } else if (!/^[A-Za-z0-9\s]+$/.test(trimmedUsername)) {
+      newErrors.username = "Username can only contain letters and numbers";
     }
 
     if (!trimmedEmail) {
@@ -98,7 +104,7 @@ function UserSignup() {
         password,
       };
         
-      const response = await axios.post("http://localhost:3000/user/signup", userData, {
+      const response = await axiosInstence.post("/user/signup", userData, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -149,7 +155,7 @@ function UserSignup() {
         <div className="right-section">
           <form className="signup-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <i className="icon fa fa-user"></i>
+              <FcBusinessman className="icon" />
               <input 
                 type="text" 
                 placeholder="First Name" 
@@ -164,7 +170,7 @@ function UserSignup() {
             </div>
             
             <div className="form-group">
-              <i className="icon fa fa-user"></i>
+            <FcBusinessman className="icon" />
               <input 
                 type="text" 
                 placeholder="Last Name" 
@@ -179,7 +185,7 @@ function UserSignup() {
             </div>
             
             <div className="form-group">
-              <i className="icon fa fa-user-circle"></i>
+            <FcManager className="icon" />
               <input 
                 type="text" 
                 placeholder="Username" 
@@ -194,7 +200,7 @@ function UserSignup() {
             </div>
             
             <div className="form-group">
-              <i className="icon fa fa-envelope"></i>
+            <FcInvite className="icon" />
               <input 
                 type="email" 
                 placeholder="Email" 
@@ -209,9 +215,9 @@ function UserSignup() {
             </div>
             
             <div className="form-group">
-              <i className="icon fa fa-lock"></i>
+            <FcLock className="icon" />
               <input 
-                type="password" 
+                type={showPassword.normal ? "text" : "password"} 
                 placeholder="Password" 
                 name="password" 
                 value={password} 
@@ -220,13 +226,35 @@ function UserSignup() {
                   setErrors(prev => ({ ...prev, password: '' }));
                 }}
               />
+                <button 
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(prev => ({
+                  ...prev,
+                  normal: !prev.normal
+                }))}
+                style={{ 
+                  border: 'none', 
+                  background: 'none',
+                  cursor: 'pointer',
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)'
+                }}
+              >
+                 {showPassword.normal ? 
+                  <EyeOff size={20} className="text-gray-500" /> : 
+                  <Eye size={20} className="text-gray-500" />
+                }
+              </button>
               {errors.password && <div className="error-message">{errors.password}</div>}
             </div>
             
             <div className="form-group">
-              <i className="icon fa fa-lock"></i>
+            <FcLock className="icon" />
               <input 
-                type="password" 
+                type={showPassword.confirm ? "text" : "password"}  
                 placeholder="Confirm Password" 
                 name="confirmpassword" 
                 value={confirmpassword} 
@@ -235,11 +263,33 @@ function UserSignup() {
                   setErrors(prev => ({ ...prev, confirmpassword: '' }));
                 }}
               />
+               <button 
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(prev => ({
+                  ...prev,
+                  confirm: !prev.confirm
+                }))}
+                style={{ 
+                  border: 'none', 
+                  background: 'none',
+                  cursor: 'pointer',
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)'
+                }}
+              >
+                {showPassword.confirm ? 
+                  <EyeOff size={20} className="text-gray-500" /> : 
+                  <Eye size={20} className="text-gray-500" />
+                }
+                </button>
               {errors.confirmpassword && <div className="error-message">{errors.confirmpassword}</div>}
             </div>
             
             <div className="form-group">
-              <i className="icon fa fa-phone"></i>
+            <FcPhone className="icon" />
               <input 
                 type="text" 
                 placeholder="Phone Number" 

@@ -4,6 +4,7 @@ import './userAccount.scss';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import { useNavigate } from 'react-router-dom';
+import axioInstence from '../../../utils/axiosConfig';
 
 export default function AccountDashboard() {
   const navigate = useNavigate();

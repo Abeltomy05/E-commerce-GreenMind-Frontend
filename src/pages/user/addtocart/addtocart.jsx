@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setSelectedItems,updateCartCount} from '../../../redux/cartSlice';
 import BasicPagination from '../../../components/pagination/pagination';
+import axioInstence from '../../../utils/axiosConfig';
 
 const CartPage = () => {
  
@@ -46,7 +47,7 @@ const CartPage = () => {
   const fetchCartItems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:3000/user/getcartdataforcartpage/${user.id}`);
+      const response = await axioInstence.get(`/user/getcartdataforcartpage/${user.id}`);
       const cartCount = response.data.data.length;
       dispatch(updateCartCount(cartCount))
       const formattedItems = response.data.data.map(item => ({
@@ -81,7 +82,7 @@ const CartPage = () => {
   const updateQuantity = async (id, newQuantity) => {
     if (newQuantity < 1) return;
     try {
-      const response = await axios.patch(`http://localhost:3000/user/updatequantity/${id}`, 
+      const response = await axioInstence.patch(`/user/updatequantity/${id}`, 
         {
           quantity: newQuantity,
           userId: user.id
@@ -122,7 +123,7 @@ const CartPage = () => {
 
   const removeItem = async (id) => {     
     try {       
-      const response = await axios.delete(`http://localhost:3000/user/removecartitem/${id}`, {
+      const response = await axioInstence.delete(`/user/removecartitem/${id}`, {
         data: { userId: user.id }  // Correctly pass userId in the request body
       });  
 

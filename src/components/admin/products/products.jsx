@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import AddProduct from '../addProduct/addProduct';
 import EditProduct from '../editProduct/editProduct';
 import BasicPagination from '../../pagination/pagination';
+import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([])
@@ -189,6 +190,8 @@ const Products = () => {
   const renderContent = () => {
     if (addTab) {
       return (
+        <>
+        <AdminBreadcrumbs additionalCrumb="Add Product"/>
         <AddProduct 
           onSave={(newProduct)=>{
             if(newProduct){
@@ -199,6 +202,7 @@ const Products = () => {
           onCancel={()=>setAddTab(false)}
           onUpdateSuccess={fetchProducts}
         />
+        </>
       );
     }
 
@@ -206,11 +210,14 @@ const Products = () => {
 
     if (editTab) {
       return (
+        <>
+        <AdminBreadcrumbs additionalCrumb="Edit Product"/>
         <EditProduct 
           product={selectedProduct} 
           onCancel={()=>setEditTab(false)}
           onUpdateSuccess={fetchProducts}
         />
+        </>
       );
     }
   
@@ -221,9 +228,7 @@ const Products = () => {
         <div className="product-header-left">
           <h1>Products</h1>
           <div className="product-breadcrumb">
-            <span className="dashboard-link">Dashboard</span>
-            <span className="separator">/</span>
-            <span>Customers List</span>
+           <AdminBreadcrumbs/>
           </div>
         </div>
         <div className="product-header-actions">

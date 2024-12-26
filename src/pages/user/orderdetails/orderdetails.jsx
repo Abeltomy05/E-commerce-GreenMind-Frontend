@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import {toast} from 'react-toastify'
+import axioInstence from '../../../utils/axiosConfig';
 
 const OrderDetails = () => {
   const [orderDetails, setOrderDetails] = useState(null);
@@ -12,6 +13,115 @@ const OrderDetails = () => {
   const [error, setError] = useState(null);
   const { orderId } = useParams();
   const navigate = useNavigate();
+
+
+  const getOrderTimeline = (order) => {
+    const formatDate = (dateString) => {
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return 'Date not available'; 
+        }
+        return date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (error) {
+        console.error('Error formatting date:', error);
+        return null;
+      }
+    };
+    const timeline = [
+      {
+        title: 'Order Placed',
+        description: 'Your order has been successfully placed',
+        date: formatDate(order.createdAt)
+      }
+    ];
+  
+    // Add subsequent status changes based on order status
+    switch (order.status) {
+      case 'CANCELED':
+        timeline.push({
+          title: 'Order Canceled',
+          description: 'Order has been canceled',
+          date: formatDate(order.updatedAt)
+        });
+        break;
+  
+      case 'DELIVERED':
+        timeline.push(
+          {
+            title: 'Order Confirmed',
+            description: 'Your order has been confirmed and is being prepared',
+            // date: addHours(new Date(order.createdAt), 1).toLocaleString('en-US', {
+            //   year: 'numeric',
+            //   month: 'long',
+            //   day: 'numeric',
+            //   hour: '2-digit',
+            //   minute: '2-digit'
+            // })
+          },
+          {
+            title: 'On The Road',
+            description: 'Your order is on the way for delivery',
+            // date: addHours(new Date(order.createdAt), 2).toLocaleString('en-US', {
+            //   year: 'numeric',
+            //   month: 'long',
+            //   day: 'numeric',
+            //   hour: '2-digit',
+            //   minute: '2-digit'
+            // })
+          },
+          {
+            title: 'Delivered',
+            description: 'Your order has been delivered successfully',
+            date: formatDate(order.updatedAt)
+          }
+        );
+        break;
+  
+      case 'ON THE ROAD':
+        timeline.push(
+          {
+            title: 'Order Confirmed',
+            description: 'Your order has been confirmed and is being prepared',
+            // date: addHours(new Date(order.createdAt), 1).toLocaleString('en-US', {
+            //   year: 'numeric',
+            //   month: 'long',
+            //   day: 'numeric',
+            //   hour: '2-digit',
+            //   minute: '2-digit'
+            // })
+          },
+          {
+            title: 'On The Road',
+            description: 'Your order is on the way',
+            date: formatDate(order.updatedAt)
+          }
+        );
+        break;
+  
+      case 'CONFIRMED':
+        timeline.push({
+          title: 'Order Confirmed',
+          description: 'Your order has been confirmed and is being prepared',
+          date: formatDate(order.updatedAt)
+        });
+        break;
+    }
+  
+    return timeline;
+  };
+
+  // const addHours = (date, hours) => {
+  //   const newDate = new Date(date);
+  //   newDate.setHours(newDate.getHours() + hours);
+  //   return newDate;
+  // };
 
   const renderProgressTracker = (status) => {
     const stages = ['Order Placed', 'Packaging', 'On The Road', 'Delivered'];
@@ -86,7 +196,7 @@ const OrderDetails = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:3000/user/orderdetails/${orderId}`);
+      const response = await axioInstence.get(`/user/orderdetails/${orderId}`);
       const transformedOrder = {
           id: response.data.order._id, 
           orderDate: new Date(response.data.order.createdAt).toLocaleDateString('en-US', {
@@ -96,19 +206,8 @@ const OrderDetails = () => {
           }),
           totalAmount: `₹${response.data.order.totalPrice.toLocaleString()}`,
           status:response.data.order.status,
-          timeline: [
-            {
-              title: 'Order Placed',
-              description: 'Your order has been successfully placed',
-              date: new Date(response.data.order.createdAt).toLocaleString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })
-            },
-          ],
+          timeline:  getOrderTimeline(response.data.order),
+
           products: response.data.order.products.map(product => ({
             id: product._id,
             name: product.name, 
@@ -169,7 +268,7 @@ const OrderDetails = () => {
   const handleCancelOrder = async () => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
       try {
-        const response = await axios.post(`http://localhost:3000/user/cancelorder/${orderId}`,{
+        const response = await axioInstence.post(`/user/cancelorder/${orderId}`,{
           status: 'CANCELED',
           updatedAt: new Date().toISOString()
         });
@@ -254,7 +353,7 @@ const OrderDetails = () => {
           {orderDetails.timeline && orderDetails.timeline.length > 0 && (
             <div className="mb-8">
               <h3 className="mb-4 text-lg font-medium">Order Activity</h3>
-              <div className="space-y-4">
+              <div className="rounded-lg border p-4">
                 {orderDetails.timeline.map((event, index) => (
                   <div key={index} className="flex gap-4">
                     <div className="relative flex flex-col items-center">

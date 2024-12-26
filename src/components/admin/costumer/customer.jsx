@@ -8,6 +8,7 @@ import EditUser from '../edituser/edituser';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BasicPagination from '../../pagination/pagination';
+import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
 
 const Customer = () => {
   const [allUsers, setAllUsers] = useState([])
@@ -216,9 +217,7 @@ const Customer = () => {
         <div className="header-left">
           <h1>Customers</h1>
           <div className="breadcrumb">
-            <span className="dashboard-link">Dashboard</span>
-            <span className="separator">/</span>
-            <span>Customers List</span>
+           <AdminBreadcrumbs/>
           </div>
         </div>
         <div className="header-actions">

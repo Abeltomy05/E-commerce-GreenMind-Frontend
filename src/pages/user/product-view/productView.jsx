@@ -8,6 +8,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { CarTaxiFront } from 'lucide-react';
+import axiosInstance from '../../../utils/axiosConfig';
 
 const ProductView = () => {
   const { productId } = useParams(); 
@@ -31,7 +32,7 @@ const ProductView = () => {
  useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/user/getcartdata/${user.id}`);
+        const response = await axiosInstance.get(`/user/getcartdata/${user.id}`);
         const cartMap = response.data.items.reduce((map, item) => {
           map[item.product] = item;
           return map;
@@ -51,7 +52,7 @@ const ProductView = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/user/product-view/${productId}`);
+        const response = await axiosInstance.get(`/user/product-view/${productId}`);
         const productData = response.data;
 
 
@@ -114,7 +115,7 @@ const ProductView = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/user/addtocart', {
+      const response = await axiosInstance.post('/user/addtocart', {
         user:user.id,
         product: product._id,
         variant: {
@@ -338,13 +339,13 @@ const ProductView = () => {
               </div>
             )}
             <div className="action-buttons">
-              <button 
+            {/* <button 
                 className="buy-now-btn" 
                 onClick={handleBuyNow}
                 disabled={!selectedVariant || selectedVariant.stock === 0}
               >
                 BUY NOW
-              </button>
+              </button> */}
               <button 
                 className="add-to-cart-btn" 
                 onClick={handleAddToCart}

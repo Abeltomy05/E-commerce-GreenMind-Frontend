@@ -1,7 +1,8 @@
 import React, { useState,useEffect } from "react";
-import { FcGoogle } from 'react-icons/fc';
+import { FcGoogle,FcLock, FcInvite } from 'react-icons/fc';
+import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import loginImg from "../../../assets/images/login-img.png";
 import Footer from "../../../components/footer/footer";
@@ -11,6 +12,7 @@ import { useDispatch } from 'react-redux';
 import {login} from "../../../redux/userSlice"
 import "./login.scss"
 import Spinner from "../../../components/spinner/spinner";
+import axioInstence from "../../../utils/axiosConfig";
 
 function UserLogin() {
   const [email, setEmail] = useState("");
@@ -18,6 +20,7 @@ function UserLogin() {
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading,setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const Navigate = useNavigate();
 
@@ -50,10 +53,11 @@ function UserLogin() {
 useEffect(() => {
   const checkLoginStatus = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/auth/login/success", {
+      const response = await axioInstence.get("/auth/login/success", {
         withCredentials: true
       });
-
+      // console.log(response.data.user);
+// console.log("response",response.data);
       if (response.data.user) {
         dispatch(login({ 
           user: response.data.user, 
@@ -71,70 +75,73 @@ useEffect(() => {
 
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitted(true);
-    setIsLoading(true)
-   
-    const validationErrors = validateForm();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      setIsLoading(false);
-      return;
-    }
-    
-    try {
-      const userData = { email, password };
-      const response = await axios.post("http://localhost:3000/user/login", userData, {
-        headers: {
-          "Content-Type": "application/json",  
-        },
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitted(true);
+  setIsLoading(true)
+ 
+  const validationErrors = validateForm();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    setIsLoading(false);
+    return;
+  }
+  
+  try {
+    const userData = { email, password };
+    const response = await axioInstence.post("/user/login", userData, {
+      headers: {
+        "Content-Type": "application/json",  
+      },
+      withCredentials: true,
+    });
+    console.log("Login response:", response.data);
+
+    const { status, message, user, role,accessToken,refreshToken } = response.data;
+    if (status === "VERIFIED" && user) {
+
+      localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+
+      toast.success(message, {
+        position: "top-right",
+        autoClose: 1000,
+        theme: "colored"
       });
 
       
-     toast.success(response.data.message, {
-      position: "top-right",
-      autoClose: 1000,
-      theme: "colored"
-    });
-   
-      const {user,role} = response.data
-      if(user){
+      
       setTimeout(() => {
-        dispatch(login({user,role}));
+        dispatch(login({ 
+          user: {
+            ...user,
+            id: user.id 
+          }, 
+          role: role 
+        }));
         Navigate('/user/home');
       }, 3000);
-      }else{
-        console.error("Error dispatch login");
-        setIsLoading(false)
-      }
-    } catch(error) {
-      setIsLoading(false)
-      toast.error(error.response?.data?.message || "Something went wrong", {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    
-      console.error("Error response:", error.response);
-      console.error("Error message:", error.message);
-      console.error("Error config:", error.config);
     }
+  } catch(error) {
+    console.log("Error in login:", error); 
+    console.log("Error response:", error.response); 
+    console.log("Error message:", error.response?.data);
+
+    setIsLoading(false)
+
+    const errorMessage = error.response?.data?.message || "Something went wrong";
+
+    toast.error(errorMessage);
+  setEmail('');
+  setPassword('');
+
   }
+}
 
   useEffect(() => {
     if (isSubmitted) {
-      const newErrors = { ...errors };
-      if (email.trim()) {
-        delete newErrors.email;
-      }
-      if (password.trim()) {
-        delete newErrors.password;
-      }
-      setErrors(newErrors);
+      const validationErrors = validateForm();
+      setErrors(validationErrors);
     }
   }, [email, password, isSubmitted]);
 
@@ -162,7 +169,7 @@ useEffect(() => {
         <div className="login-right-section">
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="form-group-login">
-              <i className="icon fa fa-envelope"></i>
+            <FcInvite className="icon" />
               <input 
                 type="email" 
                 placeholder="Email" 
@@ -173,14 +180,33 @@ useEffect(() => {
               {errors.email && <p className="error-message">{errors.email}</p>}
             </div>
             <div className={`form-group-login ${errors.password ? 'error' : ''}`}>
-              <i className="icon fa fa-lock"></i>
+            <FcLock className="icon" />
               <input 
-                type="password" 
+                 type={showPassword ? "text" : "password"} 
                 placeholder="Password" 
                 name="password" 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
               />
+               <button 
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ 
+                  border: 'none', 
+                  background: 'none',
+                  cursor: 'pointer',
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)'
+                }}
+              >
+                {showPassword ? 
+                  <EyeOff size={20} className="text-gray-500" /> : 
+                  <Eye size={20} className="text-gray-500" />
+                }
+              </button>
               {errors.password && <p className="error-message">{errors.password}</p>}
             </div>
             <button type="submit" className="login-btn">
@@ -197,22 +223,7 @@ useEffect(() => {
           <FcGoogle  size={24} className="google-icon" />Signin with Google
           </button>
         </div>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-          style={{ 
-            fontFamily: "serif",
-            fontSize: '18px',
-          }}
-        />
+       
       </div>
       <Footer/>
     </>

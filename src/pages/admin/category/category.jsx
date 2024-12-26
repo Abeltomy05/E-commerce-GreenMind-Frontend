@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import AddCategory from '../../../components/admin/addCategory/addCategory';
 import EditCategory from '../../../components/admin/editCategory/editCategory';
 import BasicPagination from '../../../components/pagination/pagination';
+import AdminBreadcrumbs from '../../../components/breadcrumbs/breadcrumbs';
 
 const Category = () => {
   const [category, setCategory] = useState([]);
@@ -151,6 +152,8 @@ const Category = () => {
   const renderContent = () => {
     if (addTab) {
       return (
+        <>
+        <AdminBreadcrumbs additionalCrumb="Add Category"/>
         <AddCategory 
           onSave={(newCategory) => {
             if(newCategory) {
@@ -161,16 +164,20 @@ const Category = () => {
           onCancel={() => setAddTab(false)}
           onUpdateSuccess={fetchCategory}
         />
+        </>
       );
     }
 
     if (editTab && selectedCategory) {
       return (
+        <>
+        <AdminBreadcrumbs additionalCrumb="Edit Category"/>
         <EditCategory 
           category={selectedCategory} 
           onCancel={() => setEditTab(false)}
           onUpdateSuccess={fetchCategory}
         />
+        </>
       );
     }
   
@@ -180,9 +187,7 @@ const Category = () => {
           <div className="category-header-left">
             <h1>Category</h1>
             <div className="category-breadcrumb">
-              <span className="dashboard-link">Dashboard</span>
-              <span className="separator">/</span>
-              <span>Category List</span>
+              <AdminBreadcrumbs/>
             </div>
           </div>
           <div className="category-header-actions">

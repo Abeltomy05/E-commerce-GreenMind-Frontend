@@ -11,6 +11,7 @@ import Footer from '../../../components/footer/footer';
 import { useDispatch } from 'react-redux';
 import {login} from '../../../redux/userSlice'
 import Spinner from '../../../components/spinner/spinner';
+import axioInstence from '../../../utils/axiosConfig';
 
 export default function VerifyOTP() {
    const {userId, email} = useParams();
@@ -98,8 +99,8 @@ export default function VerifyOTP() {
         // setIsLoading(true);
       
         try {
-          const response = await axios.post(
-            "http://localhost:3000/user/verifyOTP", 
+          const response = await axioInstence.post(
+            "/user/verifyOTP", 
             {
               userId,
               otp: otpValue,
@@ -108,31 +109,34 @@ export default function VerifyOTP() {
               withCredentials: true 
             }
           );
-      
-          if (response.data.status === "VERIFIED") {
-            toast.success(response.data.message, {
-                position: "top-right",
-                autoClose: 1000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-              });
-             
-                const user = userId;
+
     
-                if(user){
-                    setTimeout(() => {
-                      dispatch(login({user, role:'user'}));
-                      Navigate('/user/home');
-                    }, 3000);
-                    }else{
-                      console.error("Error dispatch login");
-                    //   setIsLoading(false)
-                    }
+          const { status, message, user, role,accessToken,refreshToken } = response.data;
+         if (status === "VERIFIED" && user) {
+         
+               localStorage.setItem('accessToken', accessToken);
+                 localStorage.setItem('refreshToken', refreshToken);
+         
+               toast.success("OTP verified successfully", {
+                 position: "top-right",
+                 autoClose: 1000,
+                 theme: "colored"
+               });
+         
                
-          } else {
-            toast.error(response.data.message || "OTP verification failed");
+               
+               setTimeout(() => {
+                 dispatch(login({ 
+                    user: {
+                        ...user,
+                        id: user.id 
+                      }, 
+                      role: role
+                 }));
+                 Navigate('/user/home');
+               }, 1000);
+             } else {
+            toast.error(message || "OTP verification failed");
             // setIsLoading(false)
           }
         } catch (error) {
@@ -157,7 +161,7 @@ export default function VerifyOTP() {
         setTimer(30);
         setResendVisible(false);
 
-        const response = await axios.post("http://localhost:3000/user/resendOTP", {
+        const response = await axioInstence.post("/user/resendOTP", {
             userId, 
             email 
 

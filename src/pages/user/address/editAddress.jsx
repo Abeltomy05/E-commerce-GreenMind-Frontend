@@ -3,6 +3,7 @@ import axios from 'axios';
 import { X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import './editAddress.scss';
+import axioInstence from '../../../utils/axiosConfig';
 
 const EditAddressModal = ({ onClose, address, userId }) => {
   const [formData, setFormData] = useState({
@@ -44,7 +45,7 @@ const EditAddressModal = ({ onClose, address, userId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`http://localhost:3000/user/updateaddress/${address._id}`, {
+      const response = await axioInstence.put(`/user/updateaddress/${address._id}`, {
         ...formData,
         user: userId,
       });

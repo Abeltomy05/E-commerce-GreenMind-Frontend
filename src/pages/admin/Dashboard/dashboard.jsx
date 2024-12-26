@@ -6,6 +6,7 @@ import { OrdersTable } from '../../../components/dashboard/orders-table'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import "./dashboard.scss"
+import BasicBreadcrumbs from '../../../components/breadcrumbs/breadcrumbs'
 
 export default function Dashboard() {
 
@@ -104,6 +105,7 @@ export default function Dashboard() {
         <div className="orders-container">
             <OrdersTable />
         </div>
+        <BasicBreadcrumbs/>
     </div>
 );
 

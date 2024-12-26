@@ -18,6 +18,11 @@ $text-secondary: #1c211f;
     flex-direction: column;
     gap: 1.5rem;
 
+    .wrapper-head{
+      display: flex;
+      gap: 14rem;
+    }
+
     .form-title {
       color: $primary-color;
       text-align: center;

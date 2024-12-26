@@ -6,6 +6,7 @@ import { Plus, Trash,Upload,X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import './addProduct.scss';
 import uploadImageToCloudinary from '../../../services/cloudinaryService';
+import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
 
 export default function AddProduct({ onSave, onUpdateSuccess, onCancel }) {
   const [productData, setProductData] = useState({
@@ -215,7 +216,12 @@ export default function AddProduct({ onSave, onUpdateSuccess, onCancel }) {
 
   return (
     <div className="add-product-container">
+      <div className="wrapper-head">
+      <div className="breadcrumb">
+      <AdminBreadcrumbs additionalCrumb="Add Product" />
+      </div>
       <h2>Add New Product</h2>
+      </div>
       <form onSubmit={handleSubmit}>
         <div className="form-grid">
           <div className="form-group">

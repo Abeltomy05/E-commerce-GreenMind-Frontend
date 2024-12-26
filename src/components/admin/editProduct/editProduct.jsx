@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {  toast } from 'react-toastify';
 import './editProduct.scss';
+import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
 
 const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
 
@@ -202,8 +203,12 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
  return (
     <div className="edit-product-container">
       <form onSubmit={handleSubmit} className="edit-product-form">
-        <h2 className="form-title">Edit Product</h2>
-        
+       <div className="wrapper-head">
+          <div className="breadcrumb">
+          <AdminBreadcrumbs additionalCrumb="Edit Product" />
+         </div>
+         <h2 className="form-title">Edit Product</h2>
+      </div>
         <div className="form-group">
           <label htmlFor="name">Product Name</label>
           <input

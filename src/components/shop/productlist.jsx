@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import axios from 'axios'; 
+import axioInstence from '../../utils/axiosConfig';
 
 function ProductList({ products }) {
   const user = useSelector((state) => state.user.user);
@@ -38,7 +39,7 @@ function ProductList({ products }) {
         quantity: 1,
       };
 
-      const response = await axios.post('http://localhost:3000/user/addtocart', cartItem);
+      const response = await axioInstence.post('/user/addtocart', cartItem);
             if (response.data.itemExists) {
               toast.info('Product is already in your cart');
             } else if(response.data.inSufficientStock){
@@ -66,7 +67,7 @@ function ProductList({ products }) {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/user/getcartdata/${user.id}`);
+        const response = await axioInstence.get(`/user/getcartdata/${user.id}`);
         
         // Convert cart items array to a map for easier lookup
         const cartMap = response.data.items.reduce((map, item) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import axios from 'axios';
+import axioInstence from '../../utils/axiosConfig';
 
 function FilterSection({ isOpen, onProductsUpdate }) {
   const [openSection, setOpenSection] = useState(null);
@@ -18,11 +19,11 @@ function FilterSection({ isOpen, onProductsUpdate }) {
   useEffect(() => {
     const fetchFilters = async () => {
       try {
-        const categoryResponse = await axios.get('http://localhost:3000/user/getcategorynames');
+        const categoryResponse = await axioInstence.get('/user/getcategorynames');
         const categoryData = categoryResponse.data.data.map(category => category.name);
         setCategories(categoryData);
 
-        const typesResponse = await axios.get('http://localhost:3000/user/producttypes');
+        const typesResponse = await axioInstence.get('/user/producttypes');
         setTypes(typesResponse.data.data);
         setLoading(false);
       } catch (err) {
@@ -44,7 +45,7 @@ function FilterSection({ isOpen, onProductsUpdate }) {
         if (selectedFilters.priceSort) params.append('priceSort', selectedFilters.priceSort);
         if (selectedFilters.nameSort) params.append('nameSort', selectedFilters.nameSort);
 
-        const response = await axios.get(`http://localhost:3000/user/productsfilter?${params}`);
+        const response = await axioInstence.get(`/user/productsfilter?${params}`);
         onProductsUpdate(response.data.data);
       } catch (error) {
         console.error('Error fetching filtered products:', error);
