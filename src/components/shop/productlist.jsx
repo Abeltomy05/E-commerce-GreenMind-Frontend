@@ -5,10 +5,14 @@ import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import axios from 'axios'; 
 import axioInstence from '../../utils/axiosConfig';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../redux/userSlice';
+
 
 function ProductList({ products }) {
   const user = useSelector((state) => state.user.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
   // State to track cart items for each product
   const [cartItemsMap, setCartItemsMap] = useState({});
@@ -55,12 +59,18 @@ function ProductList({ products }) {
     } catch (error) {
       console.error('Error adding to cart:', error);
       
-      // Check if the error is due to the product already being in cart
-      if (error.response && error.response.data.message === 'Product already in cart') {
-        toast.info('Product is already in your cart');
-      } else {
-        toast.error('Failed to add product to cart');
-      }
+    if (error.response?.status === 403) {
+      toast.error('User is Blocked');
+      dispatch(logout());
+      navigate('/user/login');
+      return;
+    }
+    const errorMessage = 
+    error.response?.data?.message || 
+    error.message || 
+    'Failed to add product to cart';
+  
+  toast.error(errorMessage);
     }
   };
 

@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { setSelectedItems,updateCartCount} from '../../../redux/cartSlice';
 import BasicPagination from '../../../components/pagination/pagination';
 import axioInstence from '../../../utils/axiosConfig';
+import {logout} from '../../../redux/userSlice'
 
 const CartPage = () => {
  
@@ -47,21 +48,44 @@ const CartPage = () => {
   const fetchCartItems = async () => {
     try {
       setLoading(true);
+      if (!user?.id) {
+        throw new Error('User ID not found');
+      }
       const response = await axioInstence.get(`/user/getcartdataforcartpage/${user.id}`);
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Failed to fetch cart items');
+      }
+     
       const cartCount = response.data.data.length;
       dispatch(updateCartCount(cartCount))
+
       const formattedItems = response.data.data.map(item => ({
         ...item,
         quantity: item.quantity < 1 ? 1 : item.quantity, 
         checked: true 
       }));
       setCartItems(formattedItems);
-      setLoading(false);
+
     } catch (err) {
-      console.error('Error fetching cart items:', err);
-      setError('Failed to load cart items');
-      setLoading(false);
+      if (err.response?.status !== 403) {
+        const errorMessage = err.response?.data?.message || err.message || 'Failed to load cart items';
+        toast.error(errorMessage);
+      }
+
+      if(response.status === 400 && response.data.message === 'Cart limit reached. Maximum 5 different products allowed in cart.'){
+        toast.error(response.data.message);
+      }
+    
+    setError(err.response?.data?.message || err.message);
+    toast.error(err.response?.data?.message || err.message);
+    
+    if (err.response?.status === 403) {
+      dispatch(logout());
+      navigate('/user/login');
     }
+  } finally {
+    setLoading(false);
+  }
   };
 
 
@@ -124,19 +148,21 @@ const CartPage = () => {
   const removeItem = async (id) => {     
     try {       
       const response = await axioInstence.delete(`/user/removecartitem/${id}`, {
-        data: { userId: user.id }  // Correctly pass userId in the request body
+        data:{ userId: user.id } 
       });  
-
+      if (response.data.success) {
       const updatedItems = cartItems.filter(item => item.id !== id);
-      setCartItems(updatedItems);    
-      dispatch(setCartItems(updatedItems));
+      setCartItems(updatedItems);   
+      // dispatch(setCartItems(updatedItems));
 
-    if(response.data.success){         
-        toast.info(response.data.message || "Product removed from cart")       
-      }            
+      toast.info(response.data.message || "Product removed from cart");       
+    } else {
+      toast.error(response.data.message || "Failed to remove item");
+    }     
+
     } catch (error) {       
-      console.error('Error removing item:', error);       
-      toast.error("Error removing cart item")     
+      console.error('Error removing item:', error);
+    toast.error(error.response?.data?.message || "Error removing cart item");   
     }   
   };
 

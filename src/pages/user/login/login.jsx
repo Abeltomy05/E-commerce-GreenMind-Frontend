@@ -3,6 +3,7 @@ import { FcGoogle,FcLock, FcInvite } from 'react-icons/fc';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
 import 'react-toastify/dist/ReactToastify.css';
 import loginImg from "../../../assets/images/login-img.png";
 import Footer from "../../../components/footer/footer";
@@ -74,6 +75,11 @@ useEffect(() => {
 }, [dispatch,Navigate]);
 
 
+const COOKIE_OPTIONS = {
+  secure: true, // Only transmitted over HTTPS
+  sameSite: 'strict', // Protects against CSRF
+  path: '/' // Available across all pages
+};
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -100,16 +106,8 @@ const handleSubmit = async (e) => {
     const { status, message, user, role,accessToken,refreshToken } = response.data;
     if (status === "VERIFIED" && user) {
 
-      localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-
-      toast.success(message, {
-        position: "top-right",
-        autoClose: 1000,
-        theme: "colored"
-      });
-
-      
+      Cookies.set('accessToken', accessToken, COOKIE_OPTIONS);
+      Cookies.set('refreshToken', refreshToken, COOKIE_OPTIONS);
       
       setTimeout(() => {
         dispatch(login({ 

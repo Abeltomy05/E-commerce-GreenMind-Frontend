@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Truck, Tag, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
 import './checkout.scss';
@@ -13,6 +13,7 @@ import Loader from '../../../components/loader/loader';
 import axioInstence from '../../../utils/axiosConfig';
 
 const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewOrderDetails, onClose }) => {
+  const formattedAmount = Number(totalAmount || 0).toFixed(2);
   return (
     <div className="order-success-overlay">
       <div className="order-success-content">
@@ -20,7 +21,7 @@ const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewO
         <h1>Order Placed Successfully!</h1>
         <div className="order-details">
           <p>Order Number: <strong>{orderId}</strong></p>
-          <p>Total Amount: <strong>${totalAmount.toFixed(2)}</strong></p>
+          <p>Total Amount: <strong>${formattedAmount}</strong></p>
         </div>
         <div className="order-success-actions">
           <button 
@@ -115,7 +116,7 @@ const CheckoutPage = () => {
   };
 
   const handleContinueShopping = () => {
-    navigate('/user/cart');
+    navigate('/user/shop');
     dispatch(clearSelectedItems());
   };
 
@@ -127,9 +128,129 @@ const CheckoutPage = () => {
   //   setOrderSuccessData(null);
   // };
 
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleRazorpaySuccess = useCallback(async (paymentResponse, orderData, orderAmount) => {
+    try {
+
+      const paymentVerification = await axioInstence.post('/payment/razorpaypaymentverify', {
+        razorpay_order_id: paymentResponse.razorpay_order_id,
+        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+        razorpay_signature: paymentResponse.razorpay_signature,
+        orderDetails: orderData
+      });
+
+      if (!paymentVerification.data.success) {
+        throw new Error('Payment verification failed');
+      }
+
+      const finalOrderData = {
+        ...orderData,
+        paymentDetails: {
+          paymentId: paymentResponse.razorpay_payment_id,
+          orderId: paymentResponse.razorpay_order_id,
+        },
+        totalPrice: orderAmount,
+        paymentMethod: 'razorpay',
+        paymentStatus: 'PENDING'
+      };
+
+      const orderResponse = await axioInstence.post('/user/razorpayplaceorder', finalOrderData);
+      
+      if (!orderResponse.data.success) {
+        throw new Error('Failed to save order');
+      }
+
+
+      // Update state and show success overlay
+      setOrderSuccessData({
+        orderId: orderResponse.data.orderId,
+        totalAmount: orderAmount
+      });
+      
+      dispatch(clearSelectedItems());
+      toast.success('Order placed successfully!');
+      
+    } catch (error) {
+      console.error('Payment verification failed:', error);
+      toast.error('Payment verification failed. Please contact support.');
+    } finally {
+        setIsOrderProcessing(false);
+    }
+  }, [dispatch]);
+
+  const initializeRazorpayPayment = async (orderData) => {
+    try {
+      setIsOrderProcessing(true);
+      const res = await loadRazorpayScript();
+      
+      if (!res) {
+        toast.error('Razorpay SDK failed to load');
+        setIsOrderProcessing(false); 
+        return;
+      }
+
+      const orderPayload = {
+        products: selectedItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size
+        })),
+        couponCode: couponCode || null
+      };
+
+      const response = await axioInstence.post('/payment/razorpay', orderPayload);
+      
+      if (!response.data.success) {
+        throw new Error('Failed to create order');
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: response.data.order.amount,
+        currency: response.data.order.currency,
+        name: "Green Mind",
+        description: "Payment for your order",
+        order_id: response.data.order.id,
+        handler: async function (paymentResponse) {
+          await handleRazorpaySuccess(
+            paymentResponse, 
+            orderData, 
+            response.data.order.amount / 100
+          );
+        },
+        prefill: {
+          name: selectedAddress?.fullName || "",
+          email: user?.email || "",
+          contact: selectedAddress?.phone || ""
+        },
+        theme: {
+          color: "#3399cc"
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.open();
+
+    } catch (error) {
+      console.error('Razorpay payment initialization failed:', error);
+      toast.error('Failed to initialize payment. Please try again.');
+      setIsOrderProcessing(false);
+    }
+  };
+
+  //Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
 
     if (!selectedAddress) {
       toast.info('Please select a shipping address');
@@ -141,51 +262,58 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (paymentMethod === 'credit-card') {
-      if (!cardDetails.number || !cardDetails.name || !cardDetails.expiry || !cardDetails.cvv) {
-        toast.info('Please fill in all credit card details');
-        return;
-      }
-    }
+    // setOrderSuccessData(null);
 
-    setIsOrderProcessing(true);
+    const orderData = {
+      userId: user.id,
+      products: selectedItems.map(item => ({
+        product: item.productId,
+        quantity: item.quantity,
+        size: item.size,
+        cartItemId: item.id
+      })),
+      addressId: selectedAddress._id,
+      totalPrice: total,
+      paymentMethod: paymentMethod,
+      couponCode: couponCode || null,
+    };
+    
+
     try {
-      const orderData = {
-        userId: user.id,
-        products: selectedItems.map(item => ({
-          product: item.productId,
-          quantity: item.quantity,
-          size: item.size,
-          cartItemId: item.id
-        })),
-        addressId: selectedAddress._id,
-        totalPrice: total,
-        paymentMethod: paymentMethod,
-        couponCode: couponCode || null,
-      };
-      const response = await axioInstence.post('/user/placeorder', orderData);
-      setOrderSuccessData({ 
-        orderId: response.data.orderId,
-        totalAmount: total 
-      });
+      if (paymentMethod === 'cod') {
+        setIsOrderProcessing(true);
+        // For COD, get the final amount from server first
+        const amountResponse = await axioInstence.post('/user/calculateOrderAmount', {
+          products: orderData.products,
+          couponCode: orderData.couponCode
+        });
+        
+        const response = await axioInstence.post('/user/placeorder', {
+          ...orderData,
+          totalPrice: amountResponse.data.data.totalAmount
+        });
+        setTimeout(()=>{
+          setIsOrderProcessing(false);
+          setOrderSuccessData({
+            orderId: response.data.orderId,
+            totalAmount: amountResponse.data.data.totalAmount
+          });
+        },3000)
+      
+      } 
+      else if (paymentMethod === 'razorpay') {
+        await initializeRazorpayPayment(orderData);
+      }
+      else if (paymentMethod === 'credit-card') {
+       console.log('Credit card payment method selected');
+      }
     } catch (error) {
       console.error('Order placement failed:', error);
       toast.error('Failed to place order. Please try again.');
-    } finally {
-      setTimeout(()=>{
-        setIsOrderProcessing(false);
-      },3000)
-      
+      setIsOrderProcessing(false);
     }
-  };
 
-  if (isOrderProcessing) {
-    return (
-     <div className="loader-layout">
-        <Loader/>
-        </div>
-    );
-  }
+  };
 
   if (isLoading) {
     return <div>Loading addresses...</div>;
@@ -200,6 +328,11 @@ const CheckoutPage = () => {
   return (
     <>
       <HeaderLogin />
+      {isOrderProcessing && (
+          <div className="loader-layout">
+            <Loader />
+          </div>
+        )}
       <div className="checkout-page">
         {orderSuccessData && (
           <OrderSuccessOverlay
@@ -383,3 +516,4 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
+

@@ -1,9 +1,16 @@
-// axiosConfig.jsx
 import axios from 'axios';
-import { store } from '../redux/store'; // Adjust path as needed
-import { logout } from '../redux/userSlice'; // Adjust path as needed
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { store } from '../redux/store';
+import { logout } from '../redux/userSlice';
 import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+const COOKIE_OPTIONS = {
+  secure: true,
+  sameSite: 'lax',
+  path: '/'
+};
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,
@@ -12,6 +19,7 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false;
 let failedQueue = [];
+let logoutTimer = null;
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => {
@@ -25,25 +33,26 @@ const processQueue = (error, token = null) => {
 };
 
 const handleAuthError = () => {
-  // Dispatch logout action to Redux
-  store.dispatch(logout());
+  if (logoutTimer) {
+    clearTimeout(logoutTimer);
+  }
   
-  // Clear all auth related data
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('userData');
-  
-  // Show error message
-  toast.error('Session expired. Please log in again.');
-  
-  // Redirect to login page
-  window.location.href = '/user/login';
+  logoutTimer = setTimeout(() => {
+    console.log('Logging out due to auth error');
+    store.dispatch(logout());
+    
+    Cookies.remove('accessToken');
+    Cookies.remove('refreshToken');
+    
+    toast.error('Session expired. Please log in again.');
+    
+    window.location.href = '/user/login';
+  }, 100); // Small delay to prevent multiple toasts and redirects
 };
 
-// Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = Cookies.get('accessToken');
     if (accessToken) {
       config.headers['Authorization'] = `Bearer ${accessToken}`;
     }
@@ -54,13 +63,11 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if error is 401 and we haven't already tried to refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -77,7 +84,7 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = Cookies.get('refreshToken');
         
         if (!refreshToken) {
           throw new Error('No refresh token available');
@@ -86,18 +93,15 @@ axiosInstance.interceptors.response.use(
         const refreshResponse = await axiosInstance.post('/user/refresh-token', { refreshToken });
 
         if (refreshResponse.data.accessToken) {
-          localStorage.setItem('accessToken', refreshResponse.data.accessToken);
+          Cookies.set('accessToken', refreshResponse.data.accessToken, COOKIE_OPTIONS);
           if (refreshResponse.data.refreshToken) {
-            localStorage.setItem('refreshToken', refreshResponse.data.refreshToken);
+            Cookies.set('refreshToken', refreshResponse.data.refreshToken, COOKIE_OPTIONS);
           }
 
-          // Update axios default headers
           axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${refreshResponse.data.accessToken}`;
           
-          // Process queue with new token
           processQueue(null, refreshResponse.data.accessToken);
           
-          // Return the original request with new token
           originalRequest.headers['Authorization'] = `Bearer ${refreshResponse.data.accessToken}`;
           return axiosInstance(originalRequest);
         } else {
@@ -112,7 +116,6 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // If error is still 401 after refresh attempt, or any other auth error
     if (error.response?.status === 401) {
       handleAuthError();
     }
@@ -122,3 +125,4 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
+

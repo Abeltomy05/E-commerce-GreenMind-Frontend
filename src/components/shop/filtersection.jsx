@@ -135,7 +135,7 @@ function FilterSection({ isOpen, onProductsUpdate }) {
       </div>
 
       <div className="filter-group mb-6">
-        <h3 className="text-lg font-semibold text-white-700 mb-3">Sort</h3>
+        <h3 className="text-lg font-semibold text-white-700 mb-3">Sort By:</h3>
         
         <div className="mb-4">
           <h4 className="text-md font-medium text-white-600 mb-2">Price</h4>

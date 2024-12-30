@@ -114,10 +114,16 @@ const ProfileSettings = () => {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     try {
-
+      const addressData = {
+        ...address,
+        fullName: `${formData.firstname} ${formData.lastname}`.trim(),
+        phone: formData.phone,
+        Address: `${address.district}, ${address.city}, ${address.state}`.trim()
+      };
+  
       await axioInstence.put(`/user/profileupdate/${user.id}`, {
         formData,
-        address
+        address: addressData
       });
 
 

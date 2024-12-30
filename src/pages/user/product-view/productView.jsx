@@ -9,6 +9,8 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { CarTaxiFront } from 'lucide-react';
 import axiosInstance from '../../../utils/axiosConfig';
+import {logout} from '../../../redux/userSlice'
+import { useDispatch } from 'react-redux';
 
 const ProductView = () => {
   const { productId } = useParams(); 
@@ -28,6 +30,7 @@ const ProductView = () => {
   // Predefined sizes to always show
   const STANDARD_SIZES = ['S', 'M', 'L'];
   const user = useSelector((state) => state.user.user);
+  const dispatch = useDispatch();
 
  useEffect(() => {
     const fetchCartItems = async () => {
@@ -134,8 +137,17 @@ const ProductView = () => {
       }
 
     } catch (err) {
-      console.error('Error adding to cart:', err);
-      toast.error('Failed to add product to cart');
+      if (err.response?.status !== 403) {
+              toast.error('Failed to add product to cart');
+            }
+          
+          setError(err.response?.data?.message || err.message);
+          toast.error(err.response?.data?.message || err.message);
+      
+       if (err.response?.status === 403) {
+            dispatch(logout());
+            navigate('/user/login');
+          }
     }
   };
 
