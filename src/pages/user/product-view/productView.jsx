@@ -17,7 +17,6 @@ const ProductView = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [error, setError] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -26,6 +25,7 @@ const ProductView = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [cartItemsMap, setCartItemsMap] = useState({});
   const [isCartLoading, setIsCartLoading] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
   // Predefined sizes to always show
   const STANDARD_SIZES = ['S', 'M', 'L'];
@@ -77,13 +77,49 @@ const ProductView = () => {
     fetchProductDetails();
   }, [productId]);
 
+  useEffect(() => {
+    const checkWishlist = async () => {
+      try {
+        const response = await axiosInstance.get(`/user/check-wishlist/${product._id}`);
+        setIsInWishlist(response.data.isInWishlist);
+      } catch (error) {
+        console.error('Error checking wishlist:', error);
+      }
+    };
+  
+    if (product && user.id) {
+      checkWishlist();
+    }
+  }, [product, user.id]);
+
   const handleQuantityChange = (e) => {
     const newQuantity = Math.max(1, parseInt(e.target.value));
     setQuantity(newQuantity);
   };
 
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+  const toggleFavorite = async () => {
+    if (!user.id) {
+      toast.error('Please login to add items to wishlist');
+      return;
+    }
+    try {
+      if (isInWishlist) {
+        await axiosInstance.delete(`/user/remove-wishlist/${product._id}`);
+        toast.success('Removed from wishlist');
+      } else {
+        await axiosInstance.post('/user/add-wishlist', {
+          product: product._id
+        });
+        toast.success('Added to wishlist');
+      }
+      setIsInWishlist(!isInWishlist);
+    } catch (err) {
+      if (err.response?.status === 403) {
+        dispatch(logout());
+        navigate('/user/login');
+      }
+      toast.error(err.response?.data?.message || 'Failed to update wishlist');
+    }
   };
 
   const handleSizeSelection = (size) => {
@@ -226,7 +262,7 @@ const ProductView = () => {
               />
 
               <button className="favorite-btn" onClick={toggleFavorite}>
-                {isFavorite ? <FaHeart /> : <FaRegHeart />}
+                {isInWishlist  ? <FaHeart size={30}/> : <FaRegHeart size={25}/>}
               </button>
               <div className="image-navigation">
                 <button 

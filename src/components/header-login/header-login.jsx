@@ -91,7 +91,7 @@ const HeaderLogin = () => {
         {user && (
           <div className="header-icons">
            <Search className="icon"/>
-           <Heart className="icon"/>
+           <Heart className="icon" onClick={() => handleNavigate('/user/wishlist')}/>
            <Badge badgeContent={cartCount} color="primary">
            <ShoppingCartIcon className="icon" onClick={() => handleNavigate('/user/cart')}/>
            </Badge>

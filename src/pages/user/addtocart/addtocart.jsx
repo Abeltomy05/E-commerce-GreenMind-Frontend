@@ -155,7 +155,7 @@ const CartPage = () => {
       setCartItems(updatedItems);   
       // dispatch(setCartItems(updatedItems));
 
-      toast.info(response.data.message || "Product removed from cart");       
+      // toast.info(response.data.message || "Product removed from cart");       
     } else {
       toast.error(response.data.message || "Failed to remove item");
     }     
