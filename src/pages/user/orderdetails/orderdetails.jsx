@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Box, CheckCircle2, MapPin, Package, Truck, Plus, X } from 'lucide-react';
+import { ArrowLeft, Box, CheckCircle2, MapPin, Package, Truck, Plus, X, Undo } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
@@ -304,6 +304,10 @@ const OrderDetails = () => {
     }
   };
 
+  const handleReturnOrder = () => {
+    navigate(`/user/return/${orderId}`);
+  };
+
   return (
     <>
     <HeaderLogin/>
@@ -325,6 +329,14 @@ const OrderDetails = () => {
               disabled={orderDetails.status === 'CANCELED' || orderDetails.status === 'DELIVERED'}
             >
               Cancel Order
+            </button>
+            <button 
+              className="px-3 py-1 text-sm border border-green-500 text-green-500 rounded-md hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              onClick={handleReturnOrder}
+              disabled={orderDetails.status !== 'DELIVERED'}
+            >
+              <Undo className="mr-1 h-4 w-4" />
+              Return Order
             </button>
             <button className="flex items-center text-sm text-green-600 hover:text-green-700">
               Leave a Rating

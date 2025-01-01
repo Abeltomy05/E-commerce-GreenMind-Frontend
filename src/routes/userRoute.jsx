@@ -15,7 +15,7 @@ import CheckoutPage from '../pages/user/checkout/checkout';
 import OrderHistory from '../pages/user/yourorders/yourorders';
 import OrderDetails from '../pages/user/orderdetails/orderdetails';
 import Wishlist from '../pages/user/wishlist/wishlist';
-
+import ReturnProductPage from '../pages/user/returnpage/returnpage';
 
 function UserRoute() {
  
@@ -41,6 +41,7 @@ function UserRoute() {
         <Route path="/orders" element={<OrderHistory/>} />
         <Route path="/orderdetails/:orderId" element={<OrderDetails/>} />
         <Route path="/wishlist" element={<Wishlist/>} />
+        <Route path="/return/:orderId" element={<ReturnProductPage/>} />
       </Route>
       </Routes>
     )
