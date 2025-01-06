@@ -42,19 +42,25 @@ const Wishlist = () => {
         },
         quantity: 1
       });
-      if(response.status === 400 && response.data.cartLimitReached){
-        toast.info('Cart limit reached');
+      if(response.data.cartLimitReached){
+        toast.warning('Cart limit reached. Maximum 5 different products allowed in cart.');
+        return;
       }
-      if(response.status === 200 && response.data.itemExists){
+      if (response.data.inSufficientStock) {
+        toast.warning(response.data.message);
+        return;
+      }
+      if(response.data.itemExists){
         toast.info('Product is already in your cart');
+        return;
       }
-      if(response.status === 200 && !response.data.itemExists){
-        toast.success('Added to cart');
+      if (response.data.success) {
+        toast.success('Added to cart successfully');
       }
     
     } catch (error) {
       console.error('Add to cart error:', error);
-      toast.error('Failed to add to cart');
+      toast.error(error.response?.data?.message || 'Failed to add to cart');
     }
   };
 

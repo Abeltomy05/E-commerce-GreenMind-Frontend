@@ -37,6 +37,7 @@ $text-secondary: #1c211f;
     color: $text-secondary;
     font-size: 12px;
     margin-bottom: 16px;
+
   }
 
   .menu-item {
@@ -53,6 +54,7 @@ $text-secondary: #1c211f;
     border-radius: 8px;
     margin-bottom: 8px;
     transition: all 0.2s;
+    text-decoration: none;
 
     &:hover {
       background: rgba($primary-color, 0.1);

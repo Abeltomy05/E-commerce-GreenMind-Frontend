@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Loader } from 'lucide-react';
+import BasicPagination from '../../../components/pagination/pagination';
 
 const ReturnRequests = () => {
   const [returnRequests, setReturnRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [requestsPerPage] = useState(4);
 
   useEffect(() => {
     fetchReturnRequests();
@@ -32,17 +35,31 @@ const ReturnRequests = () => {
         orderId,
         productId
       });
-      if (response.data.success) {
-        toast.success('Return request approved successfully');
-        fetchReturnRequests(); // Refresh the list
-      } else {
-        toast.error(response.data.message || 'Failed to approve return request');
-      }
+
+       if (response.data.success) {
+            if (response.data.refunded) {
+                toast.success('Return request approved and amount refunded to wallet');
+            } else {
+                toast.success('Return request approved successfully');
+            }
+            fetchReturnRequests(); 
+        } else {
+            toast.error(response.data.message || 'Failed to approve return request');
+        }
+
     } catch (error) {
       console.error('Error approving return request:', error);
-      toast.error('Failed to approve return request');
+      const errorMessage = error.response?.data?.message || 'Failed to approve return request';
+      toast.error(errorMessage);
     }
   };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+  const pageCount = Math.ceil(returnRequests.length / requestsPerPage);
+  const startIndex = (page - 1) * requestsPerPage;
+  const currentRequests  = returnRequests.slice(startIndex, startIndex + requestsPerPage);
 
   if (loading) {
     return <div className="p-6 text-center"><Loader/></div>;
@@ -68,7 +85,7 @@ const ReturnRequests = () => {
             </tr>
           </thead>
           <tbody>
-            {returnRequests.map((request) => (
+            {currentRequests.map((request) => (
               <tr key={`${request.orderId}-${request.productId}`} className="hover:bg-gray-50">
                 <td className="px-6 py-4 border-b">
                   {`${request.user.firstname} ${request.user.lastname}`}
@@ -96,6 +113,11 @@ const ReturnRequests = () => {
           </tbody>
         </table>
       </div>
+      {pageCount > 1 && (
+                  <div className="mt-6 flex justify-center">
+                    <BasicPagination count={pageCount} onChange={handlePageChange} />
+                  </div>
+                )}
     </div>
   );
 };

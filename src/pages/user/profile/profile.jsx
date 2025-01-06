@@ -115,29 +115,30 @@ const ProfileSettings = () => {
     e.preventDefault();
     try {
       const addressData = {
-        ...address,
-        fullName: `${formData.firstname} ${formData.lastname}`.trim(),
-        phone: formData.phone,
-        Address: `${address.district}, ${address.city}, ${address.state}`.trim()
+      fullName: `${formData.firstname} ${formData.lastname}`.trim(),
+      phone: formData.phone,
+      Address: address.district ? `${address.district}, ${address.city}, ${address.state}`.trim() : 'N/A',
+      city: address.city || 'N/A',
+      country: address.country || 'N/A',
+      state: address.state || 'N/A',
+      district: address.district || 'N/A',
+      pincode: address.pincode || 'N/A'
       };
   
-      await axioInstence.put(`/user/profileupdate/${user.id}`, {
+      const response = await axioInstence.put(`/user/profileupdate/${user.id}`, {
         formData,
         address: addressData
       });
 
 
-      toast.success('Profile updated successfully', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true
-      });
+      if (response.data.success) {
+        toast.success('Profile updated successfully');
+      } else {
+        toast.warning(response.data.message);
+      }
     } catch (err) {
       console.error('Update error:', err);
-      toast.error(err.message || "Failed to update profile")
+      toast.error(err.response?.data?.message || "Failed to update profile");
     }
   };
 

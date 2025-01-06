@@ -274,6 +274,7 @@ const OrderDetails = () => {
         });
 
         if (response.data.success) {
+            toast.success(response.data.message);
           setOrderDetails(prev => ({
             ...prev,
             status: 'CANCELED',
@@ -416,7 +417,7 @@ const OrderDetails = () => {
                         <div className="text-sm text-right">x{product.quantity}</div>
                         <div className="text-sm text-right">₹{product.price.toLocaleString()}</div>
                         <div className="text-sm font-medium text-right">
-                            ₹{(product.price * product.quantity).toLocaleString()}
+                            ₹{orderDetails.totalAmount}
                         </div>
                         </div>
                     ))}

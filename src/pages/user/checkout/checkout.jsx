@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, Tag, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+import { CreditCard, Truck, Tag, ChevronDown, ChevronUp, CheckCircle,ShoppingBag,  } from 'lucide-react';
 import './checkout.scss';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
@@ -45,6 +45,10 @@ const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewO
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { selectedItems, total } = useSelector((state) => state.cart);
+  const user = useSelector((state) => state.user.user);
+
+  const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const [addresses, setAddresses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,16 +64,36 @@ const CheckoutPage = () => {
     cvv: ''
   });
   const [couponCode, setCouponCode] = useState('');
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [showAllAddresses, setShowAllAddresses] = useState(false);
+  const [discountedSubtotal, setDiscountedSubtotal] = useState(subtotal);
+  const [showCoupons, setShowCoupons] = useState(false);
 
-  const { selectedItems, total } = useSelector((state) => state.cart);
-  const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
     if (!selectedItems || selectedItems.length === 0) {
       navigate('/user/cart');
     }
   }, [selectedItems, navigate]);
+
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      try {
+        const response = await axioInstence.get(`/user/displaycoupons?orderAmount=${subtotal}`);
+        if (response.data.success) {
+          setAvailableCoupons(response.data.coupons);
+        }
+      } catch (error) {
+        console.error('Failed to fetch coupons:', error);
+        toast.error('Failed to load coupons');
+      }
+    };
+
+    if (subtotal > 0) {
+      fetchCoupons();
+    }
+  }, [subtotal]);
 
   useEffect(() => {
     const fetchUserAddresses = async () => {
@@ -97,7 +121,38 @@ const CheckoutPage = () => {
     }
   }, [user]);
 
-  const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const handleCouponSelect = (code) => {
+    setCouponCode(code);
+  };
+
+  const toggleCoupons = () => {
+    setShowCoupons(!showCoupons);
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
+    
+    try {
+      const response = await axioInstence.get('/user/applycoupen', {
+        params: { 
+          code: couponCode,
+          orderAmount: subtotal
+        }
+      });
+  
+      if (response.data.success) {
+        setAppliedDiscount(response.data.discountAmount);
+        setDiscountedSubtotal(response.data.finalAmount); 
+        toast.success('Coupon applied successfully!');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to apply coupon');
+      setCouponCode('');
+      setAppliedDiscount(0);
+    }
+  };
+
+
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
@@ -111,9 +166,7 @@ const CheckoutPage = () => {
     setCardDetails({ ...cardDetails, [e.target.name]: e.target.value });
   };
 
-  const handleCouponChange = (e) => {
-    setCouponCode(e.target.value);
-  };
+
 
   const handleContinueShopping = () => {
     navigate('/user/shop');
@@ -138,6 +191,11 @@ const CheckoutPage = () => {
       document.body.appendChild(script);
     });
   };
+
+  const handleCouponChange = (e) => {
+    setCouponCode(e.target.value);
+  };
+
 
   const handleRazorpaySuccess = useCallback(async (paymentResponse, orderData, orderAmount) => {
     try {
@@ -205,7 +263,8 @@ const CheckoutPage = () => {
           quantity: item.quantity,
           size: item.size
         })),
-        couponCode: couponCode || null
+        couponCode: couponCode || null,
+        totalAmount: subtotal - appliedDiscount 
       };
 
       const response = await axioInstence.post('/payment/razorpay', orderPayload);
@@ -236,6 +295,12 @@ const CheckoutPage = () => {
         theme: {
           color: "#3399cc"
         },
+        modal: {
+          ondismiss: function() {
+            setIsOrderProcessing(false);
+            toast.info('Payment cancelled');
+          }
+        }
       };
 
       const razorpayInstance = new window.Razorpay(options);
@@ -273,35 +338,34 @@ const CheckoutPage = () => {
         cartItemId: item.id
       })),
       addressId: selectedAddress._id,
-      totalPrice: total,
       paymentMethod: paymentMethod,
       couponCode: couponCode || null,
     };
     
 
     try {
+      const amountResponse = await axioInstence.post('/user/calculateOrderAmount', {
+        products: orderData.products,
+        couponCode: orderData.couponCode
+      });
+      const finalAmount = amountResponse.data.data.totalAmount;
       if (paymentMethod === 'cod') {
         setIsOrderProcessing(true);
-        // For COD, get the final amount from server first
-        const amountResponse = await axioInstence.post('/user/calculateOrderAmount', {
-          products: orderData.products,
-          couponCode: orderData.couponCode
-        });
-        
         const response = await axioInstence.post('/user/placeorder', {
           ...orderData,
-          totalPrice: amountResponse.data.data.totalAmount
+          totalPrice: finalAmount
         });
         setTimeout(()=>{
           setIsOrderProcessing(false);
           setOrderSuccessData({
             orderId: response.data.orderId,
-            totalAmount: amountResponse.data.data.totalAmount
+            totalAmount: finalAmount
           });
         },3000)
       
       } 
       else if (paymentMethod === 'razorpay') {
+        orderData.totalPrice = finalAmount;
         await initializeRazorpayPayment(orderData);
       }
       else if (paymentMethod === 'credit-card') {
@@ -323,7 +387,7 @@ const CheckoutPage = () => {
     return <div>Error loading addresses: {error}</div>;
   }
 
-  const visibleAddresses = showAllAddresses ? addresses : addresses.slice(0, 2);
+  const visibleAddresses = showAllAddresses ? addresses : addresses.slice(0, 1);
 
   return (
     <>
@@ -348,7 +412,15 @@ const CheckoutPage = () => {
           <div className="checkout-left">
             {/* Address section */}
             <section className="checkout-section">
-              <h2>Shipping Address</h2>
+            <div className="address-section-header">
+                  <h2>Shipping Address</h2>
+                  <button 
+                    className="add-address-btn"
+                    onClick={() => navigate('/user/address')}
+                  >
+                    + Add New Address
+                  </button>
+                </div>
               <div className="address-list">
                 {visibleAddresses.map(address => (
                   <div
@@ -468,6 +540,45 @@ const CheckoutPage = () => {
           <div className="checkout-right">
             <section className="checkout-section">
               <h2>Order Summary</h2>
+              <div className="available-coupons">
+              <div 
+                  className="coupon-header flex items-center justify-between  p-2 cursor-pointer hover:bg-gray-50 rounded-md"
+                  onClick={toggleCoupons}
+                >
+                  <h3>
+                    <ShoppingBag className="inline-icon" />
+                    Available Coupons
+                  </h3>
+                  {showCoupons ? <ChevronUp /> : <ChevronDown />}
+                  </div>
+
+                  {showCoupons && (
+                  <div className="coupon-list">
+                    {availableCoupons.length > 0 ? (
+                      availableCoupons.map((coupon, index) => (
+                      <div key={index} className="coupon-item">
+                        <span className="coupon-code">{coupon.code}</span>
+                        <span className="coupon-discount">{coupon.discount}</span>
+                        <span className="coupon-min">Min order: ${coupon.minimumPurchaseAmount}</span>
+                        <button onClick={() => handleCouponSelect(coupon.code)}  disabled={couponCode === coupon.code}> 
+                          {couponCode === coupon.code ? 'Selected' : 'Use Coupon'}
+                          </button>
+                      </div>
+                    ))
+                  ):(
+                    <div className="no-coupons-message">
+                    <p>No coupons available for this order</p>
+                  </div>
+                  )}
+                  </div>
+                  )}
+                  {appliedDiscount > 0 && (
+                      <div className="discount-applied">
+                        <span>Discount Applied:</span>
+                        <span>-${appliedDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+                </div>
               <div className="order-summary">
                 <div className="cart-items">
                   {selectedItems.map(item => (
@@ -483,25 +594,32 @@ const CheckoutPage = () => {
                     type="text"
                     placeholder="Enter coupon code"
                     value={couponCode}
-                    onChange={handleCouponChange}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    readOnly={couponCode !== ''}
                   />
-                  <button className="apply-coupon">
+                  <button className="apply-coupon" onClick={handleApplyCoupon}  disabled={!couponCode} >
                     <Tag />
-                    Apply
+                    {appliedDiscount > 0 ? 'Applied' : 'Apply'}
                   </button>
                 </div>
                 <div className="order-totals">
                   <div className="subtotal">
-                    <span>Subtotal</span>
+                    <span>Original Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
+                  {appliedDiscount > 0 && (
+                      <div className="discount">
+                        <span>Discount Applied</span>
+                        <span>-${appliedDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
                   <div className="shipping">
                     <span>Shipping</span>
                     <span className="free-shipping">FREE</span>
                   </div>
                   <div className="total">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>${(subtotal-appliedDiscount).toFixed(2)}</span>
                   </div>
                 </div>
               </div>

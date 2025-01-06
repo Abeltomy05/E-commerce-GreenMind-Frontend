@@ -63,13 +63,22 @@ const Orders = () => {
     }
   };
 
+  const getFilteredOrders = () => {
+    if (selectedStatus.toLowerCase() === 'all status') {
+      return orders;
+    }
+    return orders.filter(order => 
+      order.paymentInfo.status.toLowerCase() === selectedStatus.toLowerCase()
+    );
+  };
+
   const handlePageChange = (event, value) => {
     setPage(value);
   };
-
-  const pageCount = Math.ceil(orders.length / ordersPerPage);
+  const filteredOrders = getFilteredOrders();
+  const pageCount = Math.ceil(filteredOrders.length / ordersPerPage);
   const startIndex = (page - 1) * ordersPerPage;
-  const currentOrders = orders.slice(startIndex, startIndex + ordersPerPage);
+  const currentOrders = filteredOrders.slice(startIndex, startIndex + ordersPerPage);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -104,6 +113,10 @@ const Orders = () => {
       console.error('Error updating order status:', err);
       toast.error('Failed to update order status');
     }
+  };
+  const handleFilterChange = (status) => {
+    setSelectedStatus(status);
+    setPage(1); 
   };
 
   const handleCancelOrder = async (e, orderId) => {
@@ -147,18 +160,18 @@ const Orders = () => {
         {!showReturnRequests && (
           <div className="flex space-x-1 mb-4">
             {['All Status', 'Pending', 'Confirmed', 'On The Road', 'Delivered', 'Canceled'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setSelectedStatus(tab.toLowerCase())}
-                className={`px-4 py-2 text-sm rounded-lg ${
-                  selectedStatus === tab.toLowerCase()
-                    ? 'bg-[#47645a] text-white'
-                    : 'text-[#1c211f] hover:bg-[#47645a] hover:bg-opacity-10'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+                    <button
+                      key={tab}
+                      onClick={() => handleFilterChange(tab)}
+                      className={`px-4 py-2 text-sm rounded-lg ${
+                        selectedStatus.toLowerCase() === tab.toLowerCase()
+                          ? 'bg-[#47645a] text-white'
+                          : 'text-[#1c211f] hover:bg-[#47645a] hover:bg-opacity-10'
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
           </div>
         )}
       </div>
@@ -180,9 +193,13 @@ const Orders = () => {
 
             {error ? (
               <div className="p-4 text-center text-red-600">{error}</div>
-            ) : currentOrders.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">No orders found.</div>
-            ) : (
+            ): currentOrders.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                {selectedStatus.toLowerCase() === 'all status' 
+                  ? 'No orders found.' 
+                  : `No ${selectedStatus} orders found.`}
+              </div>
+            )  : (
               currentOrders.map((order) => (
                 <div key={order._id} className="grid grid-cols-[2fr,1fr,1fr,1fr,1fr,1fr,auto] gap-4 p-4 border-b border-[#949599] last:border-b-0 items-center text-sm">
                   <div className="flex items-center space-x-3">

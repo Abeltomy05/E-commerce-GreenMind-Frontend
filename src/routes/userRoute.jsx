@@ -16,6 +16,7 @@ import OrderHistory from '../pages/user/yourorders/yourorders';
 import OrderDetails from '../pages/user/orderdetails/orderdetails';
 import Wishlist from '../pages/user/wishlist/wishlist';
 import ReturnProductPage from '../pages/user/returnpage/returnpage';
+import WalletComponent from '../pages/user/wallet/wallet';
 
 function UserRoute() {
  
@@ -42,6 +43,7 @@ function UserRoute() {
         <Route path="/orderdetails/:orderId" element={<OrderDetails/>} />
         <Route path="/wishlist" element={<Wishlist/>} />
         <Route path="/return/:orderId" element={<ReturnProductPage/>} />
+        <Route path="/wallet" element={<WalletComponent/>} />
       </Route>
       </Routes>
     )

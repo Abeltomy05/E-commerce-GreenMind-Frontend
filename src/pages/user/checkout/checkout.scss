@@ -47,6 +47,114 @@ $border-radius: 8px;
   margin: 10px auto;
   animation: fadeInCheckout 0.5s ease-out forwards;
 
+  .available-coupons {
+    margin-bottom: 20px;
+
+    .discount-applied{
+     margin-top: 10px;
+     margin-left: 5px;
+    }
+    h3 {
+      display: flex;
+      align-items: center;
+      color: $primary-color;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+
+      .inline-icon {
+        margin-right: 10px;
+      }
+    }
+
+    .coupon-list {
+      background-color: white;
+      border-radius: $border-radius;
+      padding: 10px;
+
+      .no-coupons-message {
+        text-align: center;
+        border-radius: 4px;
+        margin: 1rem 0;
+        
+        p {
+          color: #353333;
+          font-size: 0.9rem;
+          margin: 0;
+        }
+      }
+    }
+    .coupon-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid color-scale($primary-color, 90%);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .coupon-code {
+        font-weight: bold;
+        color: $primary-color;
+      }
+
+      .coupon-discount {
+        color: $accent-color;
+      }
+
+      button {
+        background-color: $accent-color;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &:hover {
+          background-color: color-scale($accent-color, $lightness: -10%);
+        }
+      }
+    }
+  }
+  .address-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  
+    .add-address-btn {
+      padding: 0.5rem 1rem;
+      background-color: #fff;
+      border: 1px solid #e28f83;
+      color: #e28f83;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      margin-bottom: 15px;
+  
+      &:hover {
+        background-color: #e28f83;
+        color: #fff;
+      }
+    }
+  }
+
+  .coupon-section {
+    input[readonly] {
+      background-color: color-scale($secondary-color, $lightness: 5%);
+    }
+
+
+    .apply-coupon {
+      &:disabled {
+        background-color: color-scale($accent-color, $lightness: 20%);
+        cursor: not-allowed;
+      }
+    }
+  }
+  
   .order-success-overlay {
     position: fixed;
     top: 0;

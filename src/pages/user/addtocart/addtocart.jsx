@@ -62,7 +62,7 @@ const CartPage = () => {
       const formattedItems = response.data.data.map(item => ({
         ...item,
         quantity: item.quantity < 1 ? 1 : item.quantity, 
-        checked: true 
+        checked: false 
       }));
       setCartItems(formattedItems);
 

@@ -38,19 +38,19 @@ export default function AccountDashboard() {
       color: "#E53935",
       path: "/user/address"
     },
-    {
-      icon: <Building2 size={24} />,
-      title: "Your business account",
-      description: "Sign up for free to save up to 28% with GST invoice and bulk discounts and purchase on credit.",
-      color: "#8E24AA",
-      path: "/user/business-account"
-    },
+    // {
+    //   icon: <Building2 size={24} />,
+    //   title: "Your business account",
+    //   description: "Sign up for free to save up to 28% with GST invoice and bulk discounts and purchase on credit.",
+    //   color: "#8E24AA",
+    //   path: "/user/business-account"
+    // },
     {
       icon: <CreditCard size={24} />,
-      title: "Payment options",
-      description: "Edit or add payment methods",
+      title: "Your Cart",
+      description: "View and buy products from cart.",
       color: "#FB8C00",
-      path: "/user/payment-options"
+      path: "/user/cart"
     },
     {
       icon: <Wallet size={24} />,

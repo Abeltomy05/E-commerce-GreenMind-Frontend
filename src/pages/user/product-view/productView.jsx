@@ -107,14 +107,16 @@ const ProductView = () => {
         await axiosInstance.delete(`/user/remove-wishlist/${product._id}`);
         toast.success('Removed from wishlist');
       } else {
-        await axiosInstance.post('/user/add-wishlist', {
+        const response = await axiosInstance.post('/user/add-wishlist', {
           product: product._id
         });
         toast.success('Added to wishlist');
+
       }
       setIsInWishlist(!isInWishlist);
     } catch (err) {
       if (err.response?.status === 403) {
+        toast.error(err.response?.data?.message || 'Account has been blocked');
         dispatch(logout());
         navigate('/user/login');
       }
@@ -173,7 +175,7 @@ const ProductView = () => {
       }
 
     } catch (err) {
-      if (err.response?.status !== 403) {
+      if (err.response?.status !== 403 && !err.response?.data?.cartLimitReached) {
               toast.error('Failed to add product to cart');
             }
           
@@ -234,7 +236,6 @@ const ProductView = () => {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
   if (!product) return <div>No product found</div>;
 
   return (
