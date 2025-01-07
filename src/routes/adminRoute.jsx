@@ -9,11 +9,10 @@ import Category from '../pages/admin/category/category';
 import Orders from '../pages/admin/orders/orders';
 import CouponManagement from '../pages/admin/coupon/coupon';
 import Banner from '../pages/admin/banner/banner';
-import Transaction from '../pages/admin/transaction/transaction';
 import Settings from '../pages/admin/settings/settings';
 import LogoutPage from '../pages/admin/logout/logout';
 import {AdminProtectRoute,AdminProtectRouteLogin} from "../Protect/ProtectedRoute"
-
+import OfferManagement from '../pages/admin/offer/offerManagement';
 
 function AdminRoute() {
  
@@ -33,7 +32,7 @@ function AdminRoute() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/coupon" element={<CouponManagement />} />
           <Route path="/banner" element={<Banner />} />
-          <Route path="/transaction" element={<Transaction />} />
+          <Route path="/offer" element={<OfferManagement />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/logout" element={<LogoutPage />} />
         </Route>

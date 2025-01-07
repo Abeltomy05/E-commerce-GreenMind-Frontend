@@ -375,7 +375,7 @@ const AdminDashboard = () => {
                 />
               </div>
               <div className="w-48 py-1 border-l border-gray-200">
-                {['Today', 'Last 7 Days', 'Last Month'].map((option) => (
+                {['Last 7 Days', 'Last Month'].map((option) => (
                   <button
                     key={option}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#9bac9c] hover:text-white transition-colors"
