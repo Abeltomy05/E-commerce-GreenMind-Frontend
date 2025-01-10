@@ -37,43 +37,64 @@ function FilterSection({ isOpen, onProductsUpdate }) {
   }, []);
 
   useEffect(() => {
-    const fetchFilteredProducts = async () => {
-      try {
-        const params = new URLSearchParams();
-        if (selectedFilters.category.length) params.append('category', selectedFilters.category.join(','));
-        if (selectedFilters.type.length) params.append('type', selectedFilters.type.join(','));
-        if (selectedFilters.priceSort) params.append('priceSort', selectedFilters.priceSort);
-        if (selectedFilters.nameSort) params.append('nameSort', selectedFilters.nameSort);
+    const timeoutId = setTimeout(() => {
+        const fetchFilteredProducts = async () => {
+            try {
+                const params = new URLSearchParams();
+                if (selectedFilters.category.length) {
+                    params.append('category', selectedFilters.category.join(','));
+                }
+                if (selectedFilters.type.length) {
+                    params.append('type', selectedFilters.type.join(','));
+                }
+                if (selectedFilters.priceSort) {
+                    params.append('priceSort', selectedFilters.priceSort);
+                }
+                if (selectedFilters.nameSort) {
+                    params.append('nameSort', selectedFilters.nameSort);
+                }
 
-        const response = await axioInstence.get(`/user/productsfilter?${params}`);
-        onProductsUpdate(response.data.data);
-      } catch (error) {
-        console.error('Error fetching filtered products:', error);
-      }
-    };
+                const response = await axioInstence.get(`/user/productsfilter?${params}`);
+                const filteredProducts = response.data.data;
 
-    fetchFilteredProducts();
-  }, [selectedFilters, onProductsUpdate]);
+                onProductsUpdate(filteredProducts);
+            } catch (error) {
+                console.error('Error fetching filtered products:', error);
+            }
+        };
+
+        fetchFilteredProducts();
+    }, 300); 
+
+    return () => clearTimeout(timeoutId);
+}, [selectedFilters]);
 
   const handleFilterChange = (filterType, value) => {
     setSelectedFilters(prev => {
-      const updatedFilters = { ...prev };
-      if (filterType === 'priceSort' || filterType === 'nameSort') {
-        updatedFilters[filterType] = value === prev[filterType] ? null : value;
-      } else {
-        if (!Array.isArray(updatedFilters[filterType])) {
-          updatedFilters[filterType] = [];
-        }
-        const index = updatedFilters[filterType].indexOf(value);
-        if (index > -1) {
-          updatedFilters[filterType].splice(index, 1);
+        const updatedFilters = { ...prev };
+        
+        if (filterType === 'priceSort' || filterType === 'nameSort') {
+            // Clear other sort when one is selected
+            if (filterType === 'priceSort') {
+                updatedFilters.nameSort = null;
+            } else {
+                updatedFilters.priceSort = null;
+            }
+            updatedFilters[filterType] = value === prev[filterType] ? null : value;
         } else {
-          updatedFilters[filterType].push(value);
+            if (!Array.isArray(updatedFilters[filterType])) {
+                updatedFilters[filterType] = [];
+            }
+            const index = updatedFilters[filterType].indexOf(value);
+            if (index > -1) {
+                updatedFilters[filterType].splice(index, 1);
+            } else {
+                updatedFilters[filterType].push(value);
+            }
         }
-      }
-      return updatedFilters;
+        return updatedFilters;
     });
-  };
+};
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);

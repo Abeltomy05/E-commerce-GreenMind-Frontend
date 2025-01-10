@@ -11,9 +11,9 @@ import { clearSelectedItems } from '../../../redux/cartSlice';
 import { toast } from 'react-toastify';
 import Loader from '../../../components/loader/loader';
 import axioInstence from '../../../utils/axiosConfig';
+import AddAddressOverlay from './addadressoverlay';
 
 const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewOrderDetails, onClose }) => {
-  const formattedAmount = Number(totalAmount || 0).toFixed(2);
   return (
     <div className="order-success-overlay">
       <div className="order-success-content">
@@ -21,7 +21,7 @@ const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewO
         <h1>Order Placed Successfully!</h1>
         <div className="order-details">
           <p>Order Number: <strong>{orderId}</strong></p>
-          <p>Total Amount: <strong>${formattedAmount}</strong></p>
+          <p>Total Amount: <strong>${Number(totalAmount).toFixed(2)}</strong></p>
         </div>
         <div className="order-success-actions">
           <button 
@@ -48,8 +48,11 @@ const CheckoutPage = () => {
   const { selectedItems, total } = useSelector((state) => state.cart);
   const user = useSelector((state) => state.user.user);
 
-  const subtotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = selectedItems.reduce((sum, item) => 
+    sum + (item.displayPrice.current * item.quantity), 0
+  );
 
+  const [showAddressForm, setShowAddressForm] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isOrderProcessing, setIsOrderProcessing] = useState(false);
@@ -232,7 +235,7 @@ const CheckoutPage = () => {
       // Update state and show success overlay
       setOrderSuccessData({
         orderId: orderResponse.data.orderId,
-        totalAmount: orderAmount
+        totalAmount:  subtotal - appliedDiscount
       });
       
       dispatch(clearSelectedItems());
@@ -244,7 +247,7 @@ const CheckoutPage = () => {
     } finally {
         setIsOrderProcessing(false);
     }
-  }, [dispatch]);
+  }, [dispatch,subtotal, appliedDiscount]);
 
   const initializeRazorpayPayment = async (orderData) => {
     try {
@@ -256,15 +259,11 @@ const CheckoutPage = () => {
         setIsOrderProcessing(false); 
         return;
       }
+      const finalAmount = orderData.totalPrice;
 
       const orderPayload = {
-        products: selectedItems.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          size: item.size
-        })),
-        couponCode: couponCode || null,
-        totalAmount: subtotal - appliedDiscount 
+           totalAmount: finalAmount,
+            orderId: `order_${Date.now()}`
       };
 
       const response = await axioInstence.post('/payment/razorpay', orderPayload);
@@ -278,13 +277,13 @@ const CheckoutPage = () => {
         amount: response.data.order.amount,
         currency: response.data.order.currency,
         name: "Green Mind",
-        description: "Payment for your order",
+        description: `Order Amount: ₹${(response.data.order.amount / 100).toFixed(2)}`,
         order_id: response.data.order.id,
         handler: async function (paymentResponse) {
           await handleRazorpaySuccess(
             paymentResponse, 
             orderData, 
-            response.data.order.amount / 100
+            finalAmount 
           );
         },
         prefill: {
@@ -349,6 +348,7 @@ const CheckoutPage = () => {
         couponCode: orderData.couponCode
       });
       const finalAmount = amountResponse.data.data.totalAmount;
+
       if (paymentMethod === 'cod') {
         setIsOrderProcessing(true);
         const response = await axioInstence.post('/user/placeorder', {
@@ -359,7 +359,7 @@ const CheckoutPage = () => {
           setIsOrderProcessing(false);
           setOrderSuccessData({
             orderId: response.data.orderId,
-            totalAmount: finalAmount
+            totalAmount: subtotal - appliedDiscount
           });
         },3000)
       
@@ -377,6 +377,20 @@ const CheckoutPage = () => {
       setIsOrderProcessing(false);
     }
 
+  };
+
+  const handleAddAddress = async (addressData) => {
+    try {
+      const response = await axioInstence.post(`/user/addaddresscheckoutpage/${user.id}`, addressData);
+      if (response.data.success) {
+        const updatedAddresses = await axioInstence.get(`/user/addressdata/${user.id}`);
+        setAddresses(updatedAddresses.data);
+        toast.success('Address added successfully');
+      }
+    } catch (error) {
+      console.error('Failed to add address:', error);
+      toast.error('Failed to add address');
+    }
   };
 
   if (isLoading) {
@@ -416,7 +430,7 @@ const CheckoutPage = () => {
                   <h2>Shipping Address</h2>
                   <button 
                     className="add-address-btn"
-                    onClick={() => navigate('/user/address')}
+                    onClick={() => setShowAddressForm(true)}
                   >
                     + Add New Address
                   </button>
@@ -585,7 +599,9 @@ const CheckoutPage = () => {
                     <div key={item.id} className="cart-item">
                       <span className="cart-item-name">{item.name}</span>
                       <span className="cart-item-quantity">x{item.quantity}</span>
-                      <span className="cart-item-price">${(item.price * item.quantity).toFixed(2)}</span>
+                      <span className="cart-item-price">
+                        ${(item.displayPrice.current * item.quantity).toFixed(2)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -627,6 +643,12 @@ const CheckoutPage = () => {
             </section>
           </div>
         </div>
+        {showAddressForm && (
+            <AddAddressOverlay
+              onClose={() => setShowAddressForm(false)}
+              onAddAddress={handleAddAddress}
+            />
+          )}
       </div>
       <Footer />
     </>

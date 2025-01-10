@@ -39,7 +39,7 @@ const CartPage = () => {
   const handleNavigate = (path) => {
     
     const selectedItems = cartItems.filter(item => item.checked);
-    const total = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = selectedItems.reduce((sum, item) => sum + (item.displayPrice.current * item.quantity), 0);
     dispatch(setSelectedItems({ selectedItems, total })); 
   
     navigate(path);
@@ -62,7 +62,21 @@ const CartPage = () => {
       const formattedItems = response.data.data.map(item => ({
         ...item,
         quantity: item.quantity < 1 ? 1 : item.quantity, 
-        checked: false 
+        checked: false,
+        displayPrice: {
+          original: item.originalPrice,
+          current: item.currentPrice,
+          hasDiscount: item.currentPrice < item.originalPrice,
+          discountPercentage: item.offer ? 
+            Math.round(((item.originalPrice - item.currentPrice) / item.originalPrice) * 100) 
+            : 0
+        },
+        offerDetails: item.offer ? {
+          name: item.offer.name,
+          type: item.offer.discountType,
+          value: item.offer.discountValue,
+          maxDiscount: item.offer.maxDiscountAmount
+        } : null
       }));
       setCartItems(formattedItems);
 
@@ -96,7 +110,7 @@ const CartPage = () => {
 
   useEffect(() => {
     const newSubtotal = cartItems.reduce((sum, item) => 
-      item.checked ? sum + item.price * item.quantity : sum, 0
+      item.checked ? sum + item.displayPrice.current * item.quantity : sum, 0
     );
     setSubtotal(newSubtotal);
   }, [cartItems]);
@@ -172,6 +186,15 @@ const CartPage = () => {
     ));
   };
 
+  const calculateTotalSavings = () => {
+    return cartItems.reduce((savings, item) => {
+      if (item.checked && item.displayPrice.hasDiscount) {
+        return savings + ((item.displayPrice.original - item.displayPrice.current) * item.quantity);
+      }
+      return savings;
+    }, 0);
+  };
+
   if (loading) return <div>Loading cart...</div>;
   if (error) return <div>{error}</div>;
 
@@ -205,46 +228,79 @@ const CartPage = () => {
                       <Check size={16} />
                     </label>
                   </div>
+                  
                   <img src={item.image} alt={item.name} className="item-image" />
-                  <div className="item-details">
-                    <h3>{item.name}</h3>
-                    <p className="item-price">${item.price.toFixed(2)}</p>
-                    <p className="item-size">Size:{item.size}</p>
+                
+                  <div className="flex flex-col flex-1">
+                  <div className="flex flex-col ">
+                    <h3 className="text-lg font-semibold">{item.name}</h3>
+                    <p className="text-sm text-gray-600 ">Size: {item.size}</p>
+                    
+                    {/* {item.displayPrice.hasDiscount && (
+                      <span className="bg-green-100 text-green-800 text-xs px-2  rounded w-fit ">
+                        {item.displayPrice.discountPercentage}% OFF
+                      </span>
+                    )} */}
+                    
+                    <div className="flex items-center gap-2">
+                      {item.displayPrice.hasDiscount && (
+                        <p className="line-through text-gray-500 text-sm">
+                          ₹{item.displayPrice.original.toFixed(2)}
+                        </p>
+                      )}
+                      <p className="text-lg font-semibold text-green-700">
+                        ₹{item.displayPrice.current.toFixed(2)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="quantity-control">
-                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                      <Minus size={16} />
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                  <p className="item-total">${(item.price * item.quantity).toFixed(2)}</p>
-                  <button className="remove-item" onClick={() => removeItem(item.id)}>
-                    <X size={20} />
+                </div>
+
+                <div className="quantity-control self-center">
+                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                    <Minus size={16} />
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                    <Plus size={16} />
                   </button>
                 </div>
+                  
+                <button 
+                  className="text-gray-500 hover:text-red-500 transition-colors self-center" 
+                  onClick={() => removeItem(item.id)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
               ))
-            )}
-          </div>
+          )}
+        </div>
           
           {currentOrders.length > 0 && (
             <div className="cart-summary">
               <h2>Cart Total</h2>
               <div className="summary-row">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>₹{subtotal.toFixed(2)}</span>
               </div>
+
+              {calculateTotalSavings() > 0 && (
+                <div className="summary-row savings">
+                  <span>Total Savings</span>
+                  <span>₹{calculateTotalSavings().toFixed(2)}</span>
+                </div>
+              )}
+              
               <div className="summary-row total">
                 <span>Total</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>₹{subtotal.toFixed(2)}</span>
               </div>
+              
               <button className="checkout-btn" onClick={()=>handleNavigate('/user/checkout')}>
                 <ShoppingBag size={20} />
                 Proceed to Checkout
               </button>
-              <button className="continue-shopping-btn">
+              <button className="continue-shopping-btn" onClick={()=>navigate('/user/shop')}>
                 <ArrowLeft size={20} />
                 Continue Shopping
               </button>
@@ -260,6 +316,7 @@ const CartPage = () => {
       <Footer/>
     </>
   );
+
 };
 
 export default CartPage;

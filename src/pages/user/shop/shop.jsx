@@ -18,6 +18,31 @@ export default function Shop() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeOffers, setActiveOffers] = useState([]);
+
+  const applyOffersToProducts = (products, offers) => {
+    return products.map(product => {
+      const applicableOffer = offers.find(offer => {
+      
+        const targetIdStr = offer.targetId?._id?.toString() || offer.targetId?.toString();
+        const productIdStr = product._id?.toString();
+        const categoryIdStr = product.category?._id?.toString();
+
+        if (offer.applicableTo === 'product' && targetIdStr === productIdStr) {
+          return true;
+        }
+        if (offer.applicableTo === 'category' && targetIdStr === categoryIdStr) {
+          return true;
+        }
+        return false;
+      });
+
+      return {
+        ...product,
+        currentOffer: applicableOffer || null
+      };
+    });
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -25,10 +50,22 @@ export default function Shop() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axioInstence.get('/user/getproductdata');
-      
-      const fetchedProducts = response.data;
-      setProducts(fetchedProducts);
+      const [productResponse, offersResponse] = await Promise.all([
+        axioInstence.get('/user/getproductdata'),
+        axioInstence.get('/user/getactiveoffers')
+      ]);
+
+      const fetchedProducts = productResponse.data;
+      const activeOffers = offersResponse.data;
+
+      console.log('Active offers:', activeOffers);
+
+      setActiveOffers(activeOffers);
+
+      const productsWithOffers = applyOffersToProducts(fetchedProducts, activeOffers);
+      setProducts(productsWithOffers);
+
+
       setTimeout(() => {
         setIsLoading(false);
       }, 1000)
@@ -41,7 +78,8 @@ export default function Shop() {
   };
 
   const handleProductsUpdate = (updatedProducts) => {
-    setProducts(updatedProducts);
+    const productsWithOffers = applyOffersToProducts(updatedProducts, activeOffers);
+    setProducts(productsWithOffers);
   };
 
   const toggleFilter = () => {
@@ -79,7 +117,7 @@ export default function Shop() {
         <div className="shop-header">
           <h1>Shop</h1>
           <button className={`filter-toggle ${isFilterOpen ? 'open' : ''}`} onClick={toggleFilter}>
-            {!isFilterOpen ?(<span className="filter-text">FILTER</span>): null}
+            {!isFilterOpen ? <span className="filter-text">FILTER</span> : null}
             {isFilterOpen ? <FiX /> : <FiMenu />}
           </button>
         </div>

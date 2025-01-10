@@ -4,6 +4,7 @@ $text-color: white;
 $secondary-color: #3a4d4f;
 $bg-color: #f5f5f5;
 $accent-color: #f0a04b;
+$offer-color: #ff4444;
 
 .spinner-loader-layout {
   display: flex;
@@ -174,13 +175,72 @@ $accent-color: #f0a04b;
     margin: 10px 80px 20px;
 
     .product-card {
-      background-color: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
+      position: relative !important;
+    background-color: white;
+    border-radius: 10px;
+    overflow: visible !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+
+      .offer-badge {
+        position: absolute !important;
+        top: -10px !important;
+        right: -10px !important; 
+        background-color: $offer-color;
+        color: $text-color;
+        padding: 8px 12px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        z-index: 10 !important;
+        pointer-events: none;
+        animation: fadeIn 0.3s ease-in;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        right: 10px;
+        width: 10px;
+        height: 10px;
+        background-color: darken($offer-color, 20%);
+        clip-path: polygon(0 0, 100% 100%, 100% 0);
+      }
+    }
+
+      .price-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    
+        .original-price {
+          color: #666;
+          text-decoration: line-through;
+          font-size: 0.9rem;
+        }
+    
+        .discounted-price {
+          color: $offer-color;
+          font-weight: bold;
+          font-size: 1.1rem;
+        }
+        .price {
+          font-weight: bold;
+          color: $accent-color;
+          font-size: 1.1rem;
+        }
+      }
 
       &:hover {
         transform: translateY(-5px);

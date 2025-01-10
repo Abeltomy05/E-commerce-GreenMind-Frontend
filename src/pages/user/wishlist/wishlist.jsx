@@ -14,6 +14,21 @@ const Wishlist = () => {
   useEffect(() => {
     fetchWishlistItems();
   }, []);
+  const calculateOfferPrice = (variant, offer) => {
+    if (!offer) return variant.price;
+
+    let discountAmount = 0;
+    if (offer.discountType === 'PERCENTAGE') {
+        discountAmount = (variant.price * offer.discountValue) / 100;
+        if (offer.maxDiscountAmount) {
+            discountAmount = Math.min(discountAmount, offer.maxDiscountAmount);
+        }
+    } else if (offer.discountType === 'FIXED') {
+        discountAmount = offer.discountValue;
+    }
+
+    return Math.max(variant.price - discountAmount, 0);
+};
 
   const fetchWishlistItems = async () => {
     try {
@@ -80,99 +95,103 @@ const Wishlist = () => {
 
   return (
     <>
-      <HeaderLogin />
-     <div className="min-h-screen bg-[#778e85]">
-         <div className="w-full max-w-7xl mx-auto p-6">
-           <h1 className="text-2xl font-semibold mb-6 text-white">Wishlist</h1>
-          
-           <div className="bg-white rounded-lg shadow-sm">
-             {!wishlistItems?.length ? (
-               <div className="p-8 text-center">
-                 <h2 className="text-xl font-medium text-gray-600">Your wishlist is empty</h2>
-                 <p className="mt-2 text-gray-500">Add items to your wishlist to keep track of products you love</p>
-               </div>
-           ) : ( 
-              <>
-                <div className="grid grid-cols-[2fr,1fr,1fr,1fr,auto] gap-4 p-4 border-b text-sm font-large text-[#333]">
-                  <div>Products</div>
-                  <div>Price</div>
-                  <div>Status</div>
-                  <div>Action</div>
-                  <div></div>
+        <HeaderLogin />
+        <div className="min-h-screen bg-[#778e85]">
+            <div className="w-full max-w-7xl mx-auto p-6">
+                <h1 className="text-2xl font-semibold mb-6 text-white">Wishlist</h1>
+                
+                <div className="bg-white rounded-lg shadow-sm">
+                    {!wishlistItems?.length ? (
+                        <div className="p-8 text-center">
+                            <h2 className="text-xl font-medium text-gray-600">Your wishlist is empty</h2>
+                            <p className="mt-2 text-gray-500">Add items to your wishlist to keep track of products you love</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-[2fr,1fr,1fr,1fr,auto] gap-4 p-4 border-b text-sm font-large text-[#333]">
+                                <div>Products</div>
+                                <div>Price</div>
+                                <div>Status</div>
+                                <div>Action</div>
+                                <div></div>
+                            </div>
+
+                            <div className="divide-y">
+                                {wishlistItems.map((item) => {
+                                    if (!item?.product?.variants?.length) return null;
+                                    
+                                    const variant = item.product.variants[0];
+                                    const inStock = variant?.stock > 0;
+                                    const offerPrice = calculateOfferPrice(variant, item.product.currentOffer);
+                                    const hasOffer = item.product.currentOffer && offerPrice < variant.price;
+                                    
+                                    return (
+                                        <div key={item._id} className="grid grid-cols-[2fr,1fr,1fr,1fr,auto] gap-4 p-4 items-center hover:bg-gray-50">
+                                            <div className="flex items-center gap-3">
+                                                <div className="relative w-16 h-16 border rounded-lg overflow-hidden">
+                                                    {item.product.images?.length > 0 && (
+                                                        <img
+                                                            src={item.product.images[0]}
+                                                            alt={item.product.name}
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    )}
+                                                </div>
+                                                <span className="font-medium text-[#333]">{item.product.name}</span>
+                                            </div>
+
+                                            <div className="flex flex-col">
+                                                <span className={`text-sm ${hasOffer ? 'line-through text-gray-500' : 'text-[#3d5e52] font-medium'}`}>
+                                                    ₹{variant?.price || 0}
+                                                </span>
+                                                {hasOffer && (
+                                                    <span className="font-medium text-[#3d5e52]">
+                                                        ₹{offerPrice.toFixed(2)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div>
+                                                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                                    inStock ? 'bg-[#3d5e52]/10 text-[#3d5e52]' : 'bg-red-100 text-red-600'
+                                                }`}>
+                                                    {inStock ? 'In Stock' : 'Out of Stock'}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <button
+                                                    onClick={() => handleAddToCart(item.product, variant)}
+                                                    disabled={!inStock}
+                                                    className={`flex items-center gap-2 px-4 py-2 rounded-md text-white ${
+                                                        inStock ? 'bg-[#375d51] hover:bg-[#1a2c25]' : 'bg-gray-300 cursor-not-allowed'
+                                                    }`}
+                                                >
+                                                    <ShoppingCart className="w-4 h-4" />
+                                                    Add to Cart
+                                                </button>
+                                            </div>
+
+                                            <div>
+                                                <button
+                                                    onClick={() => handleRemoveFromWishlist(item.product._id)}
+                                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md"
+                                                >
+                                                    <Trash2 className="w-6 h-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
                 </div>
-
-                <div className="divide-y">
-                  {wishlistItems.map((item) => {
-                    if (!item?.product?.variants?.length) return null;
-                    
-                    const variant = item.product.variants[0];
-                    const inStock = variant?.stock > 0;
-                    
-                    return (
-                      <div key={item._id} className="grid grid-cols-[2fr,1fr,1fr,1fr,auto] gap-4 p-4 items-center hover:bg-gray-50">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-16 h-16 border rounded-lg overflow-hidden">
-                            {item.product.images?.length > 0 && (
-                              <img
-                                src={item.product.images[0]}
-                                alt={item.product.name}
-                                className="object-cover w-full h-full"
-                              />
-                            )}
-                          </div>
-                          <span className="font-medium text-[#333]">{item.product.name}</span>
-                        </div>
-
-                        <div className="flex flex-col">
-                          <span className="text-sm line-through text-gray-500">
-                            ₹{((variant?.price || 0) * 1.2).toFixed(2)}
-                          </span>
-                          <span className="font-medium text-[#3d5e52]">
-                            ₹{variant?.price || 0}
-                          </span>
-                        </div>
-
-                        <div>
-                          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                            inStock ? 'bg-[#3d5e52]/10 text-[#3d5e52]' : 'bg-red-100 text-red-600'
-                          }`}>
-                            {inStock ? 'In Stock' : 'Out of Stock'}
-                          </span>
-                        </div>
-
-                        <div>
-                          <button
-                            onClick={() => handleAddToCart(item.product, variant)}
-                            disabled={!inStock}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-white ${
-                              inStock ? 'bg-[#375d51] hover:bg-[#1a2c25]' : 'bg-gray-300 cursor-not-allowed'
-                            }`}
-                          >
-                            <ShoppingCart className="w-4 h-4" />
-                            Add to Cart
-                          </button>
-                        </div>
-
-                        <div>
-                          <button
-                            onClick={() => handleRemoveFromWishlist(item.product._id)}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md"
-                          >
-                            <Trash2 className="w-6 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
+            </div>
         </div>
-      </div>
-      <Footer />
+        <Footer />
     </>
-  );
+);
 };
 
 export default Wishlist;

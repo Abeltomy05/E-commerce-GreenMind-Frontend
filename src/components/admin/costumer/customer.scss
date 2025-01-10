@@ -116,7 +116,7 @@
     border: 1px solid #e5e7eb;
     overflow: hidden;
     overflow: auto; 
-    height: fit-content;
+    min-height: 50vh;
     z-index: 5;
 
     table {

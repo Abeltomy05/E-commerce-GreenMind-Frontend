@@ -197,6 +197,11 @@ const OrderDetails = () => {
     try {
       setLoading(true);
       const response = await axioInstence.get(`/user/orderdetails/${orderId}`);
+
+      const totalProductValue = response.data.order.products.reduce((sum, product) => 
+        sum + (product.finalPrice * product.quantity), 0
+      );
+
       const transformedOrder = {
           id: response.data.order._id, 
           orderDate: new Date(response.data.order.createdAt).toLocaleDateString('en-US', {
@@ -205,6 +210,7 @@ const OrderDetails = () => {
             day: 'numeric'
           }),
           totalAmount: `₹${response.data.order.totalPrice.toLocaleString()}`,
+          couponDiscount: response.data.order.couponDiscount  || 0,
           status:response.data.order.status,
           timeline:  getOrderTimeline(response.data.order),
 
@@ -213,7 +219,10 @@ const OrderDetails = () => {
             name: product.name, 
             image: product.image || 'Product Image', 
             quantity: product.quantity,
-            price: product.price
+            price: product.price,
+            finalPrice: product.finalPrice || product.price,
+            couponDiscount: response.data.order.discountAmount ? 
+            (product.finalPrice * product.quantity / totalProductValue) * response.data.order.discountAmount : 0
           })),
           address: {
             name: response.data.order.address?.name || 'Not Provided', 
@@ -388,42 +397,89 @@ const OrderDetails = () => {
 
           {/* Products */}
           {orderDetails.products && orderDetails.products.length > 0 && (
-                <div className="mb-8">
-                    <h3 className="mb-4 text-lg font-medium">
-                    Products ({orderDetails.products.length})
-                    </h3>
-                    <div className="rounded-lg border">
-                    <div className="grid grid-cols-[150px,1fr,100px,100px,100px] gap-4 border-b p-4 text-sm font-medium text-gray-500">
-                        <div>PRODUCTS</div>
-                        <div></div>
-                        <div className="text-right">QUANTITY</div>
-                        <div className="text-right">PRICE</div>
-                        <div className="text-right">SUB TOTAL</div>
+          <div className="mb-8">
+            <h3 className="mb-4 text-lg font-medium">
+              Products ({orderDetails.products.length})
+            </h3>
+            <div className="rounded-lg border">
+              <div className="grid grid-cols-[150px,1fr,100px,100px,100px,100px] gap-4 border-b p-4 text-sm font-medium text-gray-500">
+                <div>PRODUCTS</div>
+                <div></div>
+                <div className="text-right">QUANTITY</div>
+                <div className="text-right">UNIT PRICE</div>
+                <div className="text-right">DISCOUNT</div>
+                <div className="text-right">SUB TOTAL</div>
+              </div>
+              {orderDetails.products.map((product) => {
+                const offerDiscount = (product.price - product.finalPrice) * product.quantity;
+                const totalDiscount = offerDiscount + product.couponDiscount;
+                
+                return (
+                  <div 
+                    key={product.id} 
+                    className="grid grid-cols-[150px,1fr,100px,100px,100px,100px] items-center gap-4 p-4 border-b last:border-b-0"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={product.image || '/placeholder.svg'}
+                        alt={product.name}
+                        className="w-16 h-20 rounded-md object-cover"
+                      />
+                      <div className="text-sm font-medium">{product.name}</div>
                     </div>
-                    {orderDetails.products.map((product) => (
-                        <div 
-                        key={product.id} 
-                        className="grid grid-cols-[150px,1fr,100px,100px,100px] items-center gap-4 p-4 border-b last:border-b-0"
-                        >
-                        <div className="flex items-center space-x-4">
-                            <img
-                            src={product.image || '/placeholder.svg'}
-                            alt={product.name}
-                            className="w-16 h-20 rounded-md object-cover"
-                            />
-                            <div className="text-sm font-medium">{product.name}</div>
+                    <div></div>
+                    <div className="text-sm text-right">x{product.quantity}</div>
+                    <div className="text-sm text-right">
+                      <div>₹{product.finalPrice.toLocaleString()}</div>
+                      {product.price !== product.finalPrice && (
+                        <div className="text-xs text-gray-500 line-through">
+                          ₹{product.price.toLocaleString()}
                         </div>
-                        <div></div>
-                        <div className="text-sm text-right">x{product.quantity}</div>
-                        <div className="text-sm text-right">₹{product.price.toLocaleString()}</div>
-                        <div className="text-sm font-medium text-right">
-                            ₹{orderDetails.totalAmount}
-                        </div>
-                        </div>
-                    ))}
+                      )}
                     </div>
+                    <div className="text-sm text-right text-red-500">
+                      -₹{totalDiscount.toLocaleString()}
+                    </div>
+                    <div className="text-sm font-medium text-right">
+                      ₹{((product.finalPrice * product.quantity) - product.couponDiscount).toLocaleString()}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Order Summary */}
+              <div className="border-t p-4">
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal</span>
+                    <span>₹{orderDetails.products.reduce((acc, product) => acc + (product.price * product.quantity), 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Product Offer Discounts</span>
+                    <span>-₹{orderDetails.products.reduce((acc, product) => acc + ((product.price - product.finalPrice) * product.quantity), 0).toLocaleString()}</span>
+                  </div>
+                  {orderDetails.couponDiscount  > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Coupon Discount</span>
+                      <span>-₹{orderDetails.couponDiscount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm text-red-500">
+                    <span>Total Savings</span>
+                    <span>-₹{(orderDetails.products.reduce((acc, product) => 
+                      acc + ((product.price - product.finalPrice) * product.quantity), 0) + 
+                      (orderDetails.couponDiscount  || 0)).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between font-medium pt-2 border-t">
+                    <span>Total</span>
+                    <span>{orderDetails.totalAmount}</span>
+                  </div>
                 </div>
-          )}
+              </div>
+            </div>
+          </div>
+        )}
+
 
           {/* Shipping Address */}
           {orderDetails.address && (

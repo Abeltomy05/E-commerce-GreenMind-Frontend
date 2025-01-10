@@ -5,8 +5,57 @@
   background-color: #fff;
   border-radius: 8px;
 
+  // .offer-badge {
+  //   position: absolute;
+  //   top: 10px;
+  //   left: 10px;
+  //   background-color: #ff4444;
+  //   color: white;
+  //   padding: 8px 12px;
+  //   border-radius: 4px;
+  //   font-size: 0.9rem;
+  //   font-weight: 600;
+  //   display: flex;
+  //   align-items: center;
+  //   gap: 6px;
+  //   z-index: 1;
+    
+  //   svg {
+  //     width: 16px;
+  //     height: 16px;
+  //   }
+  // }
+
+  .product-price {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+
+    .line-through {
+      text-decoration: line-through;
+      color: #666;
+      margin-right: 10px;
+    }
   
+    .discounted-price {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #000;
+    }
+  
+    .savings {
+      display: block;
+      color: #009900;
+      margin-top: 5px;
+      font-size: 0.9em;
+    }
+  }
 }
+
+  
+
 
 .product-view {
   display: flex;
@@ -23,6 +72,7 @@
     overflow: hidden;
     cursor: zoom-in;
     
+
     .image-wrapper {
       position: relative;
       width: 80%;
@@ -116,6 +166,43 @@
 
 .product-details {
   flex: 1;
+
+  .offer-banner {
+    background-color: #fff8f8;
+    border: 1px solid #ffdddd;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .offer-icon {
+      color: #ff4444;
+      font-size: 1.5rem;
+    }
+
+    .offer-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .offer-title {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .offer-value {
+        color: #ff4444;
+        font-size: 1.1rem;
+      }
+
+      .offer-validity {
+        font-size: 0.9rem;
+        color: #666;
+      }
+    }
+  }
   
   .product-title {
     font-size: 28px;
@@ -138,7 +225,30 @@
   }
   
   .product-price {
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+
+    .strike-through {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 1.1rem;
+    }
+
+    .discounted-price {
+      color: #ff4444;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .savings {
+      background-color: #f0fff0;
+      color: #2e8b57;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
     
     .current-price {
       font-size: 24px;

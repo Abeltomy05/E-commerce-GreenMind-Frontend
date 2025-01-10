@@ -109,6 +109,7 @@ $text-color: #333;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 
+
     &:hover {
       transform: translateY(-5px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -159,6 +160,43 @@ $text-color: #333;
 
     .item-details {
       flex: 1;
+
+
+      .price-section {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+
+        .original-price {
+          text-decoration: line-through;
+          color: #6b7280;
+        }
+
+        .current-price {
+          font-size: 1.125rem;
+          font-weight: 600;
+        }
+
+        .discount-badge {
+          background-color: #dcfce7;
+          color: #166534;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+        }
+      }
+
+      
+      .offer-badge {
+        display: inline-block;
+        background-color: #ffedd5;
+        color: #9a3412;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
 
       h3 {
         margin: 0 0 0.5rem;
@@ -241,6 +279,10 @@ $text-color: #333;
       display: flex;
       justify-content: space-between;
       margin-bottom: 0.5rem;
+
+      &.savings {
+        color: #16a34a;
+      }
 
       &.total {
         font-weight: 600;

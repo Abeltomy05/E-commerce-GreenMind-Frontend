@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaStar, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaStar, FaHeart, FaRegHeart} from 'react-icons/fa';
+import {FiTag} from 'react-icons/fi'
 import './productView.scss';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
@@ -11,6 +12,8 @@ import { CarTaxiFront } from 'lucide-react';
 import axiosInstance from '../../../utils/axiosConfig';
 import {logout} from '../../../redux/userSlice'
 import { useDispatch } from 'react-redux';
+
+
 
 const ProductView = () => {
   const { productId } = useParams(); 
@@ -26,11 +29,15 @@ const ProductView = () => {
   const [cartItemsMap, setCartItemsMap] = useState({});
   const [isCartLoading, setIsCartLoading] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState(0);
+  const [discountedPrice, setDiscountedPrice] = useState(0);
 
   // Predefined sizes to always show
   const STANDARD_SIZES = ['S', 'M', 'L'];
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
+
+
 
  useEffect(() => {
     const fetchCartItems = async () => {
@@ -51,31 +58,55 @@ const ProductView = () => {
       fetchCartItems();
     }
   }, [user.id]);
+  
+
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         const response = await axiosInstance.get(`/user/product-view/${productId}`);
         const productData = response.data;
+  
 
-
+        let initialVariant = null;
         if (productData.variants && productData.variants.length > 0) {
-          const availableVariant = productData.variants.find(variant => variant.stock > 0) 
+          initialVariant = productData.variants.find(variant => variant.stock > 0) 
             || productData.variants[0];
-          setSelectedVariant(availableVariant);
+          setSelectedVariant(initialVariant);
+          
+          if (initialVariant) {
+            setCurrentPrice(initialVariant.price);
+
+            setDiscountedPrice(initialVariant.discountedPrice || initialVariant.price);
+          }
         }
 
         setProduct(productData);
-        setLoading(false);
+      setLoading(false);
       } catch (err) {
         console.error('Error fetching product details:', err);
         setError(err.response?.data?.message || 'Failed to fetch product details');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchProductDetails();
   }, [productId]);
+
+  useEffect(() => {
+    if (selectedVariant && product?.currentOffer) {
+      console.log('Updating prices with variant:', selectedVariant); 
+      console.log('Current offer:', product.currentOffer); 
+
+      const variantPrice = selectedVariant.price;
+      setCurrentPrice(variantPrice);
+      
+      const calculated = calculateDiscountedPrice(variantPrice, product.currentOffer);
+      setDiscountedPrice(calculated);
+    }
+  }, [selectedVariant, product?.currentOffer]);
+  
 
   useEffect(() => {
     const checkWishlist = async () => {
@@ -91,6 +122,41 @@ const ProductView = () => {
       checkWishlist();
     }
   }, [product, user.id]);
+
+  const calculateDiscountedPrice = (originalPrice, offer) => {
+    console.log('Calculating discount with:', { originalPrice, offer }); 
+    if (!offer || !originalPrice) {
+      console.log('No offer or price, returning original:', originalPrice);
+      return originalPrice;
+    }
+    
+    let discountedPrice = originalPrice;
+    
+    try {
+      if (offer.discountType === 'PERCENTAGE') {
+        const discountAmount = originalPrice * (offer.discountValue / 100);
+        console.log('Calculated discount amount:', discountAmount);
+
+        if (offer.maxDiscountAmount) {
+          const cappedDiscount = Math.min(discountAmount, offer.maxDiscountAmount);
+          discountedPrice = originalPrice - cappedDiscount;
+          console.log('Applied capped discount:', cappedDiscount);
+        } else {
+          discountedPrice = originalPrice - discountAmount;
+        }
+      } else if (offer.discountType === 'FIXED') {
+        discountedPrice = Math.max(originalPrice - offer.discountValue, 0);
+      }
+
+      discountedPrice = Math.max(discountedPrice, 0);
+      console.log('Final discounted price:', discountedPrice);
+
+      return Math.round(discountedPrice * 100) / 100;
+    } catch (error) {
+      console.error('Error calculating discount:', error);
+      return originalPrice;
+    }
+  };
 
   const handleQuantityChange = (e) => {
     const newQuantity = Math.max(1, parseInt(e.target.value));
@@ -126,8 +192,8 @@ const ProductView = () => {
 
   const handleSizeSelection = (size) => {
     const variant = product.variants.find(v => v.size === size);
-    setSelectedVariant(variant);
-    setQuantity(1); 
+  setSelectedVariant(variant);
+  setQuantity(1); 
   };
 
   const isProductInCart = (productToCheck) => {
@@ -238,6 +304,8 @@ const ProductView = () => {
   if (loading) return <div>Loading...</div>;
   if (!product) return <div>No product found</div>;
 
+
+
   return (
     <>
       <HeaderLogin />
@@ -265,6 +333,7 @@ const ProductView = () => {
               <button className="favorite-btn" onClick={toggleFavorite}>
                 {isInWishlist  ? <FaHeart size={30}/> : <FaRegHeart size={25}/>}
               </button>
+
               <div className="image-navigation">
                 <button 
                   className="nav-btn prev" 
@@ -305,20 +374,58 @@ const ProductView = () => {
           </div>
           <div className="product-details">
             <h1 className="product-title">{product.name}</h1>
+
             <div className="product-rating">
               {[...Array(5)].map((_, index) => (
                 <FaStar key={index} className={index < 3 ? 'filled' : ''} />
               ))}
               <span className="rating-text">3.0 (0 REVIEWS)</span>
             </div>
+
+            {/* {product.currentOffer && (
+              <div className="offer-banner">
+                <FiTag className="offer-icon" />
+                <div className="offer-details">
+                  <span className="offer-title">{product.currentOffer.name}</span>
+                  <span className="offer-value">
+                    {product.currentOffer.discountType === 'PERCENTAGE' 
+                      ? `${product.currentOffer.discountValue}% OFF`
+                      : `$${product.currentOffer.discountValue} OFF`
+                    }
+                  </span>
+                  <span className="offer-validity">
+                    Valid till {new Date(product.currentOffer.endDate).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            )} */}
+
+
+
+            {selectedVariant && (
             <div className="product-price">
-              <span className="current-price">
-                ${selectedVariant ? selectedVariant.price.toFixed(2) : product.variants[0].price.toFixed(2)}
-              </span>
-              <span className="original-price">
-                ${(selectedVariant ? selectedVariant.price : product.variants[0].price * 1.2).toFixed(2)}
-              </span>
+              {product?.currentOffer ? (
+                <>
+                  <span className="original-price line-through">
+                    ₹{currentPrice.toFixed(2)}
+                  </span>
+                  <span className="discounted-price">
+                    ₹{discountedPrice.toFixed(2)}
+                  </span>
+                  <span className="savings">
+                    You save: ₹{(currentPrice - discountedPrice).toFixed(2)}
+                  </span>
+                </>
+              ) : (
+                <span className="current-price">
+                  ₹{currentPrice.toFixed(2)}
+                </span>
+              )}
             </div>
+          )}
+
+
+
             <p className="product-description">{product.description}</p>
             <div className="product-info">
               <div className="info-section">
@@ -338,6 +445,7 @@ const ProductView = () => {
                   </div>
                 )}
               </div>
+
               <div className="info-section">
                 <h3>Available Sizes</h3>
                 <div className="size-options">
