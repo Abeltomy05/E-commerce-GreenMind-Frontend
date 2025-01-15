@@ -216,9 +216,9 @@ const Customer = () => {
       <div className="dashboard-header">
         <div className="header-left">
           <h1>Customers</h1>
-          <div className="breadcrumb">
+          {/* <div className="breadcrumb">
            <AdminBreadcrumbs/>
-          </div>
+          </div> */}
         </div>
         <div className="header-actions">
           {/* <button className="btn btn-primary">

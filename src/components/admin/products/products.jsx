@@ -58,8 +58,8 @@ const Products = () => {
       const matchesSearch = !searchTerm || 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.category?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase());
+        product.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand?.toLowerCase().includes(searchTerm.toLowerCase());
   
       // Calculate stock
       const calculateEffectiveStock = (variants) => {
@@ -227,9 +227,9 @@ const Products = () => {
       <div className="product-dashboard-header">
         <div className="product-header-left">
           <h1>Products</h1>
-          <div className="product-breadcrumb">
+          {/* <div className="product-breadcrumb">
            <AdminBreadcrumbs/>
-          </div>
+          </div> */}
         </div>
         <div className="product-header-actions">
           <button className="btn btn-primary"

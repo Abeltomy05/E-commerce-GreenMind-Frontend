@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, Tag, ChevronDown, ChevronUp, CheckCircle,ShoppingBag,  } from 'lucide-react';
+import { CreditCard, Truck, Tag, ChevronDown, ChevronUp, CheckCircle,ShoppingBag,XCircle, RefreshCw  } from 'lucide-react';
 import './checkout.scss';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
@@ -21,7 +21,7 @@ const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewO
         <h1>Order Placed Successfully!</h1>
         <div className="order-details">
           <p>Order Number: <strong>{orderId}</strong></p>
-          <p>Total Amount: <strong>${Number(totalAmount).toFixed(2)}</strong></p>
+          <p>Total Amount: <strong>${Number((totalAmount)+50).toFixed(2)}</strong></p>
         </div>
         <div className="order-success-actions">
           <button 
@@ -42,6 +42,46 @@ const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewO
   );
 };
 
+const PaymentFailureOverlay = ({ 
+  orderId, 
+  totalAmount, 
+  paymentMethod,
+  onRetryPayment,
+  onContinueShopping,
+  errorMessage 
+}) => {
+  return (
+    <div className="order-overlay">
+      <div className="order-content failure">
+        <XCircle size={100} color="red" className="status-icon"/>
+        <h1>Payment Failed!</h1>
+        <p className="error-message">{errorMessage || "We couldn't process your payment at this time."}</p>
+        <div className="order-details">
+          <p>Order Number: <strong>{orderId}</strong></p>
+          <p>Total Amount: <strong>${Number(totalAmount).toFixed(2)}</strong></p>
+          <p>Payment Method: <strong>{paymentMethod}</strong></p>
+        </div>
+        <div className="order-actions">
+          <button 
+            className="retry-payment-btn" 
+            onClick={onRetryPayment}
+          >
+            <RefreshCw className="inline-icon" />
+            Try Payment Again
+          </button>
+          <button 
+            className="continue-shopping-btn" 
+            onClick={onContinueShopping}
+          >
+            Return to Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -52,6 +92,7 @@ const CheckoutPage = () => {
     sum + (item.displayPrice.current * item.quantity), 0
   );
 
+  const [paymentFailureData, setPaymentFailureData] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -124,7 +165,7 @@ const CheckoutPage = () => {
     }
   }, [user]);
 
-  const handleCouponSelect = (code) => {
+  const handleCouponSelect = (code) => { 
     setCouponCode(code);
   };
 
@@ -152,6 +193,40 @@ const CheckoutPage = () => {
       toast.error(error.response?.data?.message || 'Failed to apply coupon');
       setCouponCode('');
       setAppliedDiscount(0);
+    }
+  };
+
+  const handlePaymentFailure = (error, orderId = null, amount = null) => {
+    setPaymentFailureData({
+      orderId: orderId || 'N/A',
+      totalAmount: amount || (subtotal - appliedDiscount),
+      paymentMethod: paymentMethod,
+      errorMessage: error.message || 'Payment processing failed. Please try again.'
+    });
+    setIsOrderProcessing(false);
+  };
+
+  const handleRetryPayment = async () => {
+    setPaymentFailureData(null);
+    if (paymentMethod === 'razorpay') {
+      // Re-initialize Razorpay payment with the same order data
+      const orderData = {
+        userId: user.id,
+        products: selectedItems.map(item => ({
+          product: item.productId,
+          quantity: item.quantity,
+          size: item.size,
+          cartItemId: item.id
+        })),
+        addressId: selectedAddress._id,
+        paymentMethod: paymentMethod,
+        couponCode: couponCode || null,
+        totalPrice: subtotal - appliedDiscount
+      };
+      await initializeRazorpayPayment(orderData);
+    } else if (paymentMethod === 'cod') {
+      // Retry COD order placement
+      handleSubmit(new Event('submit'));
     }
   };
 
@@ -231,19 +306,16 @@ const CheckoutPage = () => {
         throw new Error('Failed to save order');
       }
 
-
-      // Update state and show success overlay
       setOrderSuccessData({
         orderId: orderResponse.data.orderId,
-        totalAmount:  subtotal - appliedDiscount
+        totalAmount: subtotal - appliedDiscount
       });
       
-      dispatch(clearSelectedItems());
-      toast.success('Order placed successfully!');
+      // dispatch(clearSelectedItems());
+      // toast.success('Order placed successfully!');
       
     } catch (error) {
-      console.error('Payment verification failed:', error);
-      toast.error('Payment verification failed. Please contact support.');
+      handlePaymentFailure(error, orderData?.orderId, orderAmount);
     } finally {
         setIsOrderProcessing(false);
     }
@@ -372,9 +444,7 @@ const CheckoutPage = () => {
        console.log('Credit card payment method selected');
       }
     } catch (error) {
-      console.error('Order placement failed:', error);
-      toast.error('Failed to place order. Please try again.');
-      setIsOrderProcessing(false);
+      handlePaymentFailure(error);
     }
 
   };
@@ -418,6 +488,16 @@ const CheckoutPage = () => {
             totalAmount={orderSuccessData.totalAmount}
             onContinueShopping={handleContinueShopping}
             onViewOrderDetails={handleViewOrderDetails}
+          />
+        )}
+        {paymentFailureData && (
+          <PaymentFailureOverlay
+            orderId={paymentFailureData.orderId}
+            totalAmount={paymentFailureData.totalAmount}
+            paymentMethod={paymentFailureData.paymentMethod}
+            errorMessage={paymentFailureData.errorMessage}
+            onRetryPayment={handleRetryPayment}
+            onContinueShopping={() => navigate('/user/cart')}
           />
         )}
         <h1>Checkout</h1>
@@ -631,11 +711,11 @@ const CheckoutPage = () => {
                     )}
                   <div className="shipping">
                     <span>Shipping</span>
-                    <span className="free-shipping">FREE</span>
+                    <span>₹50.00</span>
                   </div>
                   <div className="total">
                     <span>Total</span>
-                    <span>${(subtotal-appliedDiscount).toFixed(2)}</span>
+                    <span>${((subtotal-appliedDiscount)+50).toFixed(2)}</span>
                   </div>
                 </div>
               </div>

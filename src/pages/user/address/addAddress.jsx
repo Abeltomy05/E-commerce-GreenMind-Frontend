@@ -32,7 +32,7 @@ const AddAddressModal = ({ onClose, userId}) => {
             const response = await axioInstence.post(`/user/addnewaddress/${userId}`, formData)
             toast.success("Successfully Added New Address")
             console.log('New address added:', response.data);
-            onClose();
+            onClose(true);
         } catch (error) {
             console.error('Error adding new address:', error.response ? error.response.data : error.message);
             toast.error('Failed To Add New Address')

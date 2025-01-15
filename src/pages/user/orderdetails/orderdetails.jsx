@@ -1,16 +1,107 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Box, CheckCircle2, MapPin, Package, Truck, Plus, X, Undo } from 'lucide-react';
+import { ArrowLeft, Box, CheckCircle2, MapPin, Package, Truck, Plus, X, Undo,FileDown  } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import {toast} from 'react-toastify'
 import axioInstence from '../../../utils/axiosConfig';
+import RatingOverlay from './ratingOverlay';
+
+const generateInvoice = (orderDetails) => {
+  const invoiceContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Invoice #${orderDetails.id}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .invoice-details { margin-bottom: 20px; }
+        .address-section { margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f8f9fa; }
+        .total-section { text-align: right; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>INVOICE</h1>
+        <p>Order #${orderDetails.id}</p>
+        <p>Date: ${orderDetails.orderDate}</p>
+      </div>
+
+      <div class="address-section">
+        <h3>Shipping Address:</h3>
+        <p>${orderDetails.address.name}</p>
+        <p>${orderDetails.address.address}</p>
+        <p>Phone: ${orderDetails.address.phone}</p>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Discount</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${orderDetails.products.map(product => `
+            <tr>
+              <td>${product.name}</td>
+              <td>${product.quantity}</td>
+              <td>₹${product.price.toLocaleString()}</td>
+              <td>₹${((product.price - product.finalPrice) * product.quantity + product.couponDiscount).toLocaleString()}</td>
+              <td>₹${((product.finalPrice * product.quantity) - product.couponDiscount).toLocaleString()}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="total-section">
+        <p>Subtotal: ₹${orderDetails.products.reduce((acc, product) => acc + (product.price * product.quantity), 0).toLocaleString()}</p>
+        <p>Product Discounts: -₹${orderDetails.products.reduce((acc, product) => acc + ((product.price - product.finalPrice) * product.quantity), 0).toLocaleString()}</p>
+        ${orderDetails.couponDiscount > 0 ? `<p>Coupon Discount: -₹${orderDetails.couponDiscount.toLocaleString()}</p>` : ''}
+        <p>Shipping Fee: ₹${orderDetails.shippingFee.toLocaleString()}</p>
+        <h3>Total Amount: ${orderDetails.totalAmount}</h3>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob([invoiceContent], { type: 'text/html' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `invoice_${orderDetails.id}.html`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+const DownloadInvoiceButton = ({ orderDetails }) => {
+  return (
+    <button 
+      onClick={() => generateInvoice(orderDetails)}
+      className="px-3 py-1 text-sm border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50 transition-colors flex items-center"
+    >
+      <FileDown className="mr-1 h-4 w-4" />
+      Download Invoice
+    </button>
+  );
+};
 
 const OrderDetails = () => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showRatingOverlay, setShowRatingOverlay] = useState(false);
   const { orderId } = useParams();
   const navigate = useNavigate();
 
@@ -202,6 +293,7 @@ const OrderDetails = () => {
         sum + (product.finalPrice * product.quantity), 0
       );
 
+      const shippingFee = 50;
       const transformedOrder = {
           id: response.data.order._id, 
           orderDate: new Date(response.data.order.createdAt).toLocaleDateString('en-US', {
@@ -209,8 +301,9 @@ const OrderDetails = () => {
             month: 'long',
             day: 'numeric'
           }),
-          totalAmount: `₹${response.data.order.totalPrice.toLocaleString()}`,
+          totalAmount: `₹${(response.data.order.totalPrice + shippingFee).toLocaleString()}`,
           couponDiscount: response.data.order.couponDiscount  || 0,
+          shippingFee: shippingFee,
           status:response.data.order.status,
           timeline:  getOrderTimeline(response.data.order),
 
@@ -242,6 +335,20 @@ const OrderDetails = () => {
       console.error('Error fetching order details:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRating = async (ratingData) => {
+    try {
+      const response = await axioInstence.post('/user/rate-order', ratingData);
+      if (response.data.success) {
+        toast.success('Thank you for your rating!');
+      } else {
+        throw new Error(response.data.message || 'Failed to submit rating');
+      }
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      toast.error('Failed to submit rating. Please try again.');
     }
   };
 
@@ -348,10 +455,16 @@ const OrderDetails = () => {
               <Undo className="mr-1 h-4 w-4" />
               Return Order
             </button>
-            <button className="flex items-center text-sm text-green-600 hover:text-green-700">
+            {orderDetails.status === 'DELIVERED' && (
+                  <DownloadInvoiceButton orderDetails={orderDetails} />
+                )}
+            {orderDetails.status === 'DELIVERED' && (<button className="flex items-center text-sm text-green-600 hover:text-green-700"
+            onClick={() => setShowRatingOverlay(true)}
+            >
               Leave a Rating
               <Plus size={20}/>
             </button>
+            )}
           </div>
         </div>
 
@@ -464,6 +577,10 @@ const OrderDetails = () => {
                       <span>-₹{orderDetails.couponDiscount.toLocaleString()}</span>
                     </div>
                   )}
+                   <div className="flex justify-between text-sm">
+                    <span>Shipping Fee</span>
+                    <span>₹{orderDetails.shippingFee.toLocaleString()}</span>
+                  </div>
                   <div className="flex justify-between text-sm text-red-500">
                     <span>Total Savings</span>
                     <span>-₹{(orderDetails.products.reduce((acc, product) => 
@@ -507,6 +624,13 @@ const OrderDetails = () => {
         </div>
       </div>
     </div>
+    {showRatingOverlay && orderDetails.status === 'DELIVERED' && (
+        <RatingOverlay
+          orderId={orderId}
+          onClose={() => setShowRatingOverlay(false)}
+          onSubmit={handleRating}
+        />
+      )}
     <Footer/>
     </>
   );

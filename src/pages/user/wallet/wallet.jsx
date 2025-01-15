@@ -82,12 +82,12 @@ const WalletComponent = () => {
                     </h2>
                   </div>
                 </div>
-                <button 
+                {/* <button 
                   onClick={handleAddMoney}
                   className="bg-[#2c453d] hover:bg-[#1e2f29] text-white font-semibold py-3 px-6 rounded-xl flex items-center transition-all duration-300 hover:shadow-lg w-full sm:w-auto justify-center"
                 >
                   <Plus className="mr-2 h-5 w-5" /> Add Money
-                </button>
+                </button> */}
               </div>
             </div>
 

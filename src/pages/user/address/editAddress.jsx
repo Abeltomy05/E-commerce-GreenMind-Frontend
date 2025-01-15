@@ -51,7 +51,7 @@ const EditAddressModal = ({ onClose, address, userId }) => {
       });
       console.log('Address updated:', response.data);
       toast.success('Address updated successfully');
-      onClose(true); // Close modal and trigger refresh
+      onClose(true); 
     } catch (error) {
       console.error('Error updating address:', error);
       toast.error('Failed to update address');

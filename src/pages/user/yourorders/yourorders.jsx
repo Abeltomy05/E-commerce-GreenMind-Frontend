@@ -29,7 +29,7 @@ const OrderHistory = () => {
       try {
         setIsLoading(true);
         const response = await axioInstence.get(`/user/getorderdata/${user.id}`);
-
+        const shippingCharge = 50;
 
        
         if (response.data && response.data.success && Array.isArray(response.data.orders)) {
@@ -49,7 +49,7 @@ const OrderHistory = () => {
               hour: '2-digit',
               minute: '2-digit'
             }),
-            total: `₹${order.totalPrice.toLocaleString()}`,
+            total: `₹${(order.totalPrice+shippingCharge).toLocaleString()}`,
             itemCount: order.products ? order.products.reduce((total, item) => total + item.quantity, 0) : 0,
             expectedDeliveryDate: order.expectedDeliveryDate 
               ? new Date(order.expectedDeliveryDate).toLocaleString('en-IN', {
@@ -127,6 +127,7 @@ const OrderHistory = () => {
       </>
     );
   }
+  
 
   return (
     <>
@@ -173,7 +174,7 @@ const OrderHistory = () => {
                         </div>
                       </div>
                       <div className="flex items-center justify-between w-2/3">
-                        <div className="text-sm text-gray-600 w-1/4 px-2">
+                        <div className="text-sm text-gray-600 w-1/4 ">
                           {order.date}
                         </div>
                         <div className="text-sm font-medium text-gray-900 w-1/4 px-2">

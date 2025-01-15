@@ -4,7 +4,7 @@ import {FiTag} from 'react-icons/fi'
 import './productView.scss';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
-import { useParams } from 'react-router-dom';
+import { useParams,useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -31,11 +31,13 @@ const ProductView = () => {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [currentPrice, setCurrentPrice] = useState(0);
   const [discountedPrice, setDiscountedPrice] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   // Predefined sizes to always show
   const STANDARD_SIZES = ['S', 'M', 'L'];
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
 
 
@@ -58,14 +60,63 @@ const ProductView = () => {
       fetchCartItems();
     }
   }, [user.id]);
-  
 
+  const calculateOfferPrice = (variant, offer) => {
+    if (!offer || !variant) return variant?.price || 0;
+    
+    const originalPrice = variant.price;
+    if (offer.discountType === 'PERCENTAGE') {
+      let discountAmount = (originalPrice * offer.discountValue) / 100;
+      if (offer.maxDiscountAmount) {
+        discountAmount = Math.min(discountAmount, offer.maxDiscountAmount);
+      }
+      return Math.max(originalPrice - discountAmount, 0);
+    } else if (offer.discountType === 'FIXED') {
+      return Math.max(originalPrice - offer.discountValue, 0);
+    }
+    return originalPrice;
+  };
+  
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        if (product?.category?._id) {
+          const response = await axiosInstance.get(`/user/related-products/${product.category._id}/${productId}`);
+          setRelatedProducts(response.data); 
+        }
+      } catch (error) {
+        console.error('Error fetching related products:', error);
+      }
+    };
+
+    if (product) {
+      fetchRelatedProducts();
+    }
+  }, [product]);
+
+  useEffect(() => {
+    if (selectedVariant && product?.currentOffer) {
+      const variantPrice = selectedVariant.price;
+      setCurrentPrice(variantPrice);
+      
+      if (selectedVariant.offerPrice !== undefined) {
+        setDiscountedPrice(selectedVariant.offerPrice);
+      } else {
+        const calculated = calculateOfferPrice(selectedVariant, product.currentOffer);
+        setDiscountedPrice(calculated);
+      }
+    } else if (selectedVariant) {
+      setCurrentPrice(selectedVariant.price);
+      setDiscountedPrice(selectedVariant.price);
+    }
+  }, [selectedVariant, product?.currentOffer]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         const response = await axiosInstance.get(`/user/product-view/${productId}`);
         const productData = response.data;
+        console.log(productData)
   
 
         let initialVariant = null;
@@ -300,6 +351,9 @@ const ProductView = () => {
   const toggleZoom = () => {
     setIsZoomed(!isZoomed);
   };
+  const handleProductClick = (productId)=>{
+  navigate(`/user/product/${productId}`)
+  }
 
   if (loading) return <div>Loading...</div>;
   if (!product) return <div>No product found</div>;
@@ -513,6 +567,71 @@ const ProductView = () => {
             </div>
           </div>
         </div>
+          {/* Related Products Section */}
+          {relatedProducts.length < 1? null :(
+          <div className="related-products-section px-4 py-8">
+      <h2 className="section-title text-2xl font-bold text-center mb-8">Related Products</h2>
+      <div className="flex justify-center w-full">
+        <div className="grid w-full max-w-7xl justify-items-center"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, 280px)',
+            gap: '1.5rem',
+            justifyContent: 'center'
+          }}>
+          {relatedProducts.map((relatedProduct) => {
+            const mainVariant = relatedProduct.variants[0];
+            const hasOffer = mainVariant.offerPrice !== undefined;
+
+            return (
+              <div 
+                key={relatedProduct._id} 
+                className="related-product-card w-[280px] bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:scale-100 hover:shadow-xl"
+              >
+                <div className="product-image aspect-square overflow-hidden cursor-pointer"
+                onClick={()=>handleProductClick(relatedProduct._id)}>
+                  <img 
+                    src={relatedProduct.images[0]} 
+                    alt={relatedProduct.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                  />
+                </div>
+                <div className="product-info p-6">
+                  <h3 className="product-name text-xl font-semibold mb-2 truncate">
+                    {relatedProduct.name}
+                  </h3>
+                  <p className="product-category text-sm text-gray-600 mb-4">
+                    {relatedProduct.category?.name}
+                  </p>
+                  <div className="product-price flex items-center gap-3">
+                    {hasOffer ? (
+                      <>
+                        <span className="original-price line-through text-gray-500">
+                          ₹{mainVariant.originalPrice || mainVariant.price}
+                        </span>
+                        <span className="discounted-price text-xl font-bold text-green-600">
+                          ₹{mainVariant.offerPrice}
+                        </span>
+                        {mainVariant.discountPercentage && (
+                          <span className="discount-tag bg-red-100 text-red-600 text-sm px-2 py-1 rounded">
+                            {mainVariant.discountPercentage}% OFF
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="current-price text-xl font-bold">
+                        ₹{mainVariant.price}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+        </div>
+          )}
       </div>
       <Footer />
     </>

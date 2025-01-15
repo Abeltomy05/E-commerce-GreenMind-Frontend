@@ -16,8 +16,8 @@ import {
 } from 'chart.js';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import TopItemsSection from './bestsellingitems';
 
-// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -37,6 +37,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [isCustomDate, setIsCustomDate] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [categoryData, setCategoryData] = useState([]);
 
   useEffect(() => {
     fetchSalesData(filterOption);
@@ -101,7 +102,8 @@ const AdminDashboard = () => {
             .map(p => ({
               name: p.product?.name || 'Unknown Product',
               quantity: p.quantity || 0,
-              variant: p.product?.variants?.find(v => v._id === p.variantId) || null
+              variant: p.product?.variants?.find(v => v._id === p.variantId) || null,
+              category: p.product?.category?.name || 'Uncategorized'
             })),
             userName: `${order.user?.firstname || ''} ${order.user?.lastname || ''}`.trim() || 'N/A',
           amount: order.totalPrice || 0,
@@ -117,6 +119,24 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCategoryData();
+  }, []);
+
+  const fetchCategoryData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost:3000/admin/category-sales');
+      setCategoryData(response.data.categories);
+    } catch (err) {
+      setError('Failed to fetch category data');
+      console.error('Error fetching category data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const formatIndianRupee = (amount) => {
     return `₹${amount.toFixed(2)}`;
@@ -421,15 +441,50 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-      {/* Sales Graph */}
-      <div className="bg-white p-4 rounded-md shadow mb-6">
-      <h2 className="text-lg font-semibold mb-4 text-gray-800">
-        {isCustomDate ? 'Hourly Sales' : 'Sales Graph'}
-      </h2>
-      <Line data={chartData()} options={chartOptions()} />
-    </div>
+          <div className="grid grid-cols-12 gap-6 mb-6">
+                {/* Sales Graph */}
+                <div className="col-span-12 lg:col-span-8 bg-white p-4 rounded-md shadow h-[420px]">
+                <h2 className="text-lg font-semibold  text-gray-800">
+                  {isCustomDate ? 'Sales of a day' : 'Sales of the selected Period'}
+                </h2>
+                <Line data={chartData()} options={chartOptions()} />
+              </div>
 
+                  {/* Category Breakdown */}
+                  <div className="col-span-12 lg:col-span-4 bg-white p-4 rounded-md shadow h-[420px]">
+                <h2 className="text-lg font-semibold mb-4 text-gray-800">
+                  Category Distribution
+                </h2>
+                <div className="space-y-4 overflow-y-auto h-[calc(100%-3rem)]">
+                  {categoryData.map(({ category, percentage, count }) => (
+                    <div key={category} className="relative">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium text-gray-700">
+                          {category}
+                        </span>
+                        <span className="text-sm font-medium text-gray-700">
+                          {percentage}% ({count} items)
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-4">
+                        <div
+                          className="bg-[#47645a] h-4 rounded-full transition-all duration-300"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  {categoryData.length === 0 && (
+                    <div className="text-center text-gray-500 py-8">
+                      No category data available
+                    </div>
+                  )}
+                </div>
+              </div>
+          </div>
 
+      <TopItemsSection/>
+  
       {/* Sales Table */}
       <div className="bg-white rounded-md shadow overflow-x-auto">
             <table className="min-w-full">

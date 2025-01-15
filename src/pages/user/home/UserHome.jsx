@@ -1,29 +1,39 @@
-import React,{useEffect, useState} from 'react'
-import { SearchIcon } from 'lucide-react'
-import { ShoppingBag, Truck, Phone } from 'lucide-react'
+import React,{useEffect, useState, useRef} from 'react'
+import { SearchIcon, ShoppingBag, Truck, Phone, ChevronLeft, ChevronRight, Quote  } from 'lucide-react';
+import { motion } from 'framer-motion';
 import HeaderLogin from '../../../components/header-login/header-login'
 import Footer from '../../../components/footer/footer'
-import "./UserHome.scss"
 import home1 from "../../../assets/images/home 1.png"
 import home2 from "../../../assets/images/home 2.png"
 import home3 from "../../../assets/images/home 3.png"
 import bannerImg from "../../../assets/images/banner-img.png"
-import cato1 from "../../../assets/images/catogeries 1.png"
-import cato2 from "../../../assets/images/catogery2.png"
-import cato3 from "../../../assets/images/catogery 3.png"
-import { useParams } from 'react-router-dom';
-import axios from "axios";
+import { useParams,useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux'
 import axioInstence from '../../../utils/axiosConfig'
 
 export default function UserHome() {
   const userdetail = useSelector((state) => state.user.user);
-  // console.log(userdetail)
 
+  const scrollContainerRef = useRef(null);
+  const [showLeftButton, setShowLeftButton] = useState(false);
+  const [showRightButton, setShowRightButton] = useState(true);
+  const [isAnimationRunning, setIsAnimationRunning] = useState(true);
+  const [currentReview, setCurrentReview] = useState(0);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+
+  const [bestproducts, setBestproducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [currentOffer, setCurrentOffer] = useState(null);
   const [user,setUser] = useState()
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
   // const [loading,setLoading] = useState(true)
+
+  const duplicatedProducts = [...bestproducts, ...bestproducts];
+  const navigate = useNavigate()
+  const INITIAL_CATEGORIES_COUNT = 3;
 
   useEffect(() => {
     fetchUser();
@@ -48,136 +58,455 @@ export default function UserHome() {
   }
   };
 
+  //best sellers
+  useEffect(() => {
+    const fetchBestSellers = async () => {
+      try {
+        const response = await axioInstence.get('/user/bestsellingproducts');
+        setBestproducts(response.data.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to load best selling products');
+        setLoading(false);
+      }
+    };
 
+    fetchBestSellers();
+  }, []);
+
+  //categories
+  useEffect(() => {
+    const fetchCategoriesWithProducts = async () => {
+      try {
+        setLoading(true);
+        const categoryResponse = await axioInstence.get('/user/categoriesforhome');
+        const activeCategories = categoryResponse.data;
+      
+        const categoriesWithImages = await Promise.all(
+          activeCategories.map(async (category) => {
+            try {
+              const productResponse = await axioInstence.get(`/user/categoryimage/${category._id}`);
+              const { products, count } = productResponse.data;
+              const firstProductImage = products && products.length > 0 && products[0].images.length > 0 
+              ? products[0].images[0] 
+              : '/api/placeholder/400/320';
+              
+              return {
+                id: category._id,
+                name: category.name,
+                description: category.description,
+                count: count || 0,
+                image: firstProductImage
+              };
+            } catch (err) {
+              console.error(`Error fetching products for category ${category.name}:`, err);
+              return {
+                id: category._id,
+                name: category.name,
+                description: category.description,
+                count: 0,
+                image: '/api/placeholder/400/320'
+              };
+            }
+          })
+        );
+
+        setCategories(categoriesWithImages);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch categories');
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategoriesWithProducts();
+  }, []);
+//reviews
+useEffect(() => {
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      const response = await axioInstence.get('/user/getreviewsforhome');
+      console.log('Raw review response:', response.data);
+
+      if (response.data?.status === 'success' && Array.isArray(response.data.data)) {
+        const formattedReviews = response.data.data.map(review => ({
+          id: review.id,
+          name: review.name || 'Anonymous',
+          feedback: review.feedback || 'No feedback provided',
+          rating: review.rating || 0,
+          profileImage: review.profileImage || null,
+          date: review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          }) : 'Date not available'
+        }));
+
+        console.log('Formatted reviews:', formattedReviews);
+        setReviews(formattedReviews);
+      } else {
+        console.log('No reviews found or invalid format');
+        setReviews([]);
+      }
+      
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+      setError('Failed to load reviews');
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchReviews();
+}, []);
+//offer
+useEffect(() => {
+  const fetchOffer = async () => {
+    try {
+      const response = await axioInstence.get('/user/activeoffersforhome');
+      if (response.data.data) {
+        setCurrentOffer(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching offer:', err);
+    }
+  };
+
+  fetchOffer();
+}, []);
+
+const formatOfferText = (offer) => {
+  if (!offer) return '';
+  
+  const discountText = offer.discountType === 'PERCENTAGE' 
+    ? `${offer.discountValue}% OFF`
+    : `₹${offer.discountValue} OFF`;
+    
+  const targetText = offer.applicableTo === 'product' 
+    ? offer.target?.title 
+    : offer.target?.name;
+    
+  const maxDiscountText = offer.maxDiscountAmount 
+    ? ` (Max ₹${offer.maxDiscountAmount})`
+    : '';
+
+  return `${discountText} on ${targetText}${maxDiscountText}`;
+};
+
+  const nextReview = () => {
+    setCurrentReview((prev) => (prev + 1) % reviews.length);
+  };
+
+  const prevReview = () => {
+    setCurrentReview((prev) => (prev - 1 + reviews.length) % reviews.length);
+  };
+
+
+  const visibleCategories = showAllCategories 
+  ? categories 
+  : categories.slice(0, INITIAL_CATEGORIES_COUNT);
+  const hasMoreCategories = categories.length > INITIAL_CATEGORIES_COUNT;
+
+
+  const handleProductClick = (productId) => {
+    setIsAnimationRunning(false);
+    navigate(`/user/product/${productId}`)
+  };
+
+  const currentReviewData = reviews[currentReview] || {};
 
   return (
     <>
-    <HeaderLogin />
-    <div className="container">
-      {/* Hero Section */}
-      <section className="hero">
-      <div className="hero-content">
-        <h1>Buy your dream plants</h1>
-        <div className="metrics">
-          <div className="metric">
-            <span className="number">50+</span>
-            <span className="label">Plant Species</span>
-          </div>
-          <div className="metric-divider">|</div>
-          <div className="metric">
-            <span className="number">100+</span>
-            <span className="label">Customers</span>
+      <HeaderLogin />
+
+      {currentOffer && (
+        <div className="w-full bg-[#4a6163] text-white py-2">
+          <div className="flex items-center justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="animate-bounce mr-2 text-2xl">🎉</div>
+            <div className="text-center flex flex-row items-center gap-2">
+              <span className="font-semibold">{currentOffer.title}</span>
+              <span className="text-sm">-</span>
+              <span className="text-sm">{formatOfferText(currentOffer)}</span>
+              {currentOffer.endDate && (
+                <span className="text-sm ml-2 bg-white/20 px-2 py-0.5 rounded-full">
+                  Ends {new Date(currentOffer.endDate).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+            <div className="animate-bounce ml-2 text-2xl">🎉</div>
           </div>
         </div>
-        <div className="search-bar">
-          <input type="text" placeholder="Search plants..." />
-          <SearchIcon className="search-icon" />
-        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <section className="bg-[#4a6163] rounded-xl px-10 py-10 my-5 relative min-h-[180px] flex justify-around items-center overflow-hidden">
+          <div className="max-w-[500px] relative z-10">
+            <h1 className="text-black text-[3.5rem] mb-6 leading-[65px] font-black">
+              Buy your dream plants
+            </h1>
+            <div className="flex items-center text-black mb-5 text-sm">
+              <div className="flex gap-1">
+                <span className="font-semibold">50+</span>
+                <span className="text-black/80">Plant Species</span>
+              </div>
+              <div className="mx-4 opacity-50">|</div>
+              <div className="flex gap-1">
+                <span className="font-semibold">100+</span>
+                <span className="text-black/80">Customers</span>
+              </div>
+            </div>
+            <div className="bg-white rounded-3xl py-3 px-5 flex items-center gap-2.5 max-w-[400px]">
+              <input 
+                type="text" 
+                placeholder="Search plants..." 
+                className="border-none bg-transparent w-full text-base outline-none placeholder:text-gray-600"
+              />
+              <div className="bg-[#4a6163] p-1.5 rounded-md">
+                <SearchIcon className="w-[30px] h-[30px] text-white" />
+              </div>
+            </div>
+          </div>
+          <div className="relative w-[300px] h-[300px]">
+            <div className="absolute -right-5 -top-10 w-full h-full bg-black rounded-full overflow-hidden mt-10">
+              <img
+                src={bannerImg}
+                alt="Featured plant"
+                className="w-full h-full object-contain absolute bottom-0 left-[53%] -translate-x-1/2"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Best Selling Section */}
+        <section className="py-10 flex items-start gap-8 overflow-hidden">
+      <div className="w-1/4">
+        <h2 className="text-5xl font-bold text-black mt-10">
+          Best Selling Plants
+        </h2>
       </div>
-      <div className="hero-image">
-        <div className="plant-container">
-          <img src={bannerImg} alt="Featured plant" />
+
+      <div className="w-3/4 relative overflow-hidden">
+        <div 
+          className={`flex gap-6 ${isAnimationRunning ? 'animate-carousel' : ''}`}
+          style={{
+            animation: isAnimationRunning ? 'scroll 10s linear infinite' : 'none',
+          }}
+        >
+          {duplicatedProducts.map((product, index) => (
+            <div 
+              key={`${product._id}-${index}`}
+              className="product-card flex-shrink-0 w-[calc(33.33%-1rem)] transition-transform hover:scale-105"
+              onClick={() => handleProductClick(product._id)}
+              role="button"
+              tabIndex={0}
+            >
+              <img
+                src={product.img}
+                alt={product.title}
+                className="w-full aspect-square object-contain bg-gray-50 rounded-lg mb-3 cursor-pointer"
+              />
+              <div className="text-left">
+                <h3 className="text-base font-medium text-black mb-1 ml-4">
+                  {product.title}
+                </h3>
+                <div className="text-sm font-medium text-black mb-1 ml-4">
+                  ₹ {product.price.toFixed(2)}
+                </div>
+                <div className="text-[0.85rem] text-gray-600 ml-4">
+                  <span className="text-[#ffd700]">★</span> {product.rating} ({product.reviews} sold)
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
+
+        {!isAnimationRunning && (
+          <button
+            onClick={() => setIsAnimationRunning(true)}
+            className="absolute bottom-4 right-4 bg-[#4a6163] text-white px-4 py-2 rounded-md hover:bg-[#3a4d4f] transition-colors"
+          >
+            Resume Slideshow
+          </button>
+        )}
+
+        <style jsx>{`
+          @keyframes scroll {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-50%);
+            }
+          }
+          .animate-carousel {
+            animation: scroll 20s linear infinite;
+          }
+          .animate-carousel:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
       </div>
     </section>
 
-      {/* Best Selling Section */}
-      <section className="best-selling">
-      <div className="section-header">
-        <h2>Best Selling Plants</h2>
-        <button className="see-more">See more →</button>
+  {/* Categories Section */}
+  <div className="text-black text-5xl font-bold  my-[50px] text-center font-extrabold">
+        <h2 className="text-grey-500 text-3xl font-bold">Categories</h2>
       </div>
-      <div className="products-grid">
-        <div className="product-card">
-          <img src={home1} alt="Natural Plants" />
-          <div className="product-info">
-            <h3>Natural Plants</h3>
-            <div className="price">₹ 1,400.00</div>
-            <div className="reviews">★ 5.0 (3.2k)</div>
+      <section className="py-16 bg-[#4a6163] rounded-xl px-8 my-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {visibleCategories.map((category) => (
+          <div key={category.id} className="group relative overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-[#4a6163] opacity-40 group-hover:opacity-50 transition-opacity duration-300" />
+            <img 
+              src={category.image} 
+              alt={category.name}
+              className="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+              <h3 className="text-3xl font-semibold mb-2">{category.name}</h3>
+              <p className="text-m opacity-90 mb-2">{category.count} Products</p>
+              <button className="bg-white text-[#4a6163] px-6 py-2 rounded-full text-sm font-medium 
+                transform translate-y-4 opacity-100 group-hover:translate-y-0 group-hover:opacity-100 
+                transition-all duration-300"
+                onClick={()=>{navigate('/user/shop')}}>
+                Explore →
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="product-card">
-          <img src={home2} alt="Artificial Plants" />
-          <div className="product-info">
-            <h3>Artificial Plants</h3>
-            <div className="price">₹ 900.00</div>
-            <div className="reviews">★ 4.8 (1.2k)</div>
-          </div>
-        </div>
-        <div className="product-card">
-          <img src={home3} alt="Artificial Plants" />
-          <div className="product-info">
-            <h3>Artificial Plants</h3>
-            <div className="price">₹ 1,200.00</div>
-            <div className="reviews">★ 4.9 (2.3k)</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-      {/* Categories Section */}
-      <div className="cato-heading">
-      <h2>Categories</h2>
+        ))}
       </div>
       
-      <section className="categories">
-      <div className="categories-grid">
-        <div className="category-card" style={{ transform: 'rotate(-3deg)' }}>
-          <img src={cato1} alt="Natural Plants" />
-            <h3>Natural Plants</h3>
+      {hasMoreCategories && (
+        <div className="text-center mt-8">
+          <button
+            onClick={() => setShowAllCategories(!showAllCategories)}
+            className="bg-white text-[#4a6163] px-8 py-3 rounded-full text-sm font-medium 
+              hover:bg-gray-50 transition-colors duration-200 shadow-md"
+          >
+            {showAllCategories ? 'Show Less ↑' : 'See More ↓'}
+          </button>
         </div>
-        <div className="category-card featured">
-          <img src={cato2} alt="Plant Accessories" />
-          <div className="card-content">
-            <h3>Plant Accessories</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          </div>
-        </div>
-        <div className="category-card" style={{ transform: 'rotate(3deg)' }}>
-          <img src={cato3} alt="Artificial Plants" />
-            <h3>Artificial Plants</h3>
-        </div>
-      </div>
-      <button className="explore">
-        Explore <span>→</span>
-      </button>
+      )}
     </section>
 
-      {/* Banner Section */}
-      <section className="banner">
-        <h2>Grow Your World, One Pot at a Time!</h2>
+        {/* Customer Reviews Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
+        
+        <div className="w-full mx-auto">
+          <div className="relative bg-white shadow-lg rounded-lg overflow-hidden border border-[#4a6163]/20">
+            <div className="absolute top-0 left-0 w-full h-2 bg-[#4a6163]" />
+            <div className="p-8">
+              <svg
+                className="absolute top-6 left-6 w-12 h-12 text-[#4a6163]/10"
+                fill="currentColor"
+                viewBox="0 0 32 32"
+                aria-hidden="true"
+              >
+                <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
+              </svg>
+              <div className="relative z-10">
+                <p className="text-lg text-gray-700 mb-8 italic pl-12">
+                  "{currentReviewData.feedback || 'No feedback provided'}"
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {currentReviewData.profileImage ? (
+                      <img
+                        src={currentReviewData.profileImage}
+                        alt={currentReviewData.name}
+                        className="w-14 h-15 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-[#4a6163]/10 flex items-center justify-center">
+                        <span className="text-[#4a6163] font-bold text-xl">
+                          {currentReviewData.name ? currentReviewData.name.charAt(0) : '?'}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="font-semibold text-[#4a6163]">
+                        {currentReviewData.name || 'Anonymous'}
+                      </h3>
+                        {/* <p className="text-sm text-gray-500">
+                          {currentReviewData.date || 'Date not available'}
+                        </p> */}
+                      <span className="text-[#ffd700]">
+                          {'★'.repeat(Math.min(5, currentReviewData.rating || 0))}
+                        </span>
+                    </div>
+                  </div>
+                  {reviews.length > 1 && (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setCurrentReview((prev) => (prev - 1 + reviews.length) % reviews.length)}
+                        className="p-2 rounded-full bg-[#4a6163] text-white transition-colors duration-200"
+                        aria-label="Previous review"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button 
+                        onClick={() => setCurrentReview((prev) => (prev + 1) % reviews.length)}
+                        className="p-2 rounded-full bg-[#4a6163] text-white transition-colors duration-200"
+                        aria-label="Next review"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
-
-      {/* About Section */}
-      <section className="about">
-      <h2>About us</h2>
-      <div className="about-grid">
-        <div className="about-card">
-          <div className="icon">
-            <ShoppingBag size={24} />
-          </div>
-          <h3>Large Assortment</h3>
-          <p>we offer many different types of products with fewer variations in each category.</p>
-        </div>
-        <div className="about-card">
-          <div className="icon">
-            <Truck size={24} />
-          </div>
-          <h3>Fast & Free Shipping</h3>
-          <p>4-day or less delivery time, free shipping and an expedited delivery option.</p>
-        </div>
-        <div className="about-card">
-          <div className="icon">
-            <Phone size={24} />
-          </div>
-          <h3>24/7 Support</h3>
-          <p>answers to any business related inquiry 24/7 and in real-time.</p>
+  
+        {/* About Section */}
+        <section className="py-24 bg-gradient-to-b from-white to-gray-100">
+      <div className="container mx-auto px-4">
+        <h2 className="text-4xl font-bold text-center mb-8">Why Choose Us</h2>
+        <p className="text-xl text-gray-600 text-center mb-16 max-w-2xl mx-auto">
+          We're committed to providing you with the best shopping experience possible.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {features.map((feature, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+            >
+              <div className="p-8">
+                <div className="w-20 h-20 bg-[#4a6163] rounded-full flex items-center justify-center mx-auto mb-6 
+                  transform hover:scale-110 transition-transform duration-300">
+                  <feature.icon className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-4 text-center">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed text-center">{feature.description}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
-    </div>
-        <Footer/>
+      </div>
+      <Footer />
     </>
-  )
+  );
 }
+const features = [
+  { icon: ShoppingBag, title: "Large Assortment", description: "We offer many different types of products with fewer variations in each category." },
+  { icon: Truck, title: "Fast & Free Shipping", description: "4-day or less delivery time, free shipping and an expedited delivery option." },
+  { icon: Phone, title: "24/7 Support", description: "Answers to any business related inquiry 24/7 and in real-time." }
+];
+
+
+
 

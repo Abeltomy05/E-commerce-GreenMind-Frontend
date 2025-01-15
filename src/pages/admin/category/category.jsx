@@ -186,9 +186,9 @@ const Category = () => {
         <div className="category-dashboard-header">
           <div className="category-header-left">
             <h1>Category</h1>
-            <div className="category-breadcrumb">
+            {/* <div className="category-breadcrumb">
               <AdminBreadcrumbs/>
-            </div>
+            </div> */}
           </div>
           <div className="category-header-actions">
             <button className="btn btn-primary" onClick={() => setAddTab(true)}>
@@ -241,7 +241,7 @@ const Category = () => {
             <thead>
               <tr>
                 <th>Category Name</th>
-                <th>Sold</th>
+                {/* <th>Sold</th> */}
                 <th>Status</th>
                 <th>Added</th>
                 <th>Action</th>
@@ -256,7 +256,7 @@ const Category = () => {
                     </div>
                   </td>
 
-                  <td>Sample data</td>
+                  {/* <td>Sample data</td> */}
 
                   <td>
                     <span className={`status-badge ${item.isActive ? "active" : "blocked"}`}>
@@ -325,6 +325,7 @@ const Category = () => {
                 )}
       </div>
     );
+  
   };
 
   return (

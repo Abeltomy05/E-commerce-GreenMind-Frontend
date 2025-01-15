@@ -155,6 +155,10 @@ const ReturnProductPage = () => {
                 const product = orderProduct.product;
                 const variant = product.variants[0];
                 const returnStatus = getReturnStatus(orderProduct);
+                const originalPrice = variant.price;
+                const finalPrice = orderProduct.finalPrice;
+                const discount = originalPrice - finalPrice;
+                const discountPercentage = Math.round((discount / originalPrice) * 100);
                 
                 return (
                   <div key={product._id} className="mb-8 pb-8 border-b border-gray-200 last:border-0">
@@ -167,7 +171,17 @@ const ReturnProductPage = () => {
                       <div className="flex-grow">
                         <h2 className="text-xl font-semibold text-[#1a2c25] mb-1">{product.name}</h2>
                         <p className="text-[#375d51] text-sm">Category: {product.category.name}</p>
-                        <p className="text-[#375d51] text-sm">Price: ₹{variant.price}</p>
+                        <div className="flex items-baseline gap-2">
+                          <p className="text-[#375d51] text-sm font-medium">
+                            Price: ₹{finalPrice}
+                          </p>
+                          {discount > 0 && (
+                            <>
+                              <p className="text-gray-500 text-sm line-through">₹{originalPrice}</p>
+                              <p className="text-green-600 text-sm">({discountPercentage}% off)</p>
+                            </>
+                          )}
+                        </div>
                         <p className="text-[#375d51] text-sm">Size: {variant.size}</p>
                       </div>
                       {returnStatus && (
@@ -221,7 +235,7 @@ const ReturnProductPage = () => {
                           <textarea
                             rows="3"
                             className="w-full px-3 py-2 text-[#333] text-sm border border-[#778e85] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3d5e52]"
-                            placeholder="Please provide any additional details..."
+                            placeholder="Please provide reason"
                             value={otherReasons[product._id] || ''}
                             onChange={(e) => setOtherReasons(prev => ({
                               ...prev,
