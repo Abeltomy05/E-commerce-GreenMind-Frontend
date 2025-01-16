@@ -10,6 +10,7 @@ import AddCategory from '../../../components/admin/addCategory/addCategory';
 import EditCategory from '../../../components/admin/editCategory/editCategory';
 import BasicPagination from '../../../components/pagination/pagination';
 import AdminBreadcrumbs from '../../../components/breadcrumbs/breadcrumbs';
+import api from '../../../utils/adminAxiosConfig';
 
 const Category = () => {
   const [category, setCategory] = useState([]);
@@ -27,7 +28,7 @@ const Category = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get("http://localhost:3000/admin/categorydata", { 
+        const response = await api.get("/admin/categorydata", { 
           withCredentials: true 
         });
         console.log('Axios Response:', response.data);
@@ -90,7 +91,7 @@ const Category = () => {
   
   const fetchCategory = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/admin/categorydata');
+      const response = await api.get('/admin/categorydata');
       setCategory(response.data);
     } catch (error) {
       console.error('Error fetching category:', error);
@@ -107,8 +108,8 @@ const Category = () => {
 
   const handleActive = async (item) => {
     try {
-      const response = await axios.put(
-        `http://localhost:3000/admin/categorystatus/${item._id}`, 
+      const response = await api.put(
+        `/admin/categorystatus/${item._id}`, 
         { isActive: !item.isActive },
         { withCredentials: true }
       );

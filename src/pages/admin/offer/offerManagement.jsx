@@ -3,6 +3,7 @@ import React, { useState,useEffect } from 'react'
 import CreateOfferForm from './createOffer'
 import { Loader2 } from "lucide-react";
 import axios from 'axios';
+import api from '../../../utils/adminAxiosConfig';
 
 export default function OfferManagement() {
     const [offers, setOffers] = useState([]);
@@ -14,7 +15,7 @@ export default function OfferManagement() {
     const fetchOffers = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:3000/admin/getoffers');
+        const response = await api.get('/admin/getoffers');
         setOffers(response.data);
         setError(null);
        } catch (err) {
@@ -27,7 +28,7 @@ export default function OfferManagement() {
   
     const handleDeleteOffer = async (offerId) => {
       try {
-        const response = await axios.delete(`http://localhost:3000/admin/deleteoffer/${offerId}`);
+        const response = await api.delete(`/admin/deleteoffer/${offerId}`);
         
         if (response.status === 200) {
             fetchOffers();

@@ -1,19 +1,31 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import {logout} from "../../../redux/adminSlice";
 import "./logout.scss"
+import api from '../../../utils/adminAxiosConfig';
 
 const LogoutPage = () => {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-  
     const dispatch = useDispatch()
+    const navigate = useNavigate();
 
-    const handleLogout = () => {
+    const handleLogout = async() => {
+      try{
       setIsLoggingOut(true);
-      setTimeout(() => {
+      await api.post('/admin/logout');
+
+
         dispatch(logout())
         console.log('Logged out successfully');
-      }, 2000);
+
+    }catch(error){
+           console.error('Logout error:', error);
+            toast.error('Error during logout. Please try again.');
+    } finally {
+      setIsLoggingOut(false);
+  }
     };
   
     return (

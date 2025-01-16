@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
+import api from '../../../utils/adminAxiosConfig';
 
 const AddCategory = ({onUpdateSuccess,onCancel}) => {
   const [categoryName, setCategoryName] = useState('');
@@ -26,7 +27,7 @@ const AddCategory = ({onUpdateSuccess,onCancel}) => {
             description: description.trim() || '', 
             isActive: true 
           };
-        const response = await axios.post('http://localhost:3000/admin/addcategorydata',payload);
+        const response = await api.post('/admin/addcategorydata',payload);
         toast.success('Category created successfully');
         setCategoryName('');
         setDescription('');

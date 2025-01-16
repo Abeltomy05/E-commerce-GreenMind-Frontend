@@ -9,6 +9,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BasicPagination from '../../pagination/pagination';
 import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
+import api from '../../../utils/adminAxiosConfig';
 
 const Customer = () => {
   const [allUsers, setAllUsers] = useState([])
@@ -29,8 +30,8 @@ const Customer = () => {
 
   useEffect(() => {
     async function fetchData() {
-      await axios
-        .get("http://localhost:3000/admin/data", { withCredentials: true })
+      await api
+        .get("/admin/data", { withCredentials: true })
         .then((res) => {
           setAllUsers(res.data);
           console.log(allUsers)
@@ -122,7 +123,7 @@ const Customer = () => {
   const handleDelete = async (customer) => {
     try {
       const id = customer._id;
-      const response = await axios.delete(`http://localhost:3000/admin/delete/${id}`, {
+      const response = await api.delete(`/admin/delete/${id}`, {
         withCredentials: true,
       });
       console.log(response.data.message);
@@ -145,8 +146,8 @@ const Customer = () => {
 
   const handleStatus = async(customer)=>{
     try{
-      const response = await axios.put(
-        `http://localhost:3000/admin/block/${customer._id}`, 
+      const response = await api.put(
+        `/admin/block/${customer._id}`, 
         { isBlocked: !customer.isBlocked },
         { withCredentials: true }
       );
@@ -168,7 +169,7 @@ const Customer = () => {
 
   const handleSaveChanges = async (updatedUser) => {
     try {
-      const response = await axios.put(`http://localhost:3000/admin/edit/${updatedUser._id}`, updatedUser);
+      const response = await api.put(`/admin/edit/${updatedUser._id}`, updatedUser);
       if (response.status === 200) {
         toast.success('User updated successfully');
         setEditTab(false);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios';
+import api from '../../../utils/adminAxiosConfig';
 
 const CouponCreation = ({ onSubmit, onCancel }) => {
   const [couponCode, setCouponCode] = useState('');
@@ -68,7 +69,7 @@ const CouponCreation = ({ onSubmit, onCancel }) => {
       maxUses: Number(maxUses)
     };
       try {
-      const response = await axios.post('http://localhost:3000/admin/createcoupon', couponData);
+      const response = await api.post('/admin/createcoupon', couponData);
       if (response.data.success) {
         onSubmit(response.data.coupon);
       } else {

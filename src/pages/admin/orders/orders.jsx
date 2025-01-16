@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import BasicPagination from '../../../components/pagination/pagination';
 import AdminBreadcrumbs from '../../../components/breadcrumbs/breadcrumbs';
 import ReturnRequests from './returnrequest';
+import api from '../../../utils/adminAxiosConfig';
 
 const Orders = () => {
   const [selectedStatus, setSelectedStatus] = useState('All Status');
@@ -47,7 +48,7 @@ const Orders = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:3000/admin/getorderdata');
+      const response = await api.get('/admin/getorderdata');
       console.log('order data:::',response.data)
       if (response.data && Array.isArray(response.data)) {
         setOrders(response.data);
@@ -101,7 +102,7 @@ const Orders = () => {
   const handleStatusChange = async (e, orderId, newStatus) => {
     e.preventDefault(); 
     try {
-      const response = await axios.patch(`http://localhost:3000/admin/changeorderstatus/${orderId}`, {
+      const response = await api.patch(`/admin/changeorderstatus/${orderId}`, {
         status: newStatus
       });
       if (response.data.success) {
@@ -124,7 +125,7 @@ const Orders = () => {
     e.preventDefault();
     if (window.confirm('Are you sure you want to cancel this order?')) {
       try {
-        const response = await axios.patch(`http://localhost:3000/admin/cancelorder/${orderId}`, {
+        const response = await api.patch(`/admin/cancelorder/${orderId}`, {
           status: 'CANCELED'
         });
         if (response.data.success) {

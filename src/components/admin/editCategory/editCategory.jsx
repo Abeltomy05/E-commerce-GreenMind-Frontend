@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './editCategory.scss';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import api from '../../../utils/adminAxiosConfig';
 
 export default function EditCategory({ category, onCancel, onUpdateSuccess }) {
   const [formData, setFormData] = useState({
@@ -37,8 +38,8 @@ export default function EditCategory({ category, onCancel, onUpdateSuccess }) {
       }
 
 
-      const response = await axios.put(
-        `http://localhost:3000/admin/editcategory/${category._id}`, 
+      const response = await api.put(
+        `/admin/editcategory/${category._id}`, 
         {
           name: formData.name,
           description: formData.description

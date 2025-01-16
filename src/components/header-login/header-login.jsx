@@ -1,23 +1,35 @@
 import React, { useState, useRef, useEffect } from "react";
-import { UserCircle2, LogOut, User, Settings, Search, Heart,ShoppingCartIcon } from 'lucide-react'
+import { UserCircle2, LogOut, User, Settings, Search, Heart, ShoppingCartIcon, Menu, X } from 'lucide-react'
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../redux/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
 import axios from "axios";
 import Badge from '@mui/material/Badge';
 import "./header-login.scss";
+import axiosInstance from "../../utils/axiosConfig";
+import Cookies from 'js-cookie';
+import {persistor} from '../../redux/store'
 
 const HeaderLogin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const mobileMenuRef = useRef(null);
 
   const user = useSelector((state) => state.user.user);
   const cartCount = useSelector((state)=>state.cart.cartCount)
 
   const handleNavigate = (path) => {
     navigate(path);
+    setIsMobileMenuOpen(false);
+  };
+
+  const COOKIE_OPTIONS = {
+    secure: true, // Only transmitted over HTTPS
+    sameSite: 'strict', // Protects against CSRF
+    path: '/' // Available across all pages
   };
 
   useEffect(() => {
@@ -25,47 +37,52 @@ const HeaderLogin = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) && !event.target.closest('.mobile-menu-toggle')) {
+        setIsMobileMenuOpen(false);
+      }
     };
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
   
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, []);
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:3000/auth/logout', {}, {
-        withCredentials: true
+      const accessToken = Cookies.get('accessToken');
+
+      await axiosInstance.post('/auth/logout', {}, {
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${Cookies.get('accessToken')}`
+        }
       });
+
+      Cookies.remove('accessToken', { path: '/' });
+      Cookies.remove('refreshToken', { path: '/' });
       dispatch(logout());
+      await persistor.purge();
+
       navigate('/user/login');
     } catch (error) {
       console.error('Logout error:', error);
+      Cookies.remove('accessToken', { path: '/' });
+      Cookies.remove('refreshToken', { path: '/' });
+      dispatch(logout());
+      await persistor.purge();
+    navigate('/user/login');
     }
   }
 
   const toggleDropdown = (e) => {
     e.stopPropagation();
-    console.log("dropdown clicked");
-    
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
   return (
     <header className="header">
@@ -75,52 +92,71 @@ const HeaderLogin = () => {
           <h1>GREENMIND</h1>
         </div>
 
-        {/* Navigation Links */}
-        {user && (
-          <nav className="header-nav">
-            <ul>
-              <li><a onClick={() => handleNavigate('/user/home')}>Home</a></li>
-              <li><a onClick={() => handleNavigate('/user/shop')}>Shop</a></li>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Contact</a></li>
-            </ul>
-          </nav>
-        )}
+        {/* Mobile Menu Toggle */}
+        <div className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </div>
 
-        {/* Icons Section */}
-        {user && (
-          <div className="header-icons">
-           <Search className="icon"/>
-           <Heart className="icon" onClick={() => handleNavigate('/user/wishlist')}/>
-           <Badge badgeContent={cartCount} color="primary">
-           <ShoppingCartIcon className="icon" onClick={() => handleNavigate('/user/cart')}/>
-           </Badge>
-
-            <div className="profile-dropdown" ref={dropdownRef}>
-              <UserCircle2 className="profile-icon" onClick={(e)=>toggleDropdown(e)} />
-              {isDropdownOpen && (
-                <div className="dropdown-menu">
-                  <a onClick={() => handleNavigate('/user/account')}>
-                    <User size={16} />
-                    Your Account
-                  </a>
-                  <a onClick={() => handleNavigate('/user/settings')}>
-                    <Settings size={16} />
-                    Settings
-                  </a>
-                  <a onClick={handleLogout}>
-                    <LogOut size={16} />
-                    Logout
-                  </a>
-                </div>
-              )}
+        <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} ref={mobileMenuRef}>
+          {/* Navigation Links */}
+          {user && (
+            <div className="flex-1 flex justify-center">
+            <nav className="header-nav">
+              <ul>
+                <li><a onClick={() => handleNavigate('/user/home')}>Home</a></li>
+                <li><a onClick={() => handleNavigate('/user/shop')}>Shop</a></li>
+                <li><a onClick={() => handleNavigate('/about')}>About</a></li>
+                <li><a onClick={() => handleNavigate('/contact')}>Contact</a></li>
+              </ul>
+            </nav>
             </div>
-          </div>
-         )}
+          )}
+
+          {/* Icons Section */}
+          {user && (
+            <div className="header-icons">
+              <div className="icon-wrapper" onClick={() => handleNavigate('/search')}>
+                <Search className="icon" />
+                <span className="icon-label">Search</span>
+              </div>
+              <div className="icon-wrapper" onClick={() => handleNavigate('/user/wishlist')}>
+                <Heart className="icon" />
+                <span className="icon-label">Wishlist</span>
+              </div>
+              <div className="icon-wrapper" onClick={() => handleNavigate('/user/cart')}>
+                <Badge badgeContent={cartCount} color="primary">
+                  <ShoppingCartIcon className="icon" />
+                </Badge>
+                <span className="icon-label">Cart</span>
+              </div>
+              <div className="profile-dropdown" ref={dropdownRef}>
+                <div className="icon-wrapper" onClick={toggleDropdown}>
+                  <UserCircle2 className="profile-icon" />
+                  <span className="icon-label">Account</span>
+                </div>
+                {isDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <a onClick={() => handleNavigate('/user/account')}>
+                      <User size={16} />
+                      Your Account
+                    </a>
+                    <a onClick={() => handleNavigate('/user/settings')}>
+                      <Settings size={16} />
+                      Settings
+                    </a>
+                    <a onClick={handleLogout}>
+                      <LogOut size={16} />
+                      Logout
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
 };
 
 export default HeaderLogin;
-

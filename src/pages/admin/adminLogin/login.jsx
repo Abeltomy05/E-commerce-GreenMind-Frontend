@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { ToastContainer, toast } from 'react-toastify';
 import {login} from "../../../redux/adminSlice"
 import 'react-toastify/dist/ReactToastify.css';
+import api from "../../../utils/adminAxiosConfig";
 import { 
   LockKeyhole, 
   Mail, 
@@ -52,7 +53,7 @@ function AdminLogin() {
     
     try {
       const userData = { email, password };
-      const response = await axios.post("http://localhost:3000/admin/login", userData, {
+      const response = await api.post("admin/login", userData, {
         headers: {
           "Content-Type": "application/json",  
         },

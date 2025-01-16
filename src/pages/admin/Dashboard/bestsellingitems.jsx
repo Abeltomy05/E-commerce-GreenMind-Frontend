@@ -1,6 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import { TrendingUp, Tag, Building } from 'lucide-react';
 import axios from 'axios';
+import api from '../../../utils/adminAxiosConfig';
 
 
 const TopItemsSection = () => {
@@ -16,7 +17,7 @@ const TopItemsSection = () => {
         const fetchTopItems = async () => {
           try {
             setLoading(true);
-            const response = await axios.get('http://localhost:3000/admin/bestsellingitems');
+            const response = await api.get('/admin/bestsellingitems');
             console.log('Response data:', response.data);
             setTopItems(response.data);
           } catch (err) {

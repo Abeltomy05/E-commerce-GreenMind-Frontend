@@ -10,6 +10,7 @@ import bannerImg from "../../../assets/images/banner-img.png"
 import { useParams,useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux'
 import axioInstence from '../../../utils/axiosConfig'
+import SpinnerNormal from '../../../components/normalSpinner/normalspinner';
 
 export default function UserHome() {
   const userdetail = useSelector((state) => state.user.user);
@@ -220,60 +221,76 @@ const formatOfferText = (offer) => {
 
   const currentReviewData = reviews[currentReview] || {};
 
+  if(loading){
+  return (
+    <>
+      <HeaderLogin />
+      <div className="min-h-screen flex items-center justify-center">
+        <SpinnerNormal />
+      </div>
+      <Footer />
+    </>
+  );
+}
   return (
     <>
       <HeaderLogin />
 
       {currentOffer && (
-        <div className="w-full bg-[#4a6163] text-white py-2">
-          <div className="flex items-center justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="animate-bounce mr-2 text-2xl">🎉</div>
-            <div className="text-center flex flex-row items-center gap-2">
-              <span className="font-semibold">{currentOffer.title}</span>
-              <span className="text-sm">-</span>
-              <span className="text-sm">{formatOfferText(currentOffer)}</span>
-              {currentOffer.endDate && (
-                <span className="text-sm ml-2 bg-white/20 px-2 py-0.5 rounded-full">
-                  Ends {new Date(currentOffer.endDate).toLocaleDateString()}
-                </span>
-              )}
-            </div>
-            <div className="animate-bounce ml-2 text-2xl">🎉</div>
+      <div className="w-full bg-[#4a6163] text-white py-1 md:py-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center max-w-7xl mx-auto px-2 md:px-4 space-y-1 sm:space-y-0">
+          <div className="animate-bounce mr-1 md:mr-2 text-lg md:text-xl lg:text-2xl">🎉</div>
+          <div className="text-center flex flex-col sm:flex-row items-center gap-1 md:gap-2">
+            <span className="font-semibold text-xs md:text-sm lg:text-base">{currentOffer.title}</span>
+            <span className="hidden sm:inline text-xs md:text-sm">-</span>
+            <span className="text-[10px] md:text-xs lg:text-sm">{formatOfferText(currentOffer)}</span>
+            {currentOffer.endDate && (
+              <span className="text-[10px] md:text-xs lg:text-sm mt-1 sm:mt-0 sm:ml-2 bg-white/20 px-1.5 md:px-2 py-0.5 rounded-full">
+                Ends {new Date(currentOffer.endDate).toLocaleDateString()}
+              </span>
+            )}
           </div>
+          <div className="animate-bounce ml-1 md:ml-2 text-lg md:text-xl lg:text-2xl">🎉</div>
         </div>
-      )}
+      </div>
+    )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+       <div className="max-w-7xl mx-auto px-3 md:px-4 lg:px-8">
         {/* Hero Section */}
-        <section className="bg-[#4a6163] rounded-xl px-10 py-10 my-5 relative min-h-[180px] flex justify-around items-center overflow-hidden">
-          <div className="max-w-[500px] relative z-10">
-            <h1 className="text-black text-[3.5rem] mb-6 leading-[65px] font-black">
+        <section className="bg-[#4a6163] rounded-xl px-4 md:px-8 lg:px-10 py-6 md:py-8 lg:py-10 my-3 md:my-4 lg:my-5 relative min-h-[140px] md:min-h-[160px] lg:min-h-[180px] flex flex-col md:flex-row justify-around items-center overflow-hidden">
+          <div className="max-w-[300px] md:max-w-[400px] lg:max-w-[500px] relative z-10">
+            <h1 className="text-black text-2xl md:text-3xl lg:text-[3.5rem] mb-3 md:mb-4 lg:mb-6 leading-tight md:leading-[65px] font-black">
               Buy your dream plants
             </h1>
-            <div className="flex items-center text-black mb-5 text-sm">
+            <div className="flex items-center text-black mb-3 md:mb-4 lg:mb-5 text-xs md:text-sm">
               <div className="flex gap-1">
                 <span className="font-semibold">50+</span>
                 <span className="text-black/80">Plant Species</span>
               </div>
-              <div className="mx-4 opacity-50">|</div>
+              <div className="mx-2 md:mx-4 opacity-50">|</div>
               <div className="flex gap-1">
                 <span className="font-semibold">100+</span>
                 <span className="text-black/80">Customers</span>
               </div>
             </div>
-            <div className="bg-white rounded-3xl py-3 px-5 flex items-center gap-2.5 max-w-[400px]">
-              <input 
-                type="text" 
-                placeholder="Search plants..." 
-                className="border-none bg-transparent w-full text-base outline-none placeholder:text-gray-600"
-              />
-              <div className="bg-[#4a6163] p-1.5 rounded-md">
-                <SearchIcon className="w-[30px] h-[30px] text-white" />
-              </div>
-            </div>
+            <button 
+              className="bg-white hover:bg-gray-50 text-[#4a6163] font-semibold rounded-full py-2.5 md:py-3 px-6 md:px-8 text-sm md:text-base transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 group"
+              onClick={() => navigate('/user/shop')}
+            >
+              Shop Now
+              <svg 
+                className="w-4 h-4 md:w-5 md:h-5 transform transition-transform duration-300 group-hover:translate-x-1" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
           </div>
-          <div className="relative w-[300px] h-[300px]">
-            <div className="absolute -right-5 -top-10 w-full h-full bg-black rounded-full overflow-hidden mt-10">
+          <div className="relative w-[200px] h-[200px] md:w-[250px] md:h-[250px] lg:w-[300px] lg:h-[300px] mt-4 md:mt-0">
+            <div className="absolute -right-5 -top-10 w-full h-full bg-black rounded-full overflow-hidden mt-6 md:mt-8 lg:mt-10">
               <img
                 src={bannerImg}
                 alt="Featured plant"
@@ -284,14 +301,14 @@ const formatOfferText = (offer) => {
         </section>
 
         {/* Best Selling Section */}
-        <section className="py-10 flex items-start gap-8 overflow-hidden">
-      <div className="w-1/4">
-        <h2 className="text-5xl font-bold text-black mt-10">
+        <section className="py-6 md:py-8 lg:py-10 flex flex-col md:flex-row items-start gap-4 md:gap-6 lg:gap-8 overflow-hidden">
+        <div className="w-full md:w-1/4">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mt-4 md:mt-6 lg:mt-10">
           Best Selling Plants
         </h2>
       </div>
 
-      <div className="w-3/4 relative overflow-hidden">
+      <div className="w-full md:w-3/4 relative overflow-hidden">
         <div 
           className={`flex gap-6 ${isAnimationRunning ? 'animate-carousel' : ''}`}
           style={{
@@ -355,10 +372,10 @@ const formatOfferText = (offer) => {
     </section>
 
   {/* Categories Section */}
-  <div className="text-black text-5xl font-bold  my-[50px] text-center font-extrabold">
-        <h2 className="text-grey-500 text-3xl font-bold">Categories</h2>
+  <div className="text-black text-3xl md:text-4xl lg:text-5xl font-bold my-5 md:my-8 lg:my-[50px] text-center font-extrabold">
+  <h2 className="text-grey-500 text-2xl md:text-2xl lg:text-3xl font-bold">Categories</h2>
       </div>
-      <section className="py-16 bg-[#4a6163] rounded-xl px-8 my-16">
+      <section className="py-8 md:py-12 lg:py-16 bg-[#4a6163] rounded-xl px-4 md:px-6 lg:px-8 my-8 md:my-12 lg:my-16">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {visibleCategories.map((category) => (
           <div key={category.id} className="group relative overflow-hidden rounded-2xl">
@@ -396,8 +413,8 @@ const formatOfferText = (offer) => {
     </section>
 
         {/* Customer Reviews Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">What Our Customers Say</h2>
+      <section className="py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-8">What Our Customers Say</h2>
         
         <div className="w-full mx-auto">
           <div className="relative bg-white shadow-lg rounded-lg overflow-hidden border border-[#4a6163]/20">
@@ -468,10 +485,10 @@ const formatOfferText = (offer) => {
       </section>
   
         {/* About Section */}
-        <section className="py-24 bg-gradient-to-b from-white to-gray-100">
+        <section className="py-20 bg-gradient-to-b from-white to-gray-100">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-8">Why Choose Us</h2>
-        <p className="text-xl text-gray-600 text-center mb-16 max-w-2xl mx-auto">
+        <h2 className="text-4xl font-bold text-center mb-4">Why Choose Us</h2>
+        <p className="text-xl text-gray-600 text-center mb-5 max-w-2xl mx-auto">
           We're committed to providing you with the best shopping experience possible.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

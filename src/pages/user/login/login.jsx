@@ -48,17 +48,32 @@ function UserLogin() {
   }
 
   const googleAuth = () => {
+
+    Cookies.remove('accessToken');
+    Cookies.remove('refreshToken');
     window.open("http://localhost:3000/auth/google", "_self");
 }
 
 useEffect(() => {
   const checkLoginStatus = async () => {
     try {
+      console.log("Checking cookies...");
+      const accessToken = Cookies.get('accessToken');
+      const refreshToken = Cookies.get('refreshToken');
+      console.log('Tokens found:', { accessToken, refreshToken });
+
+      if (!accessToken) {
+        console.log('No access token found');
+        return; 
+      }
       const response = await axioInstence.get("/auth/login/success", {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
       });
-      // console.log(response.data.user);
-// console.log("response",response.data);
+
+      console.log('Login success response:', response.data);
       if (response.data.user) {
         dispatch(login({ 
           user: response.data.user, 
@@ -68,6 +83,8 @@ useEffect(() => {
       }
     } catch (error) {
       console.error("Login check error:", error);
+      Cookies.remove('accessToken');
+      Cookies.remove('refreshToken');
     }
   };
 
@@ -101,7 +118,6 @@ const handleSubmit = async (e) => {
       },
       withCredentials: true,
     });
-    console.log("Login response:", response.data);
 
     const { status, message, user, role,accessToken,refreshToken } = response.data;
     if (status === "VERIFIED" && user) {

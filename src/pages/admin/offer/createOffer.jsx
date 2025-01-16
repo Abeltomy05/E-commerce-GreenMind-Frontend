@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState,useEffect } from 'react';
+import api from '../../../utils/adminAxiosConfig';
 
 
 export default function CreateOfferForm({ onClose }) {
@@ -27,8 +28,8 @@ export default function CreateOfferForm({ onClose }) {
 
   const fetchTargets = async () => {
     try {
-      const endpoint = formData.applicableTo === 'product' ? 'http://localhost:3000/admin/products' : 'http://localhost:3000/admin/categories';
-      const response = await axios.get(endpoint);
+      const endpoint = formData.applicableTo === 'product' ? '/admin/products' : '/admin/categories';
+      const response = await api.get(endpoint);
       setTargets(response.data);
     } catch (err) {
       setError('Failed to fetch ' + formData.applicableTo + 's');
@@ -111,7 +112,7 @@ export default function CreateOfferForm({ onClose }) {
             endDate: formatDateToMidnight(formData.endDate)
           };
       console.log('Submitting form data:', formData);
-      const response = await axios.post('http://localhost:3000/admin/createoffer', submitData);
+      const response = await api.post('/admin/createoffer', submitData);
       console.log('Response:', response.data); 
       onClose();
     } catch (err) {

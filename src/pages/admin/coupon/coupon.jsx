@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Plus, Trash2 } from 'lucide-react'
 import axios from 'axios'
 import CouponCreation from "./createCoupon"
+import api from "../../../utils/adminAxiosConfig"
 
 const CouponManagement = () => {
   const [activeTab, setActiveTab] = useState("All")
@@ -18,7 +19,7 @@ const CouponManagement = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await axios.get('http://localhost:3000/admin/getcoupons')
+      const response = await api.get('/admin/getcoupons')
       if (!response.data) throw new Error('No data received')
       setCoupons(Array.isArray(response.data) ? response.data : [])
     } catch (err) {
@@ -45,7 +46,7 @@ const CouponManagement = () => {
 
   const handleDelete = async (couponId) => {
     try {
-      await axios.delete(`http://localhost:3000/admin/deletecoupon/${couponId}`)
+      await api.delete(`/admin/deletecoupon/${couponId}`)
       await fetchCoupons()
     } catch (err) {
       console.error('Error deleting coupon:', err)

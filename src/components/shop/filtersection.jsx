@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import axios from 'axios';
 import axioInstence from '../../utils/axiosConfig';
+import SpinnerNormal from '../normalSpinner/normalspinner';
+import HeaderLogin from '../header-login/header-login';
+import Footer from '../footer/footer';
 
-function FilterSection({ isOpen, onProductsUpdate }) {
+function FilterSection({ isOpen, onProductsUpdate, isSearchActive  }) {
   const [openSection, setOpenSection] = useState(null);
   const [categories, setCategories] = useState([]);
   const [types, setTypes] = useState([]);
@@ -38,36 +41,39 @@ function FilterSection({ isOpen, onProductsUpdate }) {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      if (!isSearchActive) {
         const fetchFilteredProducts = async () => {
-            try {
-                const params = new URLSearchParams();
-                if (selectedFilters.category.length) {
-                    params.append('category', selectedFilters.category.join(','));
-                }
-                if (selectedFilters.type.length) {
-                    params.append('type', selectedFilters.type.join(','));
-                }
-                if (selectedFilters.priceSort) {
-                    params.append('priceSort', selectedFilters.priceSort);
-                }
-                if (selectedFilters.nameSort) {
-                    params.append('nameSort', selectedFilters.nameSort);
-                }
-
-                const response = await axioInstence.get(`/user/productsfilter?${params}`);
-                const filteredProducts = response.data.data;
-
-                onProductsUpdate(filteredProducts);
-            } catch (error) {
-                console.error('Error fetching filtered products:', error);
+          try {
+            const params = new URLSearchParams();
+            if (selectedFilters.category.length) {
+              params.append('category', selectedFilters.category.join(','));
             }
+            if (selectedFilters.type.length) {
+              params.append('type', selectedFilters.type.join(','));
+            }
+            if (selectedFilters.priceSort) {
+              params.append('priceSort', selectedFilters.priceSort);
+            }
+            if (selectedFilters.nameSort) {
+              params.append('nameSort', selectedFilters.nameSort);
+            }
+
+            const response = await axioInstence.get(`/user/productsfilter?${params}`);
+            const filteredProducts = response.data.data;
+
+            onProductsUpdate(filteredProducts);
+          } catch (error) {
+            console.error('Error fetching filtered products:', error);
+          }
         };
 
         fetchFilteredProducts();
-    }, 300); 
+      }
+    }, 300);
 
     return () => clearTimeout(timeoutId);
-}, [selectedFilters]);
+  }, [selectedFilters, isSearchActive]);
+
 
   const handleFilterChange = (filterType, value) => {
     setSelectedFilters(prev => {
@@ -100,7 +106,15 @@ function FilterSection({ isOpen, onProductsUpdate }) {
     setOpenSection(openSection === section ? null : section);
   };
 
-  if (loading) return <div className="p-4 text-center">Loading filters...</div>;
+  if (loading){
+    return (
+      <>
+        <div className="min-h-screen flex items-center justify-center">
+          <SpinnerNormal />
+        </div>
+      </>
+    );
+  }
   if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
 
   return (
@@ -120,7 +134,7 @@ function FilterSection({ isOpen, onProductsUpdate }) {
               <label key={category} className="flex items-center space-x-2 text-white-600 ">
                 <input
                   type="checkbox"
-                  className="form-checkbox text-blue-500"
+                  className="form-checkbox text-blue-500 "
                   checked={selectedFilters.category.includes(category)}
                   onChange={() => handleFilterChange('category', category)}
                 />

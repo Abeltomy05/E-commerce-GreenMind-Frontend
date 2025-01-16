@@ -3,6 +3,7 @@ import axios from 'axios';
 import {  toast } from 'react-toastify';
 import './editProduct.scss';
 import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
+import api from '../../../utils/adminAxiosConfig';
 
 const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
 
@@ -21,7 +22,7 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/admin/categorydata-addproduct', {
+        const response = await api.get('/admin/categorydata-addproduct', {
           withCredentials: true
         });
         setCategories(response.data);
@@ -172,7 +173,7 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
         }))
       };
 
-      const response = await axios.put(`http://localhost:3000/admin/editproduct/${product._id}`, payload);
+      const response = await api.put(`/admin/editproduct/${product._id}`, payload);
       console.log('Product updated successfully', response.data);
       toast.success('Product updated successfully', {
         position: "top-right",

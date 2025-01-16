@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import './addProduct.scss';
 import uploadImageToCloudinary from '../../../services/cloudinaryService';
 import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
+import api from '../../../utils/adminAxiosConfig';
 
 export default function AddProduct({ onSave, onUpdateSuccess, onCancel }) {
   const [productData, setProductData] = useState({
@@ -110,7 +111,7 @@ export default function AddProduct({ onSave, onUpdateSuccess, onCancel }) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/admin/categorydata-addproduct', {
+        const response = await api.get('/admin/categorydata-addproduct', {
           withCredentials: true
         });
         setCategories(response.data);
@@ -187,7 +188,7 @@ export default function AddProduct({ onSave, onUpdateSuccess, onCancel }) {
         images: imageUrls,
       };
       console.log("Payload being sent:", JSON.stringify(productPayload, null, 2));
-      const result = await axios.post("http://localhost:3000/admin/addproduct", productPayload);
+      const result = await api.post("/admin/addproduct", productPayload);
       console.log("Product added successfully!", result);
       toast.success('Product Added Successfully', {
         position: "top-right",

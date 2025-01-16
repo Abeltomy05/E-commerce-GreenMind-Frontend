@@ -32,23 +32,23 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-const handleAuthError = () => {
-  if (logoutTimer) {
-    clearTimeout(logoutTimer);
-  }
+// const handleAuthError = () => {
+//   if (logoutTimer) {
+//     clearTimeout(logoutTimer);
+//   }
   
-  logoutTimer = setTimeout(() => {
-    console.log('Logging out due to auth error');
-    store.dispatch(logout());
+//   logoutTimer = setTimeout(() => {
+//     console.log('Logging out due to auth error');
+//     store.dispatch(logout());
     
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
+//     Cookies.remove('accessToken');
+//     Cookies.remove('refreshToken');
     
-    toast.error('Session expired. Please log in again.');
+//     toast.error('Session expired. Please log in again.');
     
-    window.location.href = '/user/login';
-  }, 100); // Small delay to prevent multiple toasts and redirects
-};
+//     window.location.href = '/user/login';
+//   }, 100); // Small delay to prevent multiple toasts and redirects
+// };
 
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -63,6 +63,14 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+const handleLogout = () => {
+  store.dispatch(logout());
+  Cookies.remove('accessToken');
+  Cookies.remove('refreshToken');
+  toast.error('Session expired. Please log in again.');
+  window.location.href = '/user/login';
+};
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -70,54 +78,49 @@ axiosInstance.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(token => {
+        try {
+          const token = await new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          });
           originalRequest.headers['Authorization'] = `Bearer ${token}`;
           return axiosInstance(originalRequest);
-        }).catch(err => {
+        } catch (err) {
           return Promise.reject(err);
-        });
+        }
       }
-
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const refreshToken = Cookies.get('refreshToken');
-        
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
+        const response = await axiosInstance.get('/user/refresh-token');
+        const { accessToken, refreshToken } = response.data;
 
-        const refreshResponse = await axiosInstance.post('/user/refresh-token', { refreshToken });
+        if (accessToken && refreshToken) {
+          Cookies.set('accessToken', accessToken, {
+            secure: true,
+            sameSite: 'lax',
+            path: '/'
+          });
+          Cookies.set('refreshToken', refreshToken, {
+            secure: true,
+            sameSite: 'lax',
+            path: '/'
+          });
 
-        if (refreshResponse.data.accessToken) {
-          Cookies.set('accessToken', refreshResponse.data.accessToken, COOKIE_OPTIONS);
-          if (refreshResponse.data.refreshToken) {
-            Cookies.set('refreshToken', refreshResponse.data.refreshToken, COOKIE_OPTIONS);
-          }
-
-          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${refreshResponse.data.accessToken}`;
+          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+          processQueue(null, accessToken);
           
-          processQueue(null, refreshResponse.data.accessToken);
-          
-          originalRequest.headers['Authorization'] = `Bearer ${refreshResponse.data.accessToken}`;
           return axiosInstance(originalRequest);
         } else {
-          throw new Error('No access token received');
+          throw new Error('Token refresh failed');
         }
       } catch (refreshError) {
         processQueue(refreshError, null);
-        handleAuthError();
+        handleLogout();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
-    }
-
-    if (error.response?.status === 401) {
-      handleAuthError();
     }
 
     return Promise.reject(error);

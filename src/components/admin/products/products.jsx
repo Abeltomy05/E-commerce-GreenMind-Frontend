@@ -10,6 +10,7 @@ import AddProduct from '../addProduct/addProduct';
 import EditProduct from '../editProduct/editProduct';
 import BasicPagination from '../../pagination/pagination';
 import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
+import api from '../../../utils/adminAxiosConfig';
 
 const Products = () => {
   const [allProducts, setAllProducts] = useState([])
@@ -29,7 +30,7 @@ const Products = () => {
   useEffect(() => {
     async function fetchData() {
       try{
-      const response = await axios.get("http://localhost:3000/admin/productdata", { 
+      const response = await api.get("/admin/productdata", { 
         withCredentials: true 
     });
     console.log('Axios Response:', response.data);
@@ -105,7 +106,7 @@ const Products = () => {
   
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/admin/productdata');
+      const response = await api.get('/admin/productdata');
       setAllProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -125,8 +126,8 @@ const Products = () => {
   //Delete
   const handleSoftDelete = async(product)=>{
     try{
-      const response = await axios.put(
-        `http://localhost:3000/admin/softdeleteproduct/${product._id}`, 
+      const response = await api.put(
+        `/admin/softdeleteproduct/${product._id}`, 
         { isDeleted: !product.isDeleted },
         { withCredentials: true }
       );

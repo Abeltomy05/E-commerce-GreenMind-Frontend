@@ -17,6 +17,7 @@ import {
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import TopItemsSection from './bestsellingitems';
+import api from '../../../utils/adminAxiosConfig';
 
 ChartJS.register(
   CategoryScale,
@@ -73,7 +74,7 @@ const AdminDashboard = () => {
         }
       }
 
-      const response = await axios.get('http://localhost:3000/admin/getorders', {
+      const response = await api.get('/admin/getorders', {
         params: {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
@@ -127,7 +128,7 @@ const AdminDashboard = () => {
   const fetchCategoryData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3000/admin/category-sales');
+      const response = await api.get('/admin/category-sales');
       setCategoryData(response.data.categories);
     } catch (err) {
       setError('Failed to fetch category data');
