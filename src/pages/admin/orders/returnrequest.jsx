@@ -57,15 +57,12 @@ const ReturnRequests = () => {
       });
 
        if (response.data.success) {
-            if (response.data.refunded) {
                 toast.success('Return request approved and amount refunded to wallet');
+                fetchReturnRequests(); 
             } else {
                 toast.success('Return request approved successfully');
             }
-            fetchReturnRequests(); 
-        } else {
-            toast.error(response.data.message || 'Failed to approve return request');
-        }
+
 
     } catch (error) {
       console.error('Error approving return request:', error);

@@ -7,6 +7,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import UserRoute from './routes/userRoute';
 import AdminRoute from './routes/adminRoute';
 import NotFoundPage from './pages/notfound/notfound';
+import LandingHomePage from './pages/user/landingpages/landinghomepage';
+import LandingShop from './pages/user/landingpages/landingshoppage';
+import LandingProductView from './pages/user/landingpages/productdetailslanding';
 
 function App() {
  
@@ -16,6 +19,9 @@ function App() {
      <Routes>
       <Route path="/user/*" element={<UserRoute />} />
       <Route path="/admin/*" element={<AdminRoute />} />
+      <Route path="/" element={<LandingHomePage />} />
+      <Route path="/shop" element={<LandingShop />} />
+      <Route path="/product/:productId" element={<LandingProductView />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
     <ToastContainer />

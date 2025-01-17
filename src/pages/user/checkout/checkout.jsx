@@ -574,13 +574,13 @@ const CheckoutPage = () => {
                   <Truck />
                   <span>Cash on Delivery</span>
                 </div>
-                <div
+                {/* <div
                   className={`payment-option ${paymentMethod === 'credit-card' ? 'selected' : ''}`}
                   onClick={() => handlePaymentMethodSelect('credit-card')}
                 >
                   <CreditCard />
                   <span>Credit Card</span>
-                </div>
+                </div> */}
                 <div
                   className={`payment-option ${paymentMethod === 'razorpay' ? 'selected' : ''}`}
                   onClick={() => handlePaymentMethodSelect('razorpay')}

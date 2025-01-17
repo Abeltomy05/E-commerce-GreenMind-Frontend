@@ -98,6 +98,19 @@ const HeaderLogin = () => {
         </div>
 
         <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} ref={mobileMenuRef}>
+          {/* Navigation Links for landing pages*/}
+        {!user && (
+            <div className="flex-1 flex justify-center">
+            <nav className="header-nav">
+              <ul>
+                <li><a onClick={() => handleNavigate('/')}>Home</a></li>
+                <li><a onClick={() => handleNavigate('/shop')}>Shop</a></li>
+                <li><a onClick={() => handleNavigate('/about')}>About</a></li>
+                <li><a onClick={() => handleNavigate('/contact')}>Contact</a></li>
+              </ul>
+            </nav>
+            </div>
+          )}
           {/* Navigation Links */}
           {user && (
             <div className="flex-1 flex justify-center">
@@ -112,13 +125,33 @@ const HeaderLogin = () => {
             </div>
           )}
 
+
+           {/* Icons Section for landing page*/}
+           {!user && (
+            <div className="header-icons">
+              <div className="profile-dropdown" ref={dropdownRef}>
+                <div className="icon-wrapper" onClick={toggleDropdown}>
+                  <UserCircle2 className="profile-icon" />
+                  <span className="icon-label">Account</span>
+                </div>
+                {isDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <a onClick={() => handleNavigate('/user/login')}>
+                      <User size={16} />
+                      Login
+                    </a>
+                    <a onClick={() => handleNavigate('/user/signup')}>
+                      <User size={16} />
+                      SignUp
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {/* Icons Section */}
           {user && (
             <div className="header-icons">
-              <div className="icon-wrapper" onClick={() => handleNavigate('/search')}>
-                <Search className="icon" />
-                <span className="icon-label">Search</span>
-              </div>
               <div className="icon-wrapper" onClick={() => handleNavigate('/user/wishlist')}>
                 <Heart className="icon" />
                 <span className="icon-label">Wishlist</span>
@@ -139,10 +172,6 @@ const HeaderLogin = () => {
                     <a onClick={() => handleNavigate('/user/account')}>
                       <User size={16} />
                       Your Account
-                    </a>
-                    <a onClick={() => handleNavigate('/user/settings')}>
-                      <Settings size={16} />
-                      Settings
                     </a>
                     <a onClick={handleLogout}>
                       <LogOut size={16} />
