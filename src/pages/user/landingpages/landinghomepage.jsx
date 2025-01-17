@@ -222,7 +222,7 @@ const formatOfferText = (offer) => {
 
   const handleProductClick = (productId) => {
     setIsAnimationRunning(false);
-    navigate(`/user/product/${productId}`)
+    navigate(`/product/${productId}`)
   };
 
   const currentReviewData = reviews[currentReview] || {};
@@ -282,7 +282,7 @@ const formatOfferText = (offer) => {
             </div>
             <button 
               className="bg-white hover:bg-gray-50 text-[#4a6163] font-semibold rounded-full py-2.5 md:py-3 px-6 md:px-8 text-sm md:text-base transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 group"
-              onClick={() => navigate('/user/shop')}
+              onClick={() => navigate('/shop')}
             >
               Shop Now
               <svg 
@@ -397,7 +397,7 @@ const formatOfferText = (offer) => {
               <button className="bg-white text-[#4a6163] px-6 py-2 rounded-full text-sm font-medium 
                 transform translate-y-4 opacity-100 group-hover:translate-y-0 group-hover:opacity-100 
                 transition-all duration-300"
-                onClick={()=>{navigate('/user/shop')}}>
+                onClick={()=>{navigate('/shop')}}>
                 Explore →
               </button>
             </div>
