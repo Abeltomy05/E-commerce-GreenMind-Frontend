@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { UserCircle2, LogOut, User, Settings, Search, Heart, ShoppingCartIcon, Menu, X } from 'lucide-react'
+import { UserCircle2, LogOut, User, Settings, Search, Heart, ShoppingCartIcon, Menu, X,Leaf } from 'lucide-react'
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../redux/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
@@ -88,9 +88,10 @@ const HeaderLogin = () => {
     <header className="header">
       <div className="header-container">
         {/* Logo */}
-        <div className="header-logo">
-          <h1>GREENMIND</h1>
-        </div>
+        <h1 className="text-3xl font-bold flex items-center">
+            <Leaf className="mr-1" />
+            Green Mind
+          </h1>
 
         {/* Mobile Menu Toggle */}
         <div className="mobile-menu-toggle" onClick={toggleMobileMenu}>

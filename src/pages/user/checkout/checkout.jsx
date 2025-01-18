@@ -21,7 +21,7 @@ const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewO
         <h1>Order Placed Successfully!</h1>
         <div className="order-details">
           <p>Order Number: <strong>{orderId}</strong></p>
-          <p>Total Amount: <strong>${Number((totalAmount)+50).toFixed(2)}</strong></p>
+          <p>Total Amount: <strong>₹{Number((totalAmount)+50).toFixed(2)}</strong></p>
         </div>
         <div className="order-success-actions">
           <button 
@@ -42,36 +42,64 @@ const OrderSuccessOverlay = ({ orderId, totalAmount, onContinueShopping, onViewO
   );
 };
 
-const PaymentFailureOverlay = ({ 
-  orderId, 
-  totalAmount, 
+const PaymentFailureOverlay = ({
+  orderId,
+  totalAmount,
   paymentMethod,
   onRetryPayment,
   onContinueShopping,
-  errorMessage 
+  errorMessage
 }) => {
   return (
-    <div className="order-overlay">
-      <div className="order-content failure">
-        <XCircle size={100} color="red" className="status-icon"/>
-        <h1>Payment Failed!</h1>
-        <p className="error-message">{errorMessage || "We couldn't process your payment at this time."}</p>
-        <div className="order-details">
-          <p>Order Number: <strong>{orderId}</strong></p>
-          <p>Total Amount: <strong>${Number(totalAmount).toFixed(2)}</strong></p>
-          <p>Payment Method: <strong>{paymentMethod}</strong></p>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+
+        <div className="text-center mb-6">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-gray-900">Payment Failed!</h2>
         </div>
-        <div className="order-actions">
-          <button 
-            className="retry-payment-btn" 
+
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Payment Error
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                {errorMessage || "Your payment didn't go through as it was declined by the bank. Try another payment method or contact your bank."}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Order Number:</span>
+              <span className="font-medium">{orderId}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Amount:</span>
+              <span className="font-medium">₹{Number((totalAmount)+50).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Payment Method:</span>
+              <span className="font-medium capitalize">{paymentMethod}</span>
+            </div>
+          </div>
+        </div>
+
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <button
             onClick={onRetryPayment}
+            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-colors"
           >
-            <RefreshCw className="inline-icon" />
             Try Payment Again
           </button>
-          <button 
-            className="continue-shopping-btn" 
+          <button
             onClick={onContinueShopping}
+            className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-colors"
           >
             Return to Cart
           </button>
@@ -114,6 +142,7 @@ const CheckoutPage = () => {
   const [discountedSubtotal, setDiscountedSubtotal] = useState(subtotal);
   const [showCoupons, setShowCoupons] = useState(false);
 
+  let razorpayInstance = null;
 
   useEffect(() => {
     if (!selectedItems || selectedItems.length === 0) {
@@ -197,6 +226,10 @@ const CheckoutPage = () => {
   };
 
   const handlePaymentFailure = (error, orderId = null, amount = null) => {
+    if (window.Razorpay) {
+      window.Razorpay.close();
+    }
+
     setPaymentFailureData({
       orderId: orderId || 'N/A',
       totalAmount: amount || (subtotal - appliedDiscount),
@@ -204,6 +237,7 @@ const CheckoutPage = () => {
       errorMessage: error.message || 'Payment processing failed. Please try again.'
     });
     setIsOrderProcessing(false);
+    setOrderSuccessData(null);
   };
 
   const handleRetryPayment = async () => {
@@ -344,6 +378,8 @@ const CheckoutPage = () => {
         throw new Error('Failed to create order');
       }
 
+      // let razorpayInstance = null;
+
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: response.data.order.amount,
@@ -369,20 +405,70 @@ const CheckoutPage = () => {
         modal: {
           ondismiss: function() {
             setIsOrderProcessing(false);
-            toast.info('Payment cancelled');
+            razorpayInstance = null;
+          },
+          escape: true,
+          confirm_close: false
+        },
+        "payment.failed": function (response){
+          if (razorpayInstance) {
+            razorpayInstance.close();
           }
+          setPaymentFailureData({
+            orderId: response.error.metadata.order_id,
+            totalAmount: finalAmount,
+            paymentMethod: 'razorpay',
+            errorMessage: response.error.description || "Your payment didn't go through as it was declined by the bank. Please try another payment method."
+          });
+          setIsOrderProcessing(false);
+        },
+        "payment.cancel": function(){
+          setPaymentFailureData({
+            orderId: response.data.order.id,
+            totalAmount: finalAmount,
+            paymentMethod: 'razorpay',
+            errorMessage: "Payment was cancelled. Please try again."
+          });
+          setIsOrderProcessing(false);
         }
       };
 
-      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance = new window.Razorpay(options);
+      //for failure payment
+      razorpayInstance.on('payment.failed', function (response) {
+        razorpayInstance.close();
+
+        setPaymentFailureData({
+          orderId: response.error.metadata.order_id,
+          totalAmount: finalAmount,
+          paymentMethod: 'razorpay',
+          errorMessage: response.error.description || "Your payment didn't go through as it was declined by the bank. Please try another payment method."
+        });
+        setIsOrderProcessing(false);
+      });
+
       razorpayInstance.open();
 
     } catch (error) {
       console.error('Razorpay payment initialization failed:', error);
-      toast.error('Failed to initialize payment. Please try again.');
-      setIsOrderProcessing(false);
+
+      if (window.Razorpay) {
+        try {
+          window.Razorpay.close();
+        } catch (e) {
+          console.error('Error closing Razorpay modal:', e);
+        }
+
+    setPaymentFailureData({
+      orderId: orderData?.orderId || 'N/A',
+      totalAmount: orderData?.totalPrice,
+      paymentMethod: 'razorpay',
+      errorMessage: error.message || "Failed to initialize payment. Please try again."
+    });
+    setIsOrderProcessing(false);
     }
   };
+}
 
   //Handle submit
   const handleSubmit = async (e) => {

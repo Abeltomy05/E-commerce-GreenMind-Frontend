@@ -10,6 +10,8 @@ import NotFoundPage from './pages/notfound/notfound';
 import LandingHomePage from './pages/user/landingpages/landinghomepage';
 import LandingShop from './pages/user/landingpages/landingshoppage';
 import LandingProductView from './pages/user/landingpages/productdetailslanding';
+import AboutContent from './pages/user/about/about';
+import ContactPage from './pages/user/contact/contact';
 
 function App() {
  
@@ -21,6 +23,8 @@ function App() {
       <Route path="/admin/*" element={<AdminRoute />} />
       <Route path="/" element={<LandingHomePage />} />
       <Route path="/shop" element={<LandingShop />} />
+      <Route path="/about" element={<AboutContent />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route path="/product/:productId" element={<LandingProductView />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
