@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { UserCircle2, LogOut, User, Settings, Search, Heart, ShoppingCartIcon, Menu, X,Leaf } from 'lucide-react'
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import { logout } from "../../redux/userSlice"
 import { useSelector, useDispatch } from 'react-redux';
 import axios from "axios";

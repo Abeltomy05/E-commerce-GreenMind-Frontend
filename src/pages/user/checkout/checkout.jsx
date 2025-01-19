@@ -226,8 +226,8 @@ const CheckoutPage = () => {
   };
 
   const handlePaymentFailure = (error, orderId = null, amount = null) => {
-    if (window.Razorpay) {
-      window.Razorpay.close();
+    if (razorpayInstance) {
+      razorpayInstance.close();
     }
 
     setPaymentFailureData({
@@ -404,39 +404,50 @@ const CheckoutPage = () => {
         },
         modal: {
           ondismiss: function() {
+            setPaymentFailureData({
+              orderId: response.data.order.id,
+              totalAmount: finalAmount,
+              paymentMethod: 'razorpay',
+              errorMessage: "Payment was cancelled. Please try again."
+            });
             setIsOrderProcessing(false);
-            razorpayInstance = null;
+            if (razorpayInstance) {
+              razorpayInstance.close();
+            }
           },
           escape: true,
           confirm_close: false
-        },
-        "payment.failed": function (response){
-          if (razorpayInstance) {
-            razorpayInstance.close();
-          }
-          setPaymentFailureData({
-            orderId: response.error.metadata.order_id,
-            totalAmount: finalAmount,
-            paymentMethod: 'razorpay',
-            errorMessage: response.error.description || "Your payment didn't go through as it was declined by the bank. Please try another payment method."
-          });
-          setIsOrderProcessing(false);
-        },
-        "payment.cancel": function(){
-          setPaymentFailureData({
-            orderId: response.data.order.id,
-            totalAmount: finalAmount,
-            paymentMethod: 'razorpay',
-            errorMessage: "Payment was cancelled. Please try again."
-          });
-          setIsOrderProcessing(false);
         }
       };
+      //   "payment.failed": function (response){
+      //     if (razorpayInstance) {
+      //       razorpayInstance.close();
+      //     }
+      //     setPaymentFailureData({
+      //       orderId: response.error.metadata.order_id,
+      //       totalAmount: finalAmount,
+      //       paymentMethod: 'razorpay',
+      //       errorMessage: response.error.description || "Your payment didn't go through as it was declined by the bank. Please try another payment method."
+      //     });
+      //     setIsOrderProcessing(false);
+      //   },
+      //   "payment.cancel": function(){
+      //     setPaymentFailureData({
+      //       orderId: response.data.order.id,
+      //       totalAmount: finalAmount,
+      //       paymentMethod: 'razorpay',
+      //       errorMessage: "Payment was cancelled. Please try again."
+      //     });
+      //     setIsOrderProcessing(false);
+      //   }
+      // };
 
       razorpayInstance = new window.Razorpay(options);
       //for failure payment
       razorpayInstance.on('payment.failed', function (response) {
-        razorpayInstance.close();
+        if (razorpayInstance) {
+          razorpayInstance.close();
+        }
 
         setPaymentFailureData({
           orderId: response.error.metadata.order_id,
@@ -451,24 +462,10 @@ const CheckoutPage = () => {
 
     } catch (error) {
       console.error('Razorpay payment initialization failed:', error);
-
-      if (window.Razorpay) {
-        try {
-          window.Razorpay.close();
-        } catch (e) {
-          console.error('Error closing Razorpay modal:', e);
-        }
-
-    setPaymentFailureData({
-      orderId: orderData?.orderId || 'N/A',
-      totalAmount: orderData?.totalPrice,
-      paymentMethod: 'razorpay',
-      errorMessage: error.message || "Failed to initialize payment. Please try again."
-    });
-    setIsOrderProcessing(false);
+      handlePaymentFailure(error, orderData?.orderId, orderData?.totalPrice); 
     }
   };
-}
+
 
   //Handle submit
   const handleSubmit = async (e) => {

@@ -95,7 +95,7 @@ const AboutContent = () => {
           </div>
         </section>
 
-        <section className="mt-16">
+        {/* <section className="mt-16">
           <h2 className="text-3xl font-semibold text-[#47645a] mb-6">Visit Our Store</h2>
           <div className="bg-white p-6 rounded-lg shadow-md">
             <p className="text-[#2c3e36] mb-4">
@@ -112,7 +112,7 @@ const AboutContent = () => {
               </button>
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
     </div>
     <Footer/>

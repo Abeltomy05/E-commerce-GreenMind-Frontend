@@ -1,11 +1,13 @@
 import "./signup.scss"
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { FcGoogle,FcLock, FcInvite,FcBusinessman, FcManager, FcPhone } from 'react-icons/fc';
 import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import loginImg from "../../../assets/images/login-img.png"
+import loginImg1 from "../../../assets/images/side1.jpg";
+import loginImg2 from "../../../assets/images/side2.jpg";
+import loginImg3 from "../../../assets/images/side3.jpg";
 import Footer from "../../../components/footer/footer"
 import HeaderLogin from "../../../components/header-login/header-login"
 import axios from "axios";
@@ -26,6 +28,18 @@ function UserSignup() {
   
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const images = [loginImg1, loginImg2, loginImg3];
+   useEffect(() => {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => 
+          prevIndex === images.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 4000); 
+  
+      return () => clearInterval(interval);
+    }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -142,202 +156,275 @@ function UserSignup() {
 
   return (
     <>
-    <div className="page-wrapper">
-      <HeaderLogin />
-      <div className="signup-container">
-        <div className="left-section">
-          <img
-            src={loginImg}
-            alt="Signup Illustration"
-            className="signup-image"
-          />
+    <HeaderLogin/>
+    <div className="min-h-[90vh] w-full bg-cover bg-center p-2 flex items-center justify-center" 
+         style={{ 
+           backgroundImage: `url('/src/assets/images/bg1.jpg')`,
+           backgroundColor: 'rgba(0, 0, 0, 0.5)',
+           backgroundBlendMode: 'overlay',
+           backgroundSize: 'cover',
+         }}>
+      {/* Main container */}
+      <div className="w-full max-w-6xl bg-white rounded-lg overflow-hidden flex flex-col md:flex-row">
+        {/* Left side - Image */}
+        <div className="w-full md:w-1/2 h-64 md:h-auto relative">
+          {images.map((img, index) => (
+            <div
+              key={index}
+              className="absolute inset-0 transition-all ease-in-out duration-[1500ms]"
+              style={{
+                opacity: currentImageIndex === index ? 1 : 0,
+              }}
+            >
+              <img
+                src={img}
+                alt={`Slide ${index + 1}`}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))}
         </div>
-        <div className="right-section">
-          <form className="signup-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <FcBusinessman className="icon" />
-              <input 
-                type="text" 
-                placeholder="First Name" 
-                name="firstname" 
-                value={firstname} 
-                onChange={(e) => {
-                  setFirstname(e.target.value);
-                  setErrors(prev => ({ ...prev, firstname: '' }));
-                }}
-              />
-              {errors.firstname && <div className="error-message">{errors.firstname}</div>}
-            </div>
+  
+        {/* Right side - Signup form */}
+        <div className="w-full md:w-1/2 p-4">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-2xl font-bold mb-4 text-center">Sign Up</h2>
             
-            <div className="form-group">
-            <FcBusinessman className="icon" />
-              <input 
-                type="text" 
-                placeholder="Last Name" 
-                name="lastname" 
-                value={lastname} 
-                onChange={(e) => {
-                  setLastname(e.target.value);
-                  setErrors(prev => ({ ...prev, lastname: '' }));
-                }}
-              />
-              {errors.lastname && <div className="error-message">{errors.lastname}</div>}
-            </div>
-            
-            <div className="form-group">
-            <FcManager className="icon" />
-              <input 
-                type="text" 
-                placeholder="Username" 
-                name="username" 
-                value={username} 
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                  setErrors(prev => ({ ...prev, username: '' }));
-                }}
-              />
-              {errors.username && <div className="error-message">{errors.username}</div>}
-            </div>
-            
-            <div className="form-group">
-            <FcInvite className="icon" />
-              <input 
-                type="email" 
-                placeholder="Email" 
-                name="email" 
-                value={email} 
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErrors(prev => ({ ...prev, email: '' }));
-                }}
-              />
-              {errors.email && <div className="error-message">{errors.email}</div>}
-            </div>
-            
-            <div className="form-group">
-            <FcLock className="icon" />
-              <input 
-                type={showPassword.normal ? "text" : "password"} 
-                placeholder="Password" 
-                name="password" 
-                value={password} 
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErrors(prev => ({ ...prev, password: '' }));
-                }}
-              />
-                <button 
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(prev => ({
-                  ...prev,
-                  normal: !prev.normal
-                }))}
-                style={{ 
-                  border: 'none', 
-                  background: 'none',
-                  cursor: 'pointer',
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)'
-                }}
+            <form onSubmit={handleSubmit} className="space-y-2">
+              {/* Form Grid for First Name and Last Name */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* First Name input */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">First Name</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="firstname"
+                      value={firstname}
+                      onChange={(e) => {
+                        setFirstname(e.target.value);
+                        setErrors(prev => ({ ...prev, firstname: '' }));
+                      }}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                    />
+                    {errors.firstname && (
+                      <p className="mt-0.5 text-xs text-red-600">{errors.firstname}</p>
+                    )}
+                  </div>
+                </div>
+  
+                {/* Last Name input */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Last Name</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="lastname"
+                      value={lastname}
+                      onChange={(e) => {
+                        setLastname(e.target.value);
+                        setErrors(prev => ({ ...prev, lastname: '' }));
+                      }}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                    />
+                    {errors.lastname && (
+                      <p className="mt-0.5 text-xs text-red-600">{errors.lastname}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+  
+              {/* Username input */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Username</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="username"
+                    value={username}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      setErrors(prev => ({ ...prev, username: '' }));
+                    }}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                  />
+                  {errors.username && (
+                    <p className="mt-0.5 text-xs text-red-600">{errors.username}</p>
+                  )}
+                </div>
+              </div>
+  
+              {/* Email input */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Email Address</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrors(prev => ({ ...prev, email: '' }));
+                    }}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                  />
+                  {errors.email && (
+                    <p className="mt-0.5 text-xs text-red-600">{errors.email}</p>
+                  )}
+                </div>
+              </div>
+  
+              {/* Form Grid for Password fields */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Password input */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword.normal ? "text" : "password"}
+                      name="password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setErrors(prev => ({ ...prev, password: '' }));
+                      }}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(prev => ({
+                        ...prev,
+                        normal: !prev.normal
+                      }))}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                    >
+                      {showPassword.normal ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </button>
+                    {errors.password && (
+                      <p className="mt-0.5 text-xs text-red-600">{errors.password}</p>
+                    )}
+                  </div>
+                </div>
+  
+                {/* Confirm Password input */}
+                <div>
+                  <label className="block text-sm text-gray-600 mb-1">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword.confirm ? "text" : "password"}
+                      name="confirmpassword"
+                      value={confirmpassword}
+                      onChange={(e) => {
+                        setConfirmpassword(e.target.value);
+                        setErrors(prev => ({ ...prev, confirmpassword: '' }));
+                      }}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(prev => ({
+                        ...prev,
+                        confirm: !prev.confirm
+                      }))}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                    >
+                      {showPassword.confirm ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </button>
+                    {errors.confirmpassword && (
+                      <p className="mt-0.5 text-xs text-red-600">{errors.confirmpassword}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+  
+              {/* Phone input */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">Phone Number</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="phone"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setErrors(prev => ({ ...prev, phone: '' }));
+                    }}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm"
+                  />
+                  {errors.phone && (
+                    <p className="mt-0.5 text-xs text-red-600">{errors.phone}</p>
+                  )}
+                </div>
+              </div>
+  
+              {/* Signup button */}
+              <button
+                type="submit"
+                className="w-full bg-[#47645a] text-white py-1.5 rounded-md hover:bg-[#2f4640] mt-3"
               >
-                 {showPassword.normal ? 
-                  <EyeOff size={20} className="text-gray-500" /> : 
-                  <Eye size={20} className="text-gray-500" />
-                }
+                Sign Up
               </button>
-              {errors.password && <div className="error-message">{errors.password}</div>}
-            </div>
-            
-            <div className="form-group">
-            <FcLock className="icon" />
-              <input 
-                type={showPassword.confirm ? "text" : "password"}  
-                placeholder="Confirm Password" 
-                name="confirmpassword" 
-                value={confirmpassword} 
-                onChange={(e) => {
-                  setConfirmpassword(e.target.value);
-                  setErrors(prev => ({ ...prev, confirmpassword: '' }));
-                }}
-              />
-               <button 
+  
+              {/* Divider */}
+              <div className="relative my-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">OR</span>
+                </div>
+              </div>
+  
+              {/* Google signup button */}
+              <button
                 type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(prev => ({
-                  ...prev,
-                  confirm: !prev.confirm
-                }))}
-                style={{ 
-                  border: 'none', 
-                  background: 'none',
-                  cursor: 'pointer',
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)'
-                }}
+                onClick={googleAuth}
+                className="w-full border border-gray-300 py-1.5 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50"
               >
-                {showPassword.confirm ? 
-                  <EyeOff size={20} className="text-gray-500" /> : 
-                  <Eye size={20} className="text-gray-500" />
-                }
-                </button>
-              {errors.confirmpassword && <div className="error-message">{errors.confirmpassword}</div>}
-            </div>
-            
-            <div className="form-group">
-            <FcPhone className="icon" />
-              <input 
-                type="text" 
-                placeholder="Phone Number" 
-                name="phone" 
-                value={phone} 
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                  setErrors(prev => ({ ...prev, phone: '' }));
-                }}
-              />
-              {errors.phone && <div className="error-message">{errors.phone}</div>}
-            </div>
-            
-            <button type="submit" className="signup-btn">
-              Sign Up
-            </button>
-          </form>
-        
-          <p className="login-link">
-            Already have an account? <a><Link to="/user/login">Login now</Link></a>
-          </p>
-          <div className="or-divider-signup">OR</div>
-         
-          <button className="google-btn-signup" onClick={googleAuth}>
-            <FcGoogle  size={24} className="google-icon" /> Continue with Google
-          </button>
+                <FcGoogle size={20} />
+                Continue with Google
+              </button>
+  
+              {/* Login link */}
+              <div className="text-center text-sm mt-2">
+                <span className="text-gray-600">Already have an account? </span>
+                <Link to="/user/login" className="text-gray-900 hover:underline">
+                  Login
+                </Link>
+              </div>
+            </form>
+          </div>
         </div>
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-          style={{ 
-            fontFamily: "serif",
-            fontSize: '18px'
-          }}
-        />
       </div>
-      <Footer/>
-      </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+        style={{ 
+          fontFamily: "serif",
+          fontSize: '18px'
+        }}
+      />
+    </div>
+    <Footer/>
     </>
-  )
+  );
 }
 
 export default UserSignup

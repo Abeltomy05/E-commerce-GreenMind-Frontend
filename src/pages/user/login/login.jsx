@@ -5,13 +5,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 import 'react-toastify/dist/ReactToastify.css';
-import loginImg from "../../../assets/images/login-img.png";
+import loginImg1 from "../../../assets/images/side1.jpg";
+import loginImg2 from "../../../assets/images/side2.jpg";
+import loginImg3 from "../../../assets/images/side3.jpg";
 import Footer from "../../../components/footer/footer";
 import HeaderLogin from "../../../components/header-login/header-login";
 import axios from "axios";
 import { useDispatch } from 'react-redux';
 import {login} from "../../../redux/userSlice"
-import "./login.scss"
 import Spinner from "../../../components/spinner/spinner";
 import axioInstence from "../../../utils/axiosConfig";
 
@@ -22,9 +23,20 @@ function UserLogin() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading,setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const dispatch = useDispatch();
   const Navigate = useNavigate();
 
+  const images = [loginImg1, loginImg2, loginImg3];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 4000); 
+
+    return () => clearInterval(interval);
+  }, []);
 
 
   const validateForm = () => {
@@ -171,77 +183,136 @@ const handleSubmit = async (e) => {
 
   return (
     <>
-      <HeaderLogin/>
-      <div className="login-container">
-        <div className="login-left-section">
-          <img
-            src={loginImg} 
-            alt="Signup Illustration"
-            className="login-image"
-          />
-        </div>
-        <div className="login-right-section">
-          <form className="login-form" onSubmit={handleSubmit}>
-            <div className="form-group-login">
-            <FcInvite className="icon" />
-              <input 
-                type="email" 
-                placeholder="Email" 
-                name="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)}
+    <HeaderLogin/>
+    <div className="min-h-[90vh] w-full bg-cover bg-center p-4 md:p-6 flex items-center justify-center" 
+         style={{ 
+           backgroundImage: `url('/src/assets/images/bg1.jpg')`,
+           backgroundColor: 'rgba(0, 0, 0, 0.5)',
+           backgroundBlendMode: 'overlay',
+           backgroundSize: 'cover',
+         }}>
+      {/* Main container */}
+      <div className="w-full max-w-5xl bg-white rounded-lg overflow-hidden flex flex-col md:flex-row">
+        {/* Left side - Image */}
+        <div className="w-full md:w-1/2 h-64 md:h-auto relative">
+          {images.map((img, index) => (
+            <div
+              key={index}
+              className="absolute inset-0 transition-all ease-in-out duration-[1500ms]"
+              style={{
+                opacity: currentImageIndex === index ? 1 : 0,
+              }}
+            >
+              <img
+                src={img}
+                alt={`Slide ${index + 1}`}
+                loading="lazy"
+                className="w-full h-full object-cover"
               />
-              {errors.email && <p className="error-message">{errors.email}</p>}
             </div>
-            <div className={`form-group-login ${errors.password ? 'error' : ''}`}>
-            <FcLock className="icon" />
-              <input 
-                 type={showPassword ? "text" : "password"} 
-                placeholder="Password" 
-                name="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)}
-              />
-               <button 
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{ 
-                  border: 'none', 
-                  background: 'none',
-                  cursor: 'pointer',
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)'
-                }}
+          ))}
+        </div>
+
+        {/* Right side - Login form */}
+        <div className="w-full md:w-1/2 p-8">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center">Login</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email input */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Email Address</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Password input */}
+              <div>
+                <label className="block text-sm text-gray-600 mb-2">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Login button */}
+              <button
+                type="submit"
+                className="w-full bg-[#47645a] text-white py-2 rounded-md hover:bg-[#2f4640]"
               >
-                {showPassword ? 
-                  <EyeOff size={20} className="text-gray-500" /> : 
-                  <Eye size={20} className="text-gray-500" />
-                }
+                Login
               </button>
-              {errors.password && <p className="error-message">{errors.password}</p>}
-            </div>
-            <button type="submit" className="login-btn">
-              Log In
-            </button>
-          </form>
-        
-          <p className="signup-link">
-            New user? <Link to="/user/signup">Signup</Link>
-          </p>
-          <div className="or-divider-login">OR</div>
-          
-          <button className="google-btn-login" onClick={googleAuth}>
-          <FcGoogle  size={24} className="google-icon" />Signin with Google
-          </button>
+
+              {/* Google login button */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">OR</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={googleAuth}
+                className="w-full border border-gray-300 py-2 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50"
+              >
+                <FcGoogle size={24} />
+                Continue with Google
+              </button>
+
+              {/* Links */}
+              {/* <div className="mt-4 text-center text-sm">
+                <a href="#" className="text-gray-600 hover:text-gray-800">
+                  Forgot Password?
+                </a>
+              </div> */}
+              
+              <div className="text-center text-sm">
+                <span className="text-gray-600">Don't have an account? </span>
+                <Link to="/user/signup" className="text-gray-900 hover:underline">
+                  Sign up
+                </Link>
+              </div>
+            </form>
+          </div>
         </div>
-       
       </div>
-      <Footer/>
+    </div>
+    <Footer/>
     </>
   );
+
 }
 
 export default UserLogin;
