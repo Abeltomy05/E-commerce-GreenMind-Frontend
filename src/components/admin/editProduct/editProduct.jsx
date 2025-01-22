@@ -1,9 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback  } from 'react';
 import axios from 'axios';
 import {  toast } from 'react-toastify';
+import Cropper from 'react-easy-crop';
 import './editProduct.scss';
 import AdminBreadcrumbs from '../../breadcrumbs/breadcrumbs';
 import api from '../../../utils/adminAxiosConfig';
+
+
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    image.src = url;
+  });
+
+  async function getCroppedImg(imageSrc, pixelCrop) {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+  
+    canvas.width = pixelCrop.width;
+    canvas.height = pixelCrop.height;
+  
+    ctx.drawImage(
+      image,
+      pixelCrop.x,
+      pixelCrop.y,
+      pixelCrop.width,
+      pixelCrop.height,
+      0,
+      0,
+      pixelCrop.width,
+      pixelCrop.height
+    );
+  
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, 'image/jpeg');
+    });
+  }
+
 
 const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
 
@@ -18,6 +56,11 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
     images: [],
     variants: [{ size: '', price: '', stock: '' }]
   });
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [temporaryImage, setTemporaryImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -91,6 +134,62 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
       variants: newVariants.length ? newVariants : [{ size: '', price: '', stock: '' }]
     }));
   };
+
+  const handleImageSelect = async (e) => {
+    if (e.target.files?.length > 0) {
+      const file = e.target.files[0];
+      const imageUrl = URL.createObjectURL(file);
+      setTemporaryImage(imageUrl);
+      setCropModalOpen(true);
+    }
+  };
+
+  const handleCropConfirm = async () => {
+    try {
+      const croppedBlob = await getCroppedImg(temporaryImage, croppedAreaPixels);
+      const { data } = await axios.get('http://localhost:3000/admin/generate-upload-url');
+      const { signature, timestamp, uploadPreset, apiKey, cloudName } = data;
+
+      const formData = new FormData();
+      formData.append('file', croppedBlob);
+      formData.append('upload_preset', uploadPreset);
+      formData.append('timestamp', timestamp);
+      formData.append('signature', signature);
+      formData.append('api_key', apiKey);
+
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        formData
+      );
+
+      setFormData(prev => {
+        const newImages = [...prev.images];
+        if (selectedImageIndex !== null && selectedImageIndex < 4) {
+          newImages[selectedImageIndex] = response.data.secure_url;
+        } else if (newImages.length < 4) {
+          newImages.push(response.data.secure_url);
+        }
+        return {
+          ...prev,
+          images: newImages
+        };
+      });
+
+      // Clean up
+      setCropModalOpen(false);
+      setTemporaryImage(null);
+      setSelectedImageIndex(null);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+    } catch (error) {
+      toast.error('Failed to upload cropped image');
+      console.error('Crop/upload error:', error);
+    }
+  };
+
+  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -278,65 +377,109 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
           />
         </div>
         <div className="form-group">
-    <label>Images</label>
-    <div className="image-preview">
-      {[0, 1, 2].map((index) => (
-        <div key={index} className="image-item">
-          {formData.images[index] ? (
-            <>
-              <img src={formData.images[index]} alt={`Product ${index + 1}`} />
-              <div className="image-actions">
+      <label>Images</label>
+      <div className="image-preview">
+        {[0, 1, 2].map((index) => (
+          <div key={index} className="image-item">
+            {formData.images[index] ? (
+              <>
+                <img src={formData.images[index]} alt={`Product ${index + 1}`} />
+                <div className="image-actions">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    id={`image-upload-input-${index}`}
+                    style={{ display: 'none' }}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      document.getElementById(`image-upload-input-${index}`).click();
+                      setSelectedImageIndex(index);
+                    }}
+                    className="replace-image-btn"
+                  >
+                    Replace
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => removeImage(index)}
+                    className="remove-image-btn"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="image-upload-placeholder">
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageUpload}
+                  onChange={handleImageSelect}
                   id={`image-upload-input-${index}`}
                   style={{ display: 'none' }}
                 />
                 <button 
-                  type="button" 
+                  type="button"
                   onClick={() => {
                     document.getElementById(`image-upload-input-${index}`).click();
                     setSelectedImageIndex(index);
                   }}
-                  className="replace-image-btn"
+                  className="add-image-btn"
                 >
-                  Replace
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => removeImage(index)}
-                  className="remove-image-btn"
-                >
-                  Remove
+                  Upload Image
                 </button>
               </div>
-            </>
-          ) : (
-            <div className="image-upload-placeholder">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                id={`image-upload-input-${index}`}
-                style={{ display: 'none' }}
-              />
+            )}
+          </div>
+        ))}
+      </div>
+      {cropModalOpen && (
+        <div className="crop-modal">
+          <div className="crop-container">
+            <Cropper
+              image={temporaryImage}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+          <div className="crop-controls">
+            <input
+              type="range"
+              value={zoom}
+              min={1}
+              max={3}
+              step={0.1}
+              onChange={(e) => setZoom(parseFloat(e.target.value))}
+            />
+            <div className="crop-buttons">
               <button 
-                type="button"
+                type="button" 
                 onClick={() => {
-                  document.getElementById(`image-upload-input-${index}`).click();
-                  setSelectedImageIndex(index);
+                  setCropModalOpen(false);
+                  setTemporaryImage(null);
                 }}
-                className="add-image-btn"
+                className="cancel-crop-btn"
               >
-                Upload Image
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                onClick={handleCropConfirm}
+                className="confirm-crop-btn"
+              >
+                Confirm Crop
               </button>
             </div>
-          )}
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
+      )}
+      </div>
 
 
         <div className="variants-section">

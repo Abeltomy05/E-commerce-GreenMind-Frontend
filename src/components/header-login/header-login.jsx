@@ -88,10 +88,19 @@ const HeaderLogin = () => {
     <header className="header">
       <div className="header-container">
         {/* Logo */}
-        <h1 className="text-3xl font-bold flex items-center">
+        {user &&<h1 className="text-3xl font-bold flex items-center cursor-pointer"
+        onClick={() => handleNavigate('/user/home')}
+        >
             <Leaf className="mr-1" />
             Green Mind
-          </h1>
+          </h1>}
+
+          {!user && <h1 className="text-3xl font-bold flex items-center cursor-pointer"
+        onClick={() => handleNavigate('/')}
+        >
+            <Leaf className="mr-1" />
+            Green Mind
+          </h1>}
 
         {/* Mobile Menu Toggle */}
         <div className="mobile-menu-toggle" onClick={toggleMobileMenu}>

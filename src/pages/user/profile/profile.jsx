@@ -8,6 +8,7 @@ import ProfileImg from "../../../assets/images/user.png"
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import axioInstence from '../../../utils/axiosConfig';
+import SpinnerNormal from "../../../components/normalSpinner/normalspinner";
 
 const ProfileSettings = () => {
   
@@ -236,7 +237,17 @@ const ProfileSettings = () => {
   };
 
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>
+     return (
+      <>
+        <HeaderLogin />
+        <div className="spinner-loader-layout">
+          <SpinnerNormal />
+        </div>
+        <Footer />
+      </>
+    );
+  </div>;
   if (error) return <div>Error: {error}</div>;
 
   return (

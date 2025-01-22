@@ -142,7 +142,6 @@ const CheckoutPage = () => {
   const [discountedSubtotal, setDiscountedSubtotal] = useState(subtotal);
   const [showCoupons, setShowCoupons] = useState(false);
 
-  let razorpayInstance = null;
 
   useEffect(() => {
     if (!selectedItems || selectedItems.length === 0) {
@@ -225,20 +224,51 @@ const CheckoutPage = () => {
     }
   };
 
-  const handlePaymentFailure = (error, orderId = null, amount = null) => {
-    if (razorpayInstance) {
-      razorpayInstance.close();
+  const handlePaymentFailure = async (error, orderId = null, amount = null) => {
+    try {
+        const orderData = {
+            userId: user.id,
+            products: selectedItems.map(item => ({
+                product: item.productId,
+                quantity: item.quantity,
+                size: item.size,
+                cartItemId: item.id
+            })),
+            addressId: selectedAddress._id,
+            paymentMethod: paymentMethod,
+            couponCode: couponCode || null,
+            totalPrice: amount || (subtotal - appliedDiscount),
+            paymentStatus: 'FAILED',
+            errorDetails: {
+              message: error.message || 'Unknown error',
+              timestamp: new Date().toISOString(),
+              orderId: orderId,
+              originalAmount: amount
+          }
+        };
+
+        const response = await axioInstence.post('/user/razorpayplaceorder', orderData);
+
+
+        setPaymentFailureData({
+            orderId: response.data.orderId,
+            totalAmount: amount || (subtotal - appliedDiscount),
+            paymentMethod: paymentMethod,
+            errorMessage: error.message || 'Payment processing failed. Please try again.'
+        });
+    } catch (err) {
+        console.error('Error saving failed order:', err);
+        console.error('Error details:', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status
+        });
+        toast.error('Failed to save order information');
     }
 
-    setPaymentFailureData({
-      orderId: orderId || 'N/A',
-      totalAmount: amount || (subtotal - appliedDiscount),
-      paymentMethod: paymentMethod,
-      errorMessage: error.message || 'Payment processing failed. Please try again.'
-    });
     setIsOrderProcessing(false);
     setOrderSuccessData(null);
-  };
+};
 
   const handleRetryPayment = async () => {
     setPaymentFailureData(null);
@@ -379,6 +409,7 @@ const CheckoutPage = () => {
       }
 
       // let razorpayInstance = null;
+      let isPaymentHandled = false;
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -388,11 +419,15 @@ const CheckoutPage = () => {
         description: `Order Amount: ₹${(response.data.order.amount / 100).toFixed(2)}`,
         order_id: response.data.order.id,
         handler: async function (paymentResponse) {
+          isPaymentHandled = true;
           await handleRazorpaySuccess(
             paymentResponse, 
             orderData, 
             finalAmount 
           );
+        },
+        retry:{
+          enabled:false
         },
         prefill: {
           name: selectedAddress?.fullName || "",
@@ -404,61 +439,54 @@ const CheckoutPage = () => {
         },
         modal: {
           ondismiss: function() {
-            setPaymentFailureData({
-              orderId: response.data.order.id,
-              totalAmount: finalAmount,
-              paymentMethod: 'razorpay',
-              errorMessage: "Payment was cancelled. Please try again."
-            });
-            setIsOrderProcessing(false);
-            if (razorpayInstance) {
-              razorpayInstance.close();
+            if (!isPaymentHandled) {
+              handlePaymentFailure({
+                message: "Payment was cancelled by user"
+              }, response.data.order.id, finalAmount);
+
+              setPaymentFailureData({
+                orderId: response.data.order.id,
+                totalAmount: finalAmount,
+                paymentMethod: 'razorpay',
+                errorMessage: "Payment was cancelled. Please try again."
+              });
+              setIsOrderProcessing(false);
             }
           },
-          escape: true,
-          confirm_close: false
+          escape: false,
+          animation: false,
+          backdropClose: false,
+          handleBack: false,
+          confirm_close: true,
         }
       };
-      //   "payment.failed": function (response){
-      //     if (razorpayInstance) {
-      //       razorpayInstance.close();
-      //     }
-      //     setPaymentFailureData({
-      //       orderId: response.error.metadata.order_id,
-      //       totalAmount: finalAmount,
-      //       paymentMethod: 'razorpay',
-      //       errorMessage: response.error.description || "Your payment didn't go through as it was declined by the bank. Please try another payment method."
-      //     });
-      //     setIsOrderProcessing(false);
-      //   },
-      //   "payment.cancel": function(){
-      //     setPaymentFailureData({
-      //       orderId: response.data.order.id,
-      //       totalAmount: finalAmount,
-      //       paymentMethod: 'razorpay',
-      //       errorMessage: "Payment was cancelled. Please try again."
-      //     });
-      //     setIsOrderProcessing(false);
-      //   }
-      // };
 
-      razorpayInstance = new window.Razorpay(options);
+      const razorpay = new window.Razorpay(options);
       //for failure payment
-      razorpayInstance.on('payment.failed', function (response) {
-        if (razorpayInstance) {
-          razorpayInstance.close();
-        }
+      razorpay.on('payment.failed', function (response) {
+        isPaymentHandled = true;
+        razorpay.close();
 
-        setPaymentFailureData({
-          orderId: response.error.metadata.order_id,
-          totalAmount: finalAmount,
-          paymentMethod: 'razorpay',
-          errorMessage: response.error.description || "Your payment didn't go through as it was declined by the bank. Please try another payment method."
-        });
-        setIsOrderProcessing(false);
-      });
+            handlePaymentFailure({
+              message: response.error.description || "Payment failed - " + response.error.reason
+            }, response.error.metadata.order_id, finalAmount);
 
-      razorpayInstance.open();
+            setPaymentFailureData({
+              orderId: response.error.metadata.order_id,
+              totalAmount: finalAmount,
+              paymentMethod: 'razorpay',
+              errorMessage: response.error.description || "Your payment didn't go through as it was declined by the bank. Please try another payment method."
+            });
+            setIsOrderProcessing(false);
+          });
+
+          razorpay.open();
+
+          return () => {
+            if (razorpay) {
+              razorpay.close();
+            }
+          };
 
     } catch (error) {
       console.error('Razorpay payment initialization failed:', error);

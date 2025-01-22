@@ -27,7 +27,7 @@ function UserLogin() {
   const dispatch = useDispatch();
   const Navigate = useNavigate();
 
-  const images = [loginImg1, loginImg2, loginImg3];
+  const images = [loginImg2, loginImg3, loginImg1];
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => 

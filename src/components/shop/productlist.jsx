@@ -33,6 +33,8 @@ const calculateDiscountedPrice = (originalPrice, offer) => {
 };
 
 function ProductList({ products }) {
+  const [displayLimit, setDisplayLimit] = useState(8);
+  const [isCartLoading, setIsCartLoading] = useState(true);
   const user = useSelector((state) => state.user.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -116,6 +118,10 @@ function ProductList({ products }) {
     }
   }, [user.id]);
 
+  const handleShowMore = () => {
+    setDisplayLimit(prevLimit => prevLimit + 8);
+  };
+
   const handleProductClick = (productId) => {
     navigate(`/user/product/${productId}`);
   };
@@ -124,85 +130,96 @@ function ProductList({ products }) {
     return <div>No products available</div>;
   }
 
-  return (
-    <div className="product-list">
-      {products.map(product => {
-        const inCart = isProductInCart(product._id);
+  const displayedProducts = products.slice(0, displayLimit);
+  const hasMoreProducts = products.length > displayLimit;
 
-        const hasOffer = Boolean(product.currentOffer);
-        
-        const originalPrice = product.variants?.[0]?.price || 0;
-        const discountedPrice = hasOffer 
-          ? calculateDiscountedPrice(originalPrice, product.currentOffer)
-          : originalPrice;
-        
-        const showDiscount = hasOffer && discountedPrice < originalPrice;
-        
-        return (
-          <div key={product._id} className="product-card">
-
-            {hasOffer && (
-              <div className="offer-badge">
-                <FiTag />
-                {product.currentOffer.discountType === 'PERCENTAGE' 
-                  ? `${product.currentOffer.discountValue}% OFF`
-                  : `₹${product.currentOffer.discountValue} OFF`
-                }
-              </div>
-            )}
-            
-            <img 
-              src={product.images?.[0] || `/placeholder-image-${product._id}.jpg`}
-              alt={product.name} 
-              onClick={() => handleProductClick(product._id)}
-              style={{ cursor: 'pointer' }}
-            />
-            
-            <div className="product-info">
-              <h3>{product.name}</h3>
-              <p className="category">{product.category?.name}</p>
-              <p className="type">{product.type}</p>
+ return (
+    <div className="product-list-container">
+      <div className="product-list">
+        {displayedProducts.map(product => {
+          const inCart = isProductInCart(product._id);
+          const hasOffer = Boolean(product.currentOffer);
+          const originalPrice = product.variants?.[0]?.price || 0;
+          const discountedPrice = hasOffer 
+            ? calculateDiscountedPrice(originalPrice, product.currentOffer)
+            : originalPrice;
+          const showDiscount = hasOffer && discountedPrice < originalPrice;
+          
+          return (
+            <div key={product._id} className="product-card">
+              {hasOffer && (
+                <div className="offer-badge">
+                  <FiTag />
+                  {product.currentOffer.discountType === 'PERCENTAGE' 
+                    ? `${product.currentOffer.discountValue}% OFF`
+                    : `₹${product.currentOffer.discountValue} OFF`
+                  }
+                </div>
+              )}
               
-              {product.variants && product.variants.length > 0 ? (
-                <div className="price-container">
-                  {showDiscount ? (
-                    <>
-                      <span className="original-price">
+              <img 
+                src={product.images?.[0] || `/placeholder-image-${product._id}.jpg`}
+                alt={product.name} 
+                onClick={() => handleProductClick(product._id)}
+                style={{ cursor: 'pointer' }}
+              />
+              
+              <div className="product-info">
+                <h3>{product.name}</h3>
+                <p className="category">{product.category?.name}</p>
+                <p className="type">{product.type}</p>
+                
+                {product.variants && product.variants.length > 0 ? (
+                  <div className="price-container">
+                    {showDiscount ? (
+                      <>
+                        <span className="original-price">
+                          ₹{originalPrice.toFixed(2)}
+                        </span>
+                        <span className="discounted-price">
+                          ₹{discountedPrice.toFixed(2)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="price">
                         ₹{originalPrice.toFixed(2)}
                       </span>
-                      <span className="discounted-price">
-                        ₹{discountedPrice.toFixed(2)}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="price">
-                      ₹{originalPrice.toFixed(2)}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <p className="price">Price not available</p>
-              )}
+                    )}
+                  </div>
+                ) : (
+                  <p className="price">Price not available</p>
+                )}
+              </div>
+              
+              <button 
+                className={`add-to-cart ${inCart ? 'added' : ''}`}
+                onClick={() => handleAddToCart(product)}
+                disabled={inCart}
+              >
+                {inCart ? (
+                  <>
+                    <FiCheckCircle /> Added to Cart
+                  </>
+                ) : (
+                  <>
+                    <FiShoppingCart /> Add to Cart
+                  </>
+                )}
+              </button>
             </div>
-            
-            <button 
-              className={`add-to-cart ${inCart ? 'added' : ''}`}
-              onClick={() => handleAddToCart(product)}
-              disabled={inCart}
-            >
-              {inCart ? (
-                <>
-                  <FiCheckCircle /> Added to Cart
-                </>
-              ) : (
-                <>
-                  <FiShoppingCart /> Add to Cart
-                </>
-              )}
-            </button>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      {hasMoreProducts && (
+        <div className="show-more-container">
+          <button 
+            className="show-more-button"
+            onClick={handleShowMore}
+          >
+            Show More
+          </button>
+        </div>
+      )}
     </div>
   );
 }

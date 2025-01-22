@@ -38,7 +38,7 @@
   
       .card-content {
         display: flex;
-        padding: 24px;
+        padding: 40px 24px;
         gap: 20px;
         align-items: center;
       }
@@ -64,14 +64,14 @@
         flex: 1;
   
         h2 {
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 600;
           color: #232f3e;
           margin-bottom: 8px;
         }
   
         p {
-          font-size: 14px;
+          font-size: 16px;
           color: #666;
           line-height: 1.5;
           margin: 0;

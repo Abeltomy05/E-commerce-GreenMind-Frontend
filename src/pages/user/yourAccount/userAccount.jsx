@@ -28,7 +28,7 @@ export default function AccountDashboard() {
       icon: <Gift size={24} />,
       title: "View Wishlist",
       description: "View wishlisted products",
-      color: "#00A650",
+      color: "#E53935",
       path: "/user/wishlist"
     },
     {

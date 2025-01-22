@@ -142,7 +142,16 @@ const OrderDetails = () => {
           date: formatDate(order.updatedAt)
         });
         break;
-  
+
+        case 'FAILED':
+          timeline.push({
+            title: 'Payment Failed',
+            description: 'Your payment has failed',
+            date: formatDate(order.updatedAt),
+            isError: true  
+          });
+          break;
+
       case 'DELIVERED':
         timeline.push(
           {
@@ -219,14 +228,16 @@ const OrderDetails = () => {
     const stageIcons = [Box, Package, Truck, CheckCircle2];
     
     // For canceled orders, return a different view
-    if (status === 'CANCELED') {
+    if (status === 'CANCELED' || status === 'FAILED') {
       return (
         <div className="relative flex justify-center">
           <div className="flex flex-col items-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500">
               <X className="h-5 w-5 text-white" />
             </div>
-            <p className="mt-2 text-xs text-red-600">Order Canceled</p>
+            <p className="mt-2 text-xs text-red-600">
+            {status === 'FAILED' ? 'Payment Failed' : 'Order Canceled'}
+            </p>
           </div>
         </div>
       );
@@ -443,7 +454,7 @@ const OrderDetails = () => {
             <button 
               className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleCancelOrder}
-              disabled={orderDetails.status === 'CANCELED' || orderDetails.status === 'DELIVERED'}
+              disabled={orderDetails.status === 'CANCELED' || orderDetails.status === 'DELIVERED' || orderDetails.status === 'FAILED'}
             >
               Cancel Order
             </button>
@@ -486,27 +497,27 @@ const OrderDetails = () => {
 
           {/* Order Activity */}
           {orderDetails.timeline && orderDetails.timeline.length > 0 && (
-            <div className="mb-8">
-              <h3 className="mb-4 text-lg font-medium">Order Activity</h3>
-              <div className="rounded-lg border p-4">
-                {orderDetails.timeline.map((event, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="relative flex flex-col items-center">
-                      <div className="h-4 w-4 rounded-full bg-green-500"></div>
-                      {index !== orderDetails.timeline.length - 1 && (
-                        <div className="h-full w-0.5 bg-green-500"></div>
-                      )}
+              <div className="mb-8">
+                <h3 className="mb-4 text-lg font-medium">Order Activity</h3>
+                <div className="rounded-lg border p-4">
+                  {orderDetails.timeline.map((event, index) => (
+                    <div key={index} className="flex gap-4">
+                      <div className="relative flex flex-col items-center">
+                        <div className={`h-4 w-4 rounded-full ${event.isError ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                        {index !== orderDetails.timeline.length - 1 && (
+                          <div className={`h-full w-0.5 ${event.isError ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                        )}
+                      </div>
+                      <div className="flex-1 pb-4">
+                        <p className={`text-sm font-medium ${event.isError ? 'text-red-500' : ''}`}>{event.title}</p>
+                        <p className={`text-sm ${event.isError ? 'text-red-400' : 'text-gray-600'}`}>{event.description}</p>
+                        <p className="mt-1 text-xs text-gray-500">{event.date}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 pb-4">
-                      <p className="text-sm font-medium">{event.title}</p>
-                      <p className="text-sm text-gray-600">{event.description}</p>
-                      <p className="mt-1 text-xs text-gray-500">{event.date}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Products */}
           {orderDetails.products && orderDetails.products.length > 0 && (

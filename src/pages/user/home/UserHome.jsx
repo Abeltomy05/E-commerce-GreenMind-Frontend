@@ -137,16 +137,14 @@ useEffect(() => {
           id: review.id,
           name: review.name || 'Anonymous',
           feedback: review.feedback || 'No feedback provided',
-          rating: review.rating || 0,
+          rating:  Number(review.rating) || 0,
           profileImage: review.profileImage || null,
-          date: review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-US', {
+          date: new Date(review.createdAt).toLocaleDateString('en-US', {
             month: 'long',
             day: 'numeric',
             year: 'numeric'
-          }) : 'Date not available'
+          })
         }));
-
-        console.log('Formatted reviews:', formattedReviews);
         setReviews(formattedReviews);
       } else {
         console.log('No reviews found or invalid format');
