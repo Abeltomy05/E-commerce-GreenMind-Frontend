@@ -494,9 +494,8 @@ const AdminDashboard = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Order ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Products</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">User ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Discount</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
@@ -518,7 +517,6 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{sale.userName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianRupee(sale.amount)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatIndianRupee(sale.discount)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(sale.status)}`}>
                         {sale.status}
