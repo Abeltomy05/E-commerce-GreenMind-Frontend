@@ -48,7 +48,7 @@ $text-secondary: #1c211f;
         padding: 10px;
         border: 1px solid $primary-color;
         border-radius: 4px;
-        background-color: color.adjust($background-color, $lightness: 10%);
+        background-color: #fff;
         color: $text-secondary;
         transition: all 0.3s ease;
 
@@ -243,6 +243,7 @@ $text-secondary: #1c211f;
       .variant-input-group {
         display: flex;
         flex-direction: column;
+        
 
         label {
           margin-bottom: 5px;

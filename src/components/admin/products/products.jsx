@@ -317,7 +317,7 @@ const Products = () => {
                    product.variants.map((variant, index) => (
                   <div key={index} className="variant-item mb-1">
                    <span className="font-semibold">Size: {variant.size}</span>
-                    <span className="ml-2">Price: ${variant.price.toFixed(2)}</span>
+                    <span className="ml-2">Price: ₹{variant.price.toFixed(2)}</span>
                    <span className="ml-2 text-gray-600">Stock: {variant.stock}</span>
                     </div>
                      ))

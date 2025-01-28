@@ -18,6 +18,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import TopItemsSection from './bestsellingitems';
 import api from '../../../utils/adminAxiosConfig';
+import * as XLSX from 'xlsx';
 
 ChartJS.register(
   CategoryScale,
@@ -28,6 +29,9 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+
+
 
 const AdminDashboard = () => {
   const [filterOption, setFilterOption] = useState('Last Month');
@@ -304,6 +308,121 @@ const AdminDashboard = () => {
     return `Rs. ${amount.toFixed(2)}`;
   };
 
+  const handleExcelDownload = () => {
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+  
+    // Generate Summary Sheet
+    const summaryData = [
+      ['Sales Report'],
+      [`Generated on: ${new Date().toLocaleDateString()}`],
+      [''],
+      ['Summary Statistics'],
+      ['Total Orders', totalSales],
+      ['Total Revenue', formatIndianRupee(totalAmount)],
+      ['Total Discounts', formatIndianRupee(totalDiscount)],
+      ['']
+    ];
+  
+    const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
+  
+    const salesTableData = [
+      [
+        'Date', 
+        'Order ID', 
+        'Customer Name',
+        'Product Name',
+        'Product Quantity',
+        'Product Category',
+        'Product Variant',
+        'Unit Price',
+        'Subtotal',
+        'Discount',
+        'Total Amount',
+        'Order Status'
+      ],
+
+      ...salesData.flatMap(sale => 
+        sale.products.map(product => [
+          new Date(sale.date).toLocaleDateString(),
+          sale.orderId,
+          sale.userName,
+          product.name,
+          product.quantity,
+          product.category,
+          product.variant ? `${product.variant.size || ''} ${product.variant.color || ''}`.trim() : 'N/A',
+          formatIndianRupee(product.variant?.price || 0),
+          formatIndianRupee((product.variant?.price || 0) * product.quantity),
+          formatIndianRupee(sale.discount / sale.products.length), 
+          formatIndianRupee(sale.amount / sale.products.length), 
+          sale.status
+        ])
+      )
+    ];
+  
+    const salesWS = XLSX.utils.aoa_to_sheet(salesTableData);
+    XLSX.utils.book_append_sheet(wb, salesWS, 'Detailed Sales');
+
+    const categoryTableData = [
+      ['Category Distribution'],
+      [''],
+      ['Category', 'Percentage', 'Count', 'Total Revenue'],
+      ...categoryData.map(({ category, percentage, count }) => [
+        category,
+        `${percentage}%`,
+        count,
+        formatIndianRupee(salesData
+          .flatMap(sale => sale.products)
+          .filter(product => product.category === category)
+          .reduce((sum, product) => sum + ((product.variant?.price || 0) * product.quantity), 0)
+        )
+      ])
+    ];
+  
+    const categoryWS = XLSX.utils.aoa_to_sheet(categoryTableData);
+    XLSX.utils.book_append_sheet(wb, categoryWS, 'Category Distribution');
+  
+    const setCellWidths = (ws) => {
+      const columnWidths = [
+        { wch: 15 },  // Date
+        { wch: 25 },  // Order ID
+        { wch: 25 },  // Customer Name
+        { wch: 40 },  // Product Name
+        { wch: 15 },  // Product Quantity
+        { wch: 20 },  // Product Category
+        { wch: 20 },  // Product Variant
+        { wch: 15 },  // Unit Price
+        { wch: 15 },  // Subtotal
+        { wch: 15 },  // Discount
+        { wch: 15 },  // Total Amount
+        { wch: 15 }   // Order Status
+      ];
+      ws['!cols'] = columnWidths;
+    };
+  
+    setCellWidths(salesWS);
+
+    const styleSheet = (ws, startRow) => {
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const address = XLSX.utils.encode_cell({ r: startRow, c: C });
+        if (!ws[address]) continue;
+        ws[address].s = {
+          fill: { fgColor: { rgb: "47645A" } },
+          font: { color: { rgb: "FFFFFF" }, bold: true },
+          alignment: { horizontal: "center" }
+        };
+      }
+    };
+
+    styleSheet(salesWS, 0);
+    styleSheet(categoryWS, 2);
+  
+    const date = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `sales_report_${date}.xlsx`);
+  };
+
   const handleDownload = () => {
     const doc = new jsPDF();
     
@@ -407,11 +526,20 @@ const AdminDashboard = () => {
                 ))}
                 <div className="border-t border-gray-100">
                   <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#9bac9c] hover:text-white transition-colors"
+                    className="block w-full text-left px-2 py-2 text-sm text-gray-700 hover:bg-[#9bac9c] hover:text-white transition-colors"
                     onClick={handleDownload}
                   >
-                    <ArrowDownTrayIcon className="h-5 w-5 inline mr-2" />
-                    Download Report
+                    <ArrowDownTrayIcon className="h-4 w-5 inline mr-1" />
+                    Download Report (pdf)
+                  </button>
+                </div>
+                <div className="border-t border-gray-100">
+                  <button
+                    className="block w-full text-left  py-2 text-sm text-gray-700 hover:bg-[#9bac9c] hover:text-white transition-colors"
+                    onClick={handleExcelDownload}
+                  >
+                    <ArrowDownTrayIcon className="h-4 w-5 inline mr-1" />
+                    Download Report (excel)
                   </button>
                 </div>
               </div>

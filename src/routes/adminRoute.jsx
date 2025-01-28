@@ -13,6 +13,7 @@ import Settings from '../pages/admin/settings/settings';
 import LogoutPage from '../pages/admin/logout/logout';
 import {AdminProtectRoute,AdminProtectRouteLogin} from "../Protect/ProtectedRoute"
 import OfferManagement from '../pages/admin/offer/offerManagement';
+import NotFoundPage from '../pages/notfound/notfound';
 
 function AdminRoute() {
  
@@ -21,6 +22,7 @@ function AdminRoute() {
       <Routes>
         <Route element={<AdminProtectRouteLogin />}>
         <Route path="/login" element={<AdminLogin />} />
+        <Route path="/*" element={<NotFoundPage />} />
       </Route>
 
       <Route element={<AdminProtectRoute />}>

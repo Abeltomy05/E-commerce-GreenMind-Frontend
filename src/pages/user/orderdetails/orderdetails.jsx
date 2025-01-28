@@ -1,88 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Box, CheckCircle2, MapPin, Package, Truck, Plus, X, Undo,FileDown  } from 'lucide-react';
+import { ArrowLeft, Box, CheckCircle2, MapPin, Package, Truck, Plus, X, Undo,FileDown, RefreshCw,XCircle,CheckCircle  } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HeaderLogin from '../../../components/header-login/header-login';
 import Footer from '../../../components/footer/footer';
 import {toast} from 'react-toastify'
 import axioInstence from '../../../utils/axiosConfig';
 import RatingOverlay from './ratingOverlay';
+import { useSelector } from 'react-redux';
+import { initializeRazorpayPayment } from './razorpayUtility';
+import CancelOrderOverlay from './cancelOrderOverlay';
+import html2pdf from 'html2pdf.js';
 
 const generateInvoice = (orderDetails) => {
   const invoiceContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Invoice #${orderDetails.id}</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .invoice-details { margin-bottom: 20px; }
-        .address-section { margin-bottom: 30px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f8f9fa; }
-        .total-section { text-align: right; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>INVOICE</h1>
-        <p>Order #${orderDetails.id}</p>
-        <p>Date: ${orderDetails.orderDate}</p>
+    <div style="font-family: Arial, sans-serif; padding: 40px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="margin: 0;">INVOICE</h1>
+        <p style="margin: 10px 0;">Order #${orderDetails.id}</p>
+        <p style="margin: 10px 0;">Date: ${orderDetails.orderDate}</p>
       </div>
 
-      <div class="address-section">
-        <h3>Shipping Address:</h3>
-        <p>${orderDetails.address.name}</p>
-        <p>${orderDetails.address.address}</p>
-        <p>Phone: ${orderDetails.address.phone}</p>
+      <div style="margin-bottom: 30px;">
+        <h3 style="margin-bottom: 10px;">Shipping Address:</h3>
+        <p style="margin: 5px 0;">${orderDetails.address.name}</p>
+        <p style="margin: 5px 0;">${orderDetails.address.address}</p>
+        <p style="margin: 5px 0;">Phone: ${orderDetails.address.phone}</p>
       </div>
 
-      <table>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
         <thead>
-          <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Discount</th>
-            <th>Total</th>
+          <tr style="background-color: #f8f9fa;">
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Product</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Quantity</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Unit Price</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Discount</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th>
           </tr>
         </thead>
         <tbody>
           ${orderDetails.products.map(product => `
             <tr>
-              <td>${product.name}</td>
-              <td>${product.quantity}</td>
-              <td>₹${product.price.toLocaleString()}</td>
-              <td>₹${((product.price - product.finalPrice) * product.quantity + product.couponDiscount).toLocaleString()}</td>
-              <td>₹${((product.finalPrice * product.quantity) - product.couponDiscount).toLocaleString()}</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">${product.name}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${product.quantity}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">₹${product.price.toLocaleString()}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">₹${((product.price - product.finalPrice) * product.quantity + product.couponDiscount).toLocaleString()}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">₹${((product.finalPrice * product.quantity) - product.couponDiscount).toLocaleString()}</td>
             </tr>
           `).join('')}
         </tbody>
       </table>
 
-      <div class="total-section">
-        <p>Subtotal: ₹${orderDetails.products.reduce((acc, product) => acc + (product.price * product.quantity), 0).toLocaleString()}</p>
-        <p>Product Discounts: -₹${orderDetails.products.reduce((acc, product) => acc + ((product.price - product.finalPrice) * product.quantity), 0).toLocaleString()}</p>
-        ${orderDetails.couponDiscount > 0 ? `<p>Coupon Discount: -₹${orderDetails.couponDiscount.toLocaleString()}</p>` : ''}
-        <p>Shipping Fee: ₹${orderDetails.shippingFee.toLocaleString()}</p>
-        <h3>Total Amount: ${orderDetails.totalAmount}</h3>
+      <div style="text-align: right;">
+        <p style="margin: 5px 0;">Subtotal: ₹${orderDetails.products.reduce((acc, product) => acc + (product.price * product.quantity), 0).toLocaleString()}</p>
+        <p style="margin: 5px 0;">Product Discounts: -₹${orderDetails.products.reduce((acc, product) => acc + ((product.price - product.finalPrice) * product.quantity), 0).toLocaleString()}</p>
+        ${orderDetails.couponDiscount > 0 ? `<p style="margin: 5px 0;">Coupon Discount: -₹${orderDetails.couponDiscount.toLocaleString()}</p>` : ''}
+        <p style="margin: 5px 0;">Shipping Fee: ₹${orderDetails.shippingFee.toLocaleString()}</p>
+        <h3 style="margin: 10px 0;">Total Amount: ${orderDetails.totalAmount}</h3>
       </div>
-    </body>
-    </html>
+    </div>
   `;
 
-  const blob = new Blob([invoiceContent], { type: 'text/html' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `invoice_${orderDetails.id}.html`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
+  const element = document.createElement('div');
+  element.innerHTML = invoiceContent;
+
+  const opt = {
+    margin: 1,
+    filename: `invoice_${orderDetails.id}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(element).save();
 };
 
 const DownloadInvoiceButton = ({ orderDetails }) => {
@@ -97,14 +87,83 @@ const DownloadInvoiceButton = ({ orderDetails }) => {
   );
 };
 
+
+
+const PaymentFailureOverlay = ({
+  orderId,
+  totalAmount,
+  onRetryPayment,
+  onContinueShopping,
+  errorMessage
+}) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-300">
+        <div className="text-center mb-6">
+          <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-gray-900">Payment Failed!</h2>
+        </div>
+
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Payment Error
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                {errorMessage || "Your payment didn't go through. Please try again."}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Order Number:</span>
+              <span className="font-medium">{orderId}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Amount:</span>
+              <span className="font-medium">₹{Number((totalAmount)+50).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <button
+            onClick={onRetryPayment}
+            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-colors"
+          >
+            Retry Payment
+          </button>
+          <button
+            onClick={onContinueShopping}
+            className="w-full sm:w-auto px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:ring-4 focus:ring-gray-200 focus:outline-none transition-colors"
+          >
+            Back to Orders
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const OrderDetails = () => {
+  // const [isOrderProcessing, setIsOrderProcessing] = useState(false);
+  // const [paymentFailureData, setPaymentFailureData] = useState(null);
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showRatingOverlay, setShowRatingOverlay] = useState(false);
+  const [paymentFailureData, setPaymentFailureData] = useState(null);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
+  const [showCancelOverlay, setShowCancelOverlay] = useState(false);
+  const [isSubmittingCancel, setIsSubmittingCancel] = useState(false);
+
   const { orderId } = useParams();
   const navigate = useNavigate();
-
+  const user = useSelector((state) => state.user.user);
 
   const getOrderTimeline = (order) => {
     const formatDate = (dateString) => {
@@ -125,6 +184,19 @@ const OrderDetails = () => {
         return null;
       }
     };
+
+    if (order.status === 'FAILED') {
+      return [
+        {
+          title: 'Payment Failed',
+          description: 'Your payment has failed',
+          date: formatDate(order.updatedAt),
+          isError: true  
+        }
+      ];
+    }
+
+    
     const timeline = [
       {
         title: 'Order Placed',
@@ -142,15 +214,6 @@ const OrderDetails = () => {
           date: formatDate(order.updatedAt)
         });
         break;
-
-        case 'FAILED':
-          timeline.push({
-            title: 'Payment Failed',
-            description: 'Your payment has failed',
-            date: formatDate(order.updatedAt),
-            isError: true  
-          });
-          break;
 
       case 'DELIVERED':
         timeline.push(
@@ -323,12 +386,14 @@ const OrderDetails = () => {
             name: product.name, 
             image: product.image || 'Product Image', 
             quantity: product.quantity,
+            size: product.variantSize || 'N/A',
             price: product.price,
             finalPrice: product.finalPrice || product.price,
             couponDiscount: response.data.order.discountAmount ? 
             (product.finalPrice * product.quantity / totalProductValue) * response.data.order.discountAmount : 0
           })),
           address: {
+            id: response.data.order.address?._id,
             name: response.data.order.address?.name || 'Not Provided', 
             address: response.data.order.address?.address || 'Address not available',
             phone: response.data.order.address?.phone,
@@ -363,6 +428,50 @@ const OrderDetails = () => {
     }
   };
 
+  const handleSuccessfulOrder = (newOrderId) => {
+    setSuccessOverlayData({
+      orderId: newOrderId,
+      totalAmount: orderDetails.products.reduce((total, product) => 
+        total + (product.finalPrice * product.quantity), 0) + 50 
+    });
+    setShowSuccessOverlay(true);
+  };
+
+  const handleRetryPayment = () => {
+    const orderData = {
+      orderId: orderDetails.id, 
+      userId: user.id,
+      totalPrice: orderDetails.products.reduce((total, product) => 
+        total + (product.finalPrice * product.quantity), 0),
+      products: orderDetails.products.map(product => ({
+        product: product.id,
+        quantity: product.quantity,
+        size: product.size || 'N/A', 
+        cartItemId: null 
+      })),
+      addressId: orderDetails.address.id, 
+      couponCode: orderDetails.couponDiscount ? 'RETRY' : null,
+      paymentMethod: 'razorpay',
+      paymentStatus: 'PENDING',
+      paymentDetails: null,
+    };
+
+    initializeRazorpayPayment(
+      orderData, 
+      user, 
+      async (newOrderId) => {
+        // handleSuccessfulOrder(newOrderId);
+        await fetchOrderDetails(); 
+      },
+      (failureData) => {
+        setPaymentFailureData({
+          orderId: orderDetails.id,
+          totalAmount: orderData.totalPrice,
+          errorMessage: failureData.errorMessage || 'Payment failed. Please try again.'
+        });
+      }
+    );
+  };
 
   useEffect(() => {
     fetchOrderDetails();
@@ -392,43 +501,25 @@ const OrderDetails = () => {
     );
   }
 
-  const handleCancelOrder = async () => {
-    if (window.confirm('Are you sure you want to cancel this order?')) {
-      try {
-        const response = await axioInstence.post(`/user/cancelorder/${orderId}`,{
-          status: 'CANCELED',
-          updatedAt: new Date().toISOString()
-        });
-
-        if (response.data.success) {
-            toast.success(response.data.message);
-          setOrderDetails(prev => ({
-            ...prev,
-            status: 'CANCELED',
-            timeline: [
-              ...prev.timeline,
-              {
-                title: 'Order Canceled',
-                description: 'Order has been canceled by customer',
-                date: new Date().toLocaleString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })
-              }
-            ]
-          }));
-
-          await fetchOrderDetails();
-        } else {
-          throw new Error(response.data.message || 'Failed to cancel order');
-        }
-      } catch (error) {
-        console.error('Error cancelling order:', error);
-        toast.error('Failed to cancel order. Please try again.');
+  const handleCancelOrder = async (reason) => {
+    try {
+      setIsSubmittingCancel(true);
+      const response = await axioInstence.post(`/user/cancelorder/${orderId}`, {
+        cancellationReason: reason,
+      });
+  
+      if (response.data.success) {
+        toast.success(response.data.message);
+        setShowCancelOverlay(false);
+        await fetchOrderDetails();
+      } else {
+        throw new Error(response.data.message || 'Failed to cancel order');
       }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast.error('Failed to cancel order. Please try again.');
+    } finally {
+      setIsSubmittingCancel(false);
     }
   };
 
@@ -453,7 +544,7 @@ const OrderDetails = () => {
           <div className="flex items-center space-x-2">
             <button 
               className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleCancelOrder}
+              onClick={() => setShowCancelOverlay(true)}
               disabled={orderDetails.status === 'CANCELED' || orderDetails.status === 'DELIVERED' || orderDetails.status === 'FAILED'}
             >
               Cancel Order
@@ -495,10 +586,22 @@ const OrderDetails = () => {
 
           {renderProgressTracker(orderDetails.status)}
 
-          {/* Order Activity */}
           {orderDetails.timeline && orderDetails.timeline.length > 0 && (
               <div className="mb-8">
-                <h3 className="mb-4 text-lg font-medium">Order Activity</h3>
+                <div className='flex items-center justify-between'>
+                   <h3 className="mb-4 text-lg font-medium">Order Activity</h3>
+                    {orderDetails.status === 'FAILED' && (
+                    <div className="mb-4">
+                      <button 
+                        onClick={handleRetryPayment}
+                        className="px-3 py-1 text-sm border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50 transition-colors flex items-center"
+                      >
+                        <RefreshCw className="mr-1 h-4 w-4" />
+                        Retry Payment
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="rounded-lg border p-4">
                   {orderDetails.timeline.map((event, index) => (
                     <div key={index} className="flex gap-4">
@@ -518,6 +621,8 @@ const OrderDetails = () => {
                 </div>
               </div>
             )}
+
+           
 
           {/* Products */}
           {orderDetails.products && orderDetails.products.length > 0 && (
@@ -554,12 +659,7 @@ const OrderDetails = () => {
                     <div></div>
                     <div className="text-sm text-right">x{product.quantity}</div>
                     <div className="text-sm text-right">
-                      <div>₹{product.finalPrice.toLocaleString()}</div>
-                      {product.price !== product.finalPrice && (
-                        <div className="text-xs text-gray-500 line-through">
-                          ₹{product.price.toLocaleString()}
-                        </div>
-                      )}
+                      <div>₹{product.price.toLocaleString()}</div>
                     </div>
                     <div className="text-sm text-right text-red-500">
                       -₹{totalDiscount.toLocaleString()}
@@ -643,6 +743,23 @@ const OrderDetails = () => {
         />
       )}
     <Footer/>
+    {paymentFailureData && (
+      <PaymentFailureOverlay
+        orderId={paymentFailureData.orderId}
+        totalAmount={paymentFailureData.totalAmount}
+        errorMessage={paymentFailureData.errorMessage}
+        onRetryPayment={handleRetryPayment}
+        onContinueShopping={() => navigate('/user/orders')}
+      
+      />
+    )}
+     {showCancelOverlay && (
+        <CancelOrderOverlay
+          onClose={() => setShowCancelOverlay(false)}
+          onConfirm={handleCancelOrder}
+          isSubmitting={isSubmittingCancel}
+        />
+      )}
     </>
   );
 };

@@ -764,7 +764,7 @@ const CheckoutPage = () => {
                       <div key={index} className="coupon-item">
                         <span className="coupon-code">{coupon.code}</span>
                         <span className="coupon-discount">{coupon.discount}</span>
-                        <span className="coupon-min">Min order: ${coupon.minimumPurchaseAmount}</span>
+                        <span className="coupon-min">Min order: ₹{coupon.minimumPurchaseAmount}</span>
                         <button onClick={() => handleCouponSelect(coupon.code)}  disabled={couponCode === coupon.code}> 
                           {couponCode === coupon.code ? 'Selected' : 'Use Coupon'}
                           </button>
@@ -780,7 +780,7 @@ const CheckoutPage = () => {
                   {appliedDiscount > 0 && (
                       <div className="discount-applied">
                         <span>Discount Applied:</span>
-                        <span>-${appliedDiscount.toFixed(2)}</span>
+                        <span>-₹{appliedDiscount.toFixed(2)}</span>
                       </div>
                     )}
                 </div>
@@ -791,7 +791,7 @@ const CheckoutPage = () => {
                       <span className="cart-item-name">{item.name}</span>
                       <span className="cart-item-quantity">x{item.quantity}</span>
                       <span className="cart-item-price">
-                        ${(item.displayPrice.current * item.quantity).toFixed(2)}
+                      ₹{(item.displayPrice.current * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -812,12 +812,12 @@ const CheckoutPage = () => {
                 <div className="order-totals">
                   <div className="subtotal">
                     <span>Original Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   {appliedDiscount > 0 && (
                       <div className="discount">
                         <span>Discount Applied</span>
-                        <span>-${appliedDiscount.toFixed(2)}</span>
+                        <span>-₹{appliedDiscount.toFixed(2)}</span>
                       </div>
                     )}
                   <div className="shipping">
@@ -826,7 +826,7 @@ const CheckoutPage = () => {
                   </div>
                   <div className="total">
                     <span>Total</span>
-                    <span>${((subtotal-appliedDiscount)+50).toFixed(2)}</span>
+                    <span>₹{((subtotal-appliedDiscount)+50).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
