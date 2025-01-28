@@ -2,9 +2,11 @@ import axios from 'axios';
 import { store } from '../redux/store';
 import { logout } from '../redux/adminSlice';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL ;
+
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: BACKEND_URL,
   withCredentials: true 
 });
 

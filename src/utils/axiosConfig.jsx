@@ -4,7 +4,7 @@ import { logout } from '../redux/userSlice';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BACKEND_URL = import.meta.env.VITE_API_URL ;
 
 const COOKIE_OPTIONS = {
   secure: true,
