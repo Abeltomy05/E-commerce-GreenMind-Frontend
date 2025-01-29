@@ -1,3 +1,4 @@
+import React from 'react';
 import './normalspinner.css'
 
 export default function SpinnerNormal(){
