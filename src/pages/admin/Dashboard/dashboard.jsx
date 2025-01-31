@@ -309,118 +309,74 @@ const AdminDashboard = () => {
   };
 
   const handleExcelDownload = () => {
-    // Create workbook
+    console.log("Starting Excel export with sales data:", salesData);
+  
     const wb = XLSX.utils.book_new();
   
-    // Generate Summary Sheet
+    // Summary Sheet
     const summaryData = [
-      ['Sales Report'],
-      [`Generated on: ${new Date().toLocaleDateString()}`],
-      [''],
-      ['Summary Statistics'],
-      ['Total Orders', totalSales],
-      ['Total Revenue', formatIndianRupee(totalAmount)],
-      ['Total Discounts', formatIndianRupee(totalDiscount)],
-      ['']
+      ['Sales Report', '', '', '', ''],
+      ['Generated on:', new Date().toLocaleDateString(), '', '', ''],
+      ['', '', '', '', ''],
+      ['Summary Statistics', '', '', '', ''],
+      ['', '', '', '', ''],
+      ['Total Orders', totalSales, '', '', ''],
+      ['Total Revenue', formatIndianRupee(totalAmount), '', '', ''],
+      ['Total Discounts', formatIndianRupee(totalDiscount), '', '', ''],
+      ['', '', '', '', '']
     ];
   
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
   
-    const salesTableData = [
-      [
-        'Date', 
-        'Order ID', 
-        'Customer Name',
-        'Product Name',
-        'Product Quantity',
-        'Product Category',
-        'Product Variant',
-        'Unit Price',
-        'Subtotal',
-        'Discount',
-        'Total Amount',
-        'Order Status'
-      ],
-
-      ...salesData.flatMap(sale => 
-        sale.products.map(product => [
-          new Date(sale.date).toLocaleDateString(),
-          sale.orderId,
-          sale.userName,
-          product.name,
-          product.quantity,
-          product.category,
-          product.variant ? `${product.variant.size || ''} ${product.variant.color || ''}`.trim() : 'N/A',
-          formatIndianRupee(product.variant?.price || 0),
-          formatIndianRupee((product.variant?.price || 0) * product.quantity),
-          formatIndianRupee(sale.discount / sale.products.length), 
-          formatIndianRupee(sale.amount / sale.products.length), 
-          sale.status
-        ])
-      )
+    // Sales data sheet
+    const salesHeaders = [
+      ['Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status']
     ];
   
+    // Convert sales data to rows
+    const salesRows = salesData.map(sale => [
+      new Date(sale.date).toLocaleDateString(),
+      sale.orderId,
+      sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
+      sale.userName,
+      formatIndianRupee(sale.amount),
+      formatIndianRupee(sale.discount),
+      sale.status
+    ]);
+  
+    // Combine headers and rows
+    const salesTableData = [...salesHeaders, ...salesRows];
+    console.log("Sales Table Data:", salesTableData); // Debugging line
+  
+    // Create sales worksheet
     const salesWS = XLSX.utils.aoa_to_sheet(salesTableData);
-    XLSX.utils.book_append_sheet(wb, salesWS, 'Detailed Sales');
-
-    const categoryTableData = [
-      ['Category Distribution'],
-      [''],
-      ['Category', 'Percentage', 'Count', 'Total Revenue'],
-      ...categoryData.map(({ category, percentage, count }) => [
-        category,
-        `${percentage}%`,
-        count,
-        formatIndianRupee(salesData
-          .flatMap(sale => sale.products)
-          .filter(product => product.category === category)
-          .reduce((sum, product) => sum + ((product.variant?.price || 0) * product.quantity), 0)
-        )
-      ])
+    console.log("Sales Worksheet:", salesWS); // Debugging line
+  
+    // Set column widths
+    const salesColWidth = [
+      { wch: 15 },  // Date
+      { wch: 25 },  // Order ID
+      { wch: 40 },  // Products
+      { wch: 25 },  // User
+      { wch: 15 },  // Amount
+      { wch: 15 },  // Discount
+      { wch: 15 }   // Status
     ];
+    salesWS['!cols'] = salesColWidth;
   
-    const categoryWS = XLSX.utils.aoa_to_sheet(categoryTableData);
-    XLSX.utils.book_append_sheet(wb, categoryWS, 'Category Distribution');
+    // Append sales worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
+    console.log("Workbook Sheets:", wb.SheetNames); // Debugging line
   
-    const setCellWidths = (ws) => {
-      const columnWidths = [
-        { wch: 15 },  // Date
-        { wch: 25 },  // Order ID
-        { wch: 25 },  // Customer Name
-        { wch: 40 },  // Product Name
-        { wch: 15 },  // Product Quantity
-        { wch: 20 },  // Product Category
-        { wch: 20 },  // Product Variant
-        { wch: 15 },  // Unit Price
-        { wch: 15 },  // Subtotal
-        { wch: 15 },  // Discount
-        { wch: 15 },  // Total Amount
-        { wch: 15 }   // Order Status
-      ];
-      ws['!cols'] = columnWidths;
-    };
-  
-    setCellWidths(salesWS);
-
-    const styleSheet = (ws, startRow) => {
-      const range = XLSX.utils.decode_range(ws['!ref']);
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        const address = XLSX.utils.encode_cell({ r: startRow, c: C });
-        if (!ws[address]) continue;
-        ws[address].s = {
-          fill: { fgColor: { rgb: "47645A" } },
-          font: { color: { rgb: "FFFFFF" }, bold: true },
-          alignment: { horizontal: "center" }
-        };
-      }
-    };
-
-    styleSheet(salesWS, 0);
-    styleSheet(categoryWS, 2);
-  
-    const date = new Date().toISOString().split('T')[0];
-    XLSX.writeFile(wb, `sales_report_${date}.xlsx`);
+    // Save the file
+    try {
+      const date = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(wb, `sales_report_${date}.xlsx`);
+      console.log("Excel file generated successfully");
+    } catch (error) {
+      console.error("Error generating Excel file:", error);
+    }
   };
 
   const handleDownload = () => {
