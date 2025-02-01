@@ -60,32 +60,45 @@ function UserLogin() {
 
   const googleAuth = () => {
 
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
+    Cookies.remove('accessToken', { path: '/', domain: '.abeltomy.site' });
+    Cookies.remove('refreshToken', { path: '/', domain: '.abeltomy.site' });
+
+    console.log('Redirecting to:', `${import.meta.env.VITE_API_URL}/auth/google`);
     window.open(`${import.meta.env.VITE_API_URL}/auth/google`, "_self");
 }
 
 useEffect(() => {
   const checkLoginStatus = async () => {
     try {
-      console.log("Checking cookies...");
+      console.log("Starting login status check...");
+
       const accessToken = Cookies.get('accessToken');
       const refreshToken = Cookies.get('refreshToken');
-      console.log('Tokens found:', { accessToken, refreshToken });
+
+      console.log('Cookie check:', {
+        accessToken: accessToken ? 'present' : 'missing',
+        refreshToken: refreshToken ? 'present' : 'missing'
+      });
 
       if (!accessToken) {
         console.log('No access token found');
         return; 
       }
+
+      console.log('Making auth check request to:', `${axioInstence.defaults.baseURL}/auth/login/success`);
+
       const response = await axioInstence.get("/auth/login/success", {
         withCredentials: true,
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json',
         }
       });
 
       console.log('Login success response:', response.data);
+
       if (response.data.user) {
+        console.log('User data received, dispatching login action');
         dispatch(login({ 
           user: response.data.user, 
           role: response.data.role || 'user' 
@@ -93,7 +106,12 @@ useEffect(() => {
         Navigate('/user/home');
       }
     } catch (error) {
-      console.error("Login check error:", error);
+      console.error("Login check error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
       Cookies.remove('accessToken');
       Cookies.remove('refreshToken');
     }
