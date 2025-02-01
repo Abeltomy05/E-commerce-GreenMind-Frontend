@@ -29,21 +29,25 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
     // Enhanced pincode validation
     if (!formData.pincode.trim()) {
       newErrors.pincode = 'Pincode is required';
-    } else {
-      const pincodeRegex = /^(?!0{6})\d{6}$/;
-      if (!pincodeRegex.test(formData.pincode)) {
-        newErrors.pincode = 'Enter valid 6-digit pincode (cannot be all zeros)';
-      }
+    } else if (!/^\d+$/.test(formData.pincode)) {
+      newErrors.pincode = 'Pincode must contain only numbers';
+    } else if (formData.pincode === '000000') {
+      newErrors.pincode = 'Pincode cannot be all zeros';
+    } else if (formData.pincode.length !== 6) {
+      newErrors.pincode = 'Pincode must be exactly 6 digits';
     }
 
     // Enhanced phone validation
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else {
-      const phoneRegex = /^(?!0{10})[6-9]\d{9}$/;
-      if (!phoneRegex.test(formData.phone)) {
-        newErrors.phone = 'Enter valid 10-digit number starting with 6-9';
-      }
+    } else if (!/^\d+$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must contain only numbers';
+    } else if (formData.phone === '0000000000') {
+      newErrors.phone = 'Phone number cannot be all zeros';
+    } else if (formData.phone.length !== 10) {
+      newErrors.phone = 'Phone number must be exactly 10 digits';
+    } else if (!/^[6-9]/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must start with 6, 7, 8, or 9';
     }
 
     setErrors(newErrors);
@@ -62,11 +66,14 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
     const { name, value } = e.target;
     let newValue = value;
 
-    if (name === 'phone') {
-      newValue = value.replace(/\D/g, '').slice(0, 10);
-    }
-    if (name === 'pincode') {
-      newValue = value.replace(/\D/g, '').slice(0, 6);
+    // Only allow numeric input for phone and pincode
+    if (name === 'phone' || name === 'pincode') {
+      newValue = value.replace(/\D/g, '');
+      if (name === 'phone') {
+        newValue = newValue.slice(0, 10);
+      } else {
+        newValue = newValue.slice(0, 6);
+      }
     }
 
     setFormData(prev => ({
@@ -74,6 +81,7 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
       [name]: newValue
     }));
 
+    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -81,7 +89,6 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
       }));
     }
   };
-
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
