@@ -17,15 +17,34 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
 
   const validateForm = () => {
     const newErrors = {};
+    
+    // Basic required field validations
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.country.trim()) newErrors.country = 'Country is required';
     if (!formData.state.trim()) newErrors.state = 'State is required';
     if (!formData.district.trim()) newErrors.district = 'District is required';
     if (!formData.city.trim()) newErrors.city = 'City is required';
-    if (!formData.Address.trim()) newErrors.address = 'Address is required';
-    if (!formData.pincode.trim()) newErrors.pincode = 'Pincode is required';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
-    else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = 'Invalid phone number';
+    if (!formData.Address.trim()) newErrors.Address = 'Address is required';
+
+    // Enhanced pincode validation
+    if (!formData.pincode.trim()) {
+      newErrors.pincode = 'Pincode is required';
+    } else {
+      const pincodeRegex = /^(?!0{6})\d{6}$/;
+      if (!pincodeRegex.test(formData.pincode)) {
+        newErrors.pincode = 'Enter valid 6-digit pincode (cannot be all zeros)';
+      }
+    }
+
+    // Enhanced phone validation
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else {
+      const phoneRegex = /^(?!0{10})[6-9]\d{9}$/;
+      if (!phoneRegex.test(formData.phone)) {
+        newErrors.phone = 'Enter valid 10-digit number starting with 6-9';
+      }
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -41,10 +60,20 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let newValue = value;
+
+    if (name === 'phone') {
+      newValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+    if (name === 'pincode') {
+      newValue = value.replace(/\D/g, '').slice(0, 6);
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: newValue
     }));
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -52,6 +81,7 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
       }));
     }
   };
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -69,14 +99,16 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
+              Full Name *
             </label>
             <input
               type="text"
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2"
+              className={`w-full border rounded-md p-2 ${
+                errors.fullName ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Enter your full name"
             />
             {errors.fullName && (
@@ -87,14 +119,16 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Country
+                Country *
               </label>
               <input
                 type="text"
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-2"
+                className={`w-full border rounded-md p-2 ${
+                  errors.country ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Country"
               />
               {errors.country && (
@@ -104,14 +138,16 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                State
+                State *
               </label>
               <input
                 type="text"
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-2"
+                className={`w-full border rounded-md p-2 ${
+                  errors.state ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="State"
               />
               {errors.state && (
@@ -123,14 +159,16 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                District
+                District *
               </label>
               <input
                 type="text"
                 name="district"
                 value={formData.district}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-2"
+                className={`w-full border rounded-md p-2 ${
+                  errors.district ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="District"
               />
               {errors.district && (
@@ -140,14 +178,16 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                City
+                City *
               </label>
               <input
                 type="text"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-2"
+                className={`w-full border rounded-md p-2 ${
+                  errors.city ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="City"
               />
               {errors.city && (
@@ -158,13 +198,15 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address
+              Address *
             </label>
             <textarea
               name="Address"
               value={formData.Address}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2"
+              className={`w-full border rounded-md p-2 ${
+                errors.Address ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Enter your full address"
               rows="3"
             />
@@ -176,15 +218,17 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Pincode
+                Pincode *
               </label>
               <input
                 type="text"
                 name="pincode"
                 value={formData.pincode}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-2"
-                placeholder="Pincode"
+                className={`w-full border rounded-md p-2 ${
+                  errors.pincode ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter 6-digit pincode"
               />
               {errors.pincode && (
                 <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>
@@ -193,15 +237,17 @@ const AddAddressOverlay = ({ onClose, onAddAddress }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
+                Phone Number *
               </label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-2"
-                placeholder="Phone number"
+                className={`w-full border rounded-md p-2 ${
+                  errors.phone ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter 10-digit number"
               />
               {errors.phone && (
                 <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
