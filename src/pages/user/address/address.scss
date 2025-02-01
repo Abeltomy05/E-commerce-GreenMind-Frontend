@@ -281,6 +281,17 @@
             font-size: 1rem;
           }
         }
+
+        input.error {
+          border-color: red;
+      }
+      
+      .error-message {
+          color: red;
+          font-size: 0.8rem;
+          margin-top: 4px;
+          display: block;
+      }
       }
   
       .submit-button {
