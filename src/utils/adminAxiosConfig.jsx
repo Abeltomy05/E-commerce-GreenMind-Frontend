@@ -36,7 +36,7 @@ api.interceptors.response.use(
       try {
         // Call refresh token endpoint
         const response = await axios.post(
-          'http://localhost:3000/admin/refresh-token',
+          'https://backend.abeltomy.site/admin/refresh-token',
           {},
           { withCredentials: true }
         );

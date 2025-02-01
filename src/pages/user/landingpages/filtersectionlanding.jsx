@@ -19,11 +19,11 @@ function LandingFilterSection({ isOpen, onProductsUpdate, isSearchActive  }) {
   useEffect(() => {
     const fetchFilters = async () => {
       try {
-        const categoryResponse = await axios.get('http://localhost:3000/user/getcategorynameslandingpage');
+        const categoryResponse = await axios.get('https://backend.abeltomy.site/user/getcategorynameslandingpage');
         const categoryData = categoryResponse.data.data.map(category => category.name);
         setCategories(categoryData);
 
-        const typesResponse = await axios.get('http://localhost:3000/user/producttypeslandingpage');
+        const typesResponse = await axios.get('https://backend.abeltomy.site/user/producttypeslandingpage');
         setTypes(typesResponse.data.data);
         setLoading(false);
       } catch (err) {
@@ -55,7 +55,7 @@ function LandingFilterSection({ isOpen, onProductsUpdate, isSearchActive  }) {
               params.append('nameSort', selectedFilters.nameSort);
             }
 
-            const response = await axios.get(`http://localhost:3000/user/productsfilterlandingpage?${params}`);
+            const response = await axios.get(`https://backend.abeltomy.site/user/productsfilterlandingpage?${params}`);
             const filteredProducts = response.data.data;
 
             onProductsUpdate(filteredProducts);

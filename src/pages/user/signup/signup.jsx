@@ -96,7 +96,7 @@ function UserSignup() {
   }
 
   const googleAuth = () => {
-    window.open("http://localhost:3000/auth/google/callback", "_self");
+    window.open("https://backend.abeltomy.site/auth/google/callback", "_self");
   }
 
   const handleSubmit = async (e) => {

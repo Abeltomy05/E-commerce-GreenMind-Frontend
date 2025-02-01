@@ -64,7 +64,7 @@ export default function LandingHomePage() {
   useEffect(() => {
     const fetchBestSellers = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/user/bestsellingproductslandingpage');
+        const response = await axios.get('https://backend.abeltomy.site/user/bestsellingproductslandingpage');
         setBestproducts(response.data.data);
         setLoading(false);
       } catch (err) {
@@ -81,13 +81,13 @@ export default function LandingHomePage() {
     const fetchCategoriesWithProducts = async () => {
       try {
         setLoading(true);
-        const categoryResponse = await axios.get('http://localhost:3000/user/categoriesforhomelandingpage');
+        const categoryResponse = await axios.get('https://backend.abeltomy.site/user/categoriesforhomelandingpage');
         const activeCategories = categoryResponse.data;
       
         const categoriesWithImages = await Promise.all(
           activeCategories.map(async (category) => {
             try {
-              const productResponse = await axios.get(`http://localhost:3000/user/categoryimagelandingpage/${category._id}`);
+              const productResponse = await axios.get(`https://backend.abeltomy.site/user/categoryimagelandingpage/${category._id}`);
               const { products, count } = productResponse.data;
               const firstProductImage = products && products.length > 0 && products[0].images.length > 0 
               ? products[0].images[0] 
@@ -130,7 +130,7 @@ useEffect(() => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3000/user/getreviewsforhomelandingpage');
+      const response = await axios.get('https://backend.abeltomy.site/user/getreviewsforhomelandingpage');
       console.log('Raw review response:', response.data);
 
       if (response.data?.status === 'success' && Array.isArray(response.data.data)) {
@@ -170,7 +170,7 @@ useEffect(() => {
 useEffect(() => {
   const fetchOffer = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/user/activeoffersforhomelandingpage');
+      const response = await axios.get('https://backend.abeltomy.site/user/activeoffersforhomelandingpage');
       if (response.data.data) {
         setCurrentOffer(response.data.data);
       }

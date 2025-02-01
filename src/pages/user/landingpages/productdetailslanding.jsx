@@ -58,7 +58,7 @@ const LandingProductView = () => {
     const fetchRelatedProducts = async () => {
       try {
         if (product?.category?._id) {
-          const response = await axios.get(`http://localhost:3000/user/related-productslandingpage/${product.category._id}/${productId}`);
+          const response = await axios.get(`https://backend.abeltomy.site/user/related-productslandingpage/${product.category._id}/${productId}`);
           setRelatedProducts(response.data); 
         }
       } catch (error) {
@@ -91,7 +91,7 @@ const LandingProductView = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/user/product-viewlandingpage/${productId}`);
+        const response = await axios.get(`https://backend.abeltomy.site/user/product-viewlandingpage/${productId}`);
         const productData = response.data;
         console.log(productData)
   

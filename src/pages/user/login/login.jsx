@@ -63,7 +63,7 @@ function UserLogin() {
 
     Cookies.remove('accessToken');
     Cookies.remove('refreshToken');
-    window.open("http://localhost:3000/auth/google", "_self");
+    window.open("https://abeltomy.site/auth/google", "_self");
 }
 
 useEffect(() => {
