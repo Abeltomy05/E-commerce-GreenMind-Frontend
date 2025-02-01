@@ -55,7 +55,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="fullName"
                             value={formData.fullName}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className="form-group">
@@ -66,7 +66,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="Address"
                             value={formData.Address}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className="form-group">
@@ -77,7 +77,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="city"
                             value={formData.city}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className="form-group">
@@ -88,7 +88,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="district"
                             value={formData.district}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className="form-group">
@@ -99,7 +99,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="state"
                             value={formData.state}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className="form-group">
@@ -110,7 +110,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="country"
                             value={formData.country}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className="form-group">
@@ -121,7 +121,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="pincode"
                             value={formData.pincode}
                             onChange={handleChange}
-                            required
+                           
                         />
                     </div>
                     <div className="form-group">
@@ -132,7 +132,7 @@ const AddAddressModal = ({ onClose, userId}) => {
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className="form-group checkbox">
