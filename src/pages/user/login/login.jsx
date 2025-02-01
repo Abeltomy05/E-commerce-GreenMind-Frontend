@@ -10,7 +10,6 @@ import loginImg2 from "../../../assets/images/side2.jpg";
 import loginImg3 from "../../../assets/images/side3.jpg";
 import Footer from "../../../components/footer/footer";
 import HeaderLogin from "../../../components/header-login/header-login";
-import axios from "axios";
 import { useDispatch } from 'react-redux';
 import {login} from "../../../redux/userSlice"
 import Spinner from "../../../components/spinner/spinner";
@@ -63,7 +62,7 @@ function UserLogin() {
 
     Cookies.remove('accessToken');
     Cookies.remove('refreshToken');
-    window.open("https://abeltomy.site/auth/google", "_self");
+    window.open(`${import.meta.env.VITE_API_URL}/auth/google`, "_self");
 }
 
 useEffect(() => {
@@ -106,7 +105,7 @@ useEffect(() => {
 
 const COOKIE_OPTIONS = {
   secure: true, // Only transmitted over HTTPS
-  sameSite: 'strict', // Protects against CSRF
+  sameSite: 'lax', // Protects against CSRF
   path: '/' // Available across all pages
 };
 
@@ -123,6 +122,8 @@ const handleSubmit = async (e) => {
   }
   
   try {
+    console.log('Making request to:', axioInstence.defaults.baseURL);
+
     const userData = { email, password };
     const response = await axioInstence.post("/user/login", userData, {
       headers: {
@@ -149,6 +150,13 @@ const handleSubmit = async (e) => {
       }, 3000);
     }
   } catch(error) {
+    console.error("Login error details:", {
+      baseURL: axioInstence.defaults.baseURL,
+      endpoint: "/user/login",
+      fullError: error,
+      response: error.response?.data,
+      status: error.response?.status
+    });
     console.log("Error in login:", error); 
     console.log("Error response:", error.response); 
     console.log("Error message:", error.response?.data);
