@@ -309,10 +309,12 @@ const AdminDashboard = () => {
   };
 
   const handleExcelDownload = () => {
+    console.log("Starting Excel export with data:", salesData); // Debug log
+    
     // Create workbook
     const wb = XLSX.utils.book_new();
     
-    // 1. Create Summary Sheet with simpler formatting
+    // 1. Create Summary Sheet
     const summaryData = [
       ['Sales Report'],
       [`Generated on: ${new Date().toLocaleDateString()}`],
@@ -326,15 +328,14 @@ const AdminDashboard = () => {
   
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
+    console.log("Summary sheet added successfully"); // Debug log
   
-    // 2. Create Sales Details Sheet as a separate worksheet
-    // Create a new worksheet for sales data
-    const salesWS = XLSX.utils.aoa_to_sheet([
-      ['Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status']
-    ]);
-  
-    // Prepare the data rows
-    const salesData2 = salesData.map(sale => [
+    // 2. Create Sales Details Sheet
+    // First create the headers
+    const headers = ['Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status'];
+    
+    // Then prepare the data rows
+    const salesRows = salesData.map(sale => [
       new Date(sale.date).toLocaleDateString(),
       sale.orderId,
       sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
@@ -344,28 +345,34 @@ const AdminDashboard = () => {
       sale.status
     ]);
   
-    // Append the data rows to the worksheet starting from row 1
-    XLSX.utils.sheet_add_aoa(salesWS, salesData2, { origin: 1 });
+    // Combine headers and rows
+    const salesSheetData = [headers, ...salesRows];
+    console.log("Prepared sales data:", salesSheetData); // Debug log
   
-    // Explicitly set the range for the sales worksheet
-    const range = XLSX.utils.decode_range(salesWS['!ref']);
-    range.e.c = 6; // Ensure 7 columns (0-6)
-    range.e.r = salesData.length; // Set correct number of rows
-    salesWS['!ref'] = XLSX.utils.encode_range(range);
+    // Create the sales worksheet
+    const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
+    
+    // Set column widths
+    salesWS['!cols'] = [
+      { wch: 15 },  // Date
+      { wch: 25 },  // Order ID
+      { wch: 40 },  // Products
+      { wch: 25 },  // User
+      { wch: 15 },  // Amount
+      { wch: 15 },  // Discount
+      { wch: 15 }   // Status
+    ];
   
-    // Add the sales worksheet to the workbook with a different name
-    XLSX.utils.book_append_sheet(wb, salesWS, 'Sales_Data');
+    // Add the sales worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
+    console.log("Sales sheet added successfully"); // Debug log
   
-    // Save the file with compatibility options
+    // Save the file
     try {
       const date = new Date().toISOString().split('T')[0];
-      const opts = {
-        bookType: 'xlsx',
-        bookSST: false,
-        type: 'array',
-        compression: true
-      };
-      XLSX.writeFile(wb, `sales_report_${date}.xlsx`, opts);
+      const filename = `sales_report_${date}.xlsx`;
+      console.log("Attempting to save file:", filename); // Debug log
+      XLSX.writeFile(wb, filename);
       console.log("Excel file generated successfully with both sheets");
     } catch (error) {
       console.error("Error generating Excel file:", error);
