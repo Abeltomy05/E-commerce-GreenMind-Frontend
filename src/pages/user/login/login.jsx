@@ -75,17 +75,12 @@ useEffect(() => {
       const accessToken = Cookies.get('user_access_token');
       const refreshToken = Cookies.get('user_refresh_token');
 
-      console.log('Cookie check:', {
-        accessToken: accessToken ? 'present' : 'missing',
-        refreshToken: refreshToken ? 'present' : 'missing'
-      });
 
-      if (!accessToken) {
-        console.log('No access token found');
-        return; 
+      if (!accessToken && !refreshToken) {
+        console.log('No tokens found');
+        return;
       }
 
-      console.log('Making auth check request to:', `${axioInstence.defaults.baseURL}/auth/login/success`);
 
       const response = await axioInstence.get("/auth/login/success", {
         withCredentials: true,
