@@ -2,13 +2,17 @@ import React from 'react';
 import axios from 'axios';
 import { store } from '../redux/store';
 import { logout } from '../redux/adminSlice';
+import { useNavigate } from 'react-router-dom';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL ;
 
 // Create axios instance with default config
 const api = axios.create({
   baseURL: BACKEND_URL,
-  withCredentials: true 
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  } 
 });
 
 // Request interceptor

@@ -19,6 +19,7 @@ const LogoutPage = () => {
 
 
         dispatch(logout())
+        navigate('/admin/login'); 
         console.log('Logged out successfully');
 
     }catch(error){
