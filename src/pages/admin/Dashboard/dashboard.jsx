@@ -309,50 +309,40 @@ const AdminDashboard = () => {
   };
 
   const handleExcelDownload = () => {
-    console.log("Starting Excel export with sales data:", salesData);
-  
+    // Create workbook
     const wb = XLSX.utils.book_new();
-  
-    // Summary Sheet
+    
+    // 1. Create Summary Sheet
     const summaryData = [
-      ['Sales Report', '', '', '', ''],
-      ['Generated on:', new Date().toLocaleDateString(), '', '', ''],
-      ['', '', '', '', ''],
-      ['Summary Statistics', '', '', '', ''],
-      ['', '', '', '', ''],
-      ['Total Orders', totalSales, '', '', ''],
-      ['Total Revenue', formatIndianRupee(totalAmount), '', '', ''],
-      ['Total Discounts', formatIndianRupee(totalDiscount), '', '', ''],
-      ['', '', '', '', '']
+      ['Sales Report'],
+      [`Generated on: ${new Date().toLocaleDateString()}`],
+      [''],
+      ['Summary Statistics'],
+      [''],
+      ['Total Orders', totalSales],
+      ['Total Revenue', formatIndianRupee(totalAmount)],
+      ['Total Discounts', formatIndianRupee(totalDiscount)],
+      ['']
     ];
   
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
   
-    // Sales data sheet
-    const salesHeaders = [
-      ['Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status']
-    ];
+    // 2. Create Sales Details Sheet
+    // First, prepare the data in the correct format
+    const salesRows = salesData.map(sale => ({
+      Date: new Date(sale.date).toLocaleDateString(),
+      'Order ID': sale.orderId,
+      Products: sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
+      User: sale.userName,
+      Amount: formatIndianRupee(sale.amount),
+      Discount: formatIndianRupee(sale.discount),
+      Status: sale.status
+    }));
   
-    // Convert sales data to rows
-    const salesRows = salesData.map(sale => [
-      new Date(sale.date).toLocaleDateString(),
-      sale.orderId,
-      sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
-      sale.userName,
-      formatIndianRupee(sale.amount),
-      formatIndianRupee(sale.discount),
-      sale.status
-    ]);
-  
-    // Combine headers and rows
-    const salesTableData = [...salesHeaders, ...salesRows];
-    console.log("Sales Table Data:", salesTableData); // Debugging line
-  
-    // Create sales worksheet
-    const salesWS = XLSX.utils.aoa_to_sheet(salesTableData);
-    console.log("Sales Worksheet:", salesWS); // Debugging line
-  
+    // Convert the array of objects to worksheet
+    const salesWS = XLSX.utils.json_to_sheet(salesRows);
+    
     // Set column widths
     const salesColWidth = [
       { wch: 15 },  // Date
@@ -365,9 +355,8 @@ const AdminDashboard = () => {
     ];
     salesWS['!cols'] = salesColWidth;
   
-    // Append sales worksheet to workbook
+    // Add the sales worksheet to the workbook
     XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
-    console.log("Workbook Sheets:", wb.SheetNames); // Debugging line
   
     // Save the file
     try {
