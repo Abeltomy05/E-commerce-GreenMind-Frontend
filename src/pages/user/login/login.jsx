@@ -150,11 +150,11 @@ const handleSubmit = async (e) => {
       withCredentials: true,
     });
 
-    const { status, message, user, role,accessToken,refreshToken } = response.data;
+    const { status, message, user, role} = response.data;
     if (status === "VERIFIED" && user) {
 
-      Cookies.set('user_access_token', accessToken, COOKIE_OPTIONS);
-      Cookies.set('user_refresh_token', refreshToken, COOKIE_OPTIONS);
+      // Cookies.set('user_access_token', accessToken, COOKIE_OPTIONS);
+      // Cookies.set('user_refresh_token', refreshToken, COOKIE_OPTIONS);
       
       setTimeout(() => {
         dispatch(login({ 
