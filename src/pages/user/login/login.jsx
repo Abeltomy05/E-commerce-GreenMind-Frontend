@@ -75,30 +75,59 @@ useEffect(() => {
       const accessToken = Cookies.get('user_access_token');
       const refreshToken = Cookies.get('user_refresh_token');
 
+      console.log('Cookie check:', {
+        accessToken: accessToken ? 'present' : 'missing',
+        refreshToken: refreshToken ? 'present' : 'missing'
+      });
 
       if (!accessToken && !refreshToken) {
         console.log('No tokens found');
         return;
       }
 
+      // Trying with access token first
+      if (accessToken) {
+        try {
+          const response = await axioInstence.get("/auth/login/success", {
+            withCredentials: true,
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Accept': 'application/json',
+            }
+          });
 
-      const response = await axioInstence.get("/auth/login/success", {
-        withCredentials: true,
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json',
+          if (response.data.user) {
+            dispatch(login({ 
+              user: response.data.user, 
+              role: response.data.role || 'user' 
+            }));
+            Navigate('/user/home');
+            return;
+          }
+        } catch (error) {
+          console.log('Access token verification failed, trying refresh token');
+          
+          if (refreshToken) {
+            try {
+              // Using your actual refresh token endpoint
+              const refreshResponse = await axioInstence.get("/user/refresh-token");
+
+              if (refreshResponse.data.status === "VERIFIED") {
+                dispatch(login({ 
+                  user: refreshResponse.data.user, 
+                  role: refreshResponse.data.role 
+                }));
+                Navigate('/user/home');
+                return;
+              }
+            } catch (refreshError) {
+              console.error("Refresh token error:", refreshError);
+              Cookies.remove('user_access_token', { path: '/', domain: '.abeltomy.site' });
+              Cookies.remove('user_refresh_token', { path: '/', domain: '.abeltomy.site' });
+              Navigate('/user/login');
+            }
+          }
         }
-      });
-
-      console.log('Login success response:', response.data);
-
-      if (response.data.user) {
-        console.log('User data received, dispatching login action');
-        dispatch(login({ 
-          user: response.data.user, 
-          role: response.data.role || 'user' 
-        }));
-        Navigate('/user/home');
       }
     } catch (error) {
       console.error("Login check error details:", {
@@ -107,13 +136,14 @@ useEffect(() => {
         status: error.response?.status
       });
       
-      Cookies.remove('user_access_token');
-      Cookies.remove('user_refresh_token');
+      Cookies.remove('user_access_token', { path: '/', domain: '.abeltomy.site' });
+      Cookies.remove('user_refresh_token', { path: '/', domain: '.abeltomy.site' });
+      Navigate('/user/login');
     }
   };
 
   checkLoginStatus();
-}, [dispatch,Navigate]);
+}, [dispatch, Navigate]);
 
 
 const COOKIE_OPTIONS = {
