@@ -309,6 +309,8 @@ const AdminDashboard = () => {
   };
 
   const handleExcelDownload = () => {
+    console.log("Starting Excel export with data:", salesData); // Debug log
+    
     // Create workbook
     const wb = XLSX.utils.book_new();
     
@@ -321,30 +323,37 @@ const AdminDashboard = () => {
       [''],
       ['Total Orders', totalSales],
       ['Total Revenue', formatIndianRupee(totalAmount)],
-      ['Total Discounts', formatIndianRupee(totalDiscount)],
-      ['']
+      ['Total Discounts', formatIndianRupee(totalDiscount)]
     ];
   
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
+    console.log("Summary sheet added successfully"); // Debug log
   
     // 2. Create Sales Details Sheet
-    // First, prepare the data in the correct format
-    const salesRows = salesData.map(sale => ({
-      Date: new Date(sale.date).toLocaleDateString(),
-      'Order ID': sale.orderId,
-      Products: sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
-      User: sale.userName,
-      Amount: formatIndianRupee(sale.amount),
-      Discount: formatIndianRupee(sale.discount),
-      Status: sale.status
-    }));
+    // First create the headers
+    const headers = ['Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status'];
+    
+    // Then prepare the data rows
+    const salesRows = salesData.map(sale => [
+      new Date(sale.date).toLocaleDateString(),
+      sale.orderId,
+      sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
+      sale.userName,
+      sale.amount.toString(),
+      sale.discount.toString(),
+      sale.status
+    ]);
   
-    // Convert the array of objects to worksheet
-    const salesWS = XLSX.utils.json_to_sheet(salesRows);
+    // Combine headers and rows
+    const salesSheetData = [headers, ...salesRows];
+    console.log("Prepared sales data:", salesSheetData); // Debug log
+  
+    // Create the sales worksheet
+    const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
     
     // Set column widths
-    const salesColWidth = [
+    salesWS['!cols'] = [
       { wch: 15 },  // Date
       { wch: 25 },  // Order ID
       { wch: 40 },  // Products
@@ -353,16 +362,18 @@ const AdminDashboard = () => {
       { wch: 15 },  // Discount
       { wch: 15 }   // Status
     ];
-    salesWS['!cols'] = salesColWidth;
   
     // Add the sales worksheet to the workbook
     XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
+    console.log("Sales sheet added successfully"); // Debug log
   
     // Save the file
     try {
       const date = new Date().toISOString().split('T')[0];
-      XLSX.writeFile(wb, `sales_report_${date}.xlsx`);
-      console.log("Excel file generated successfully");
+      const filename = `sales_report_${date}.xlsx`;
+      console.log("Attempting to save file:", filename); // Debug log
+      XLSX.writeFile(wb, filename);
+      console.log("Excel file generated successfully with both sheets");
     } catch (error) {
       console.error("Error generating Excel file:", error);
     }
