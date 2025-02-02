@@ -60,8 +60,8 @@ function UserLogin() {
 
   const googleAuth = () => {
 
-    Cookies.remove('accessToken', { path: '/', domain: '.abeltomy.site' });
-    Cookies.remove('refreshToken', { path: '/', domain: '.abeltomy.site' });
+    Cookies.remove('user_access_token', { path: '/', domain: '.abeltomy.site' });
+    Cookies.remove('user_refresh_token', { path: '/', domain: '.abeltomy.site' });
 
     console.log('Redirecting to:', `${import.meta.env.VITE_API_URL}/auth/google`);
     window.open(`${import.meta.env.VITE_API_URL}/auth/google`, "_self");
@@ -72,8 +72,8 @@ useEffect(() => {
     try {
       console.log("Starting login status check...");
 
-      const accessToken = Cookies.get('accessToken');
-      const refreshToken = Cookies.get('refreshToken');
+      const accessToken = Cookies.get('user_access_token');
+      const refreshToken = Cookies.get('user_refresh_token');
 
       console.log('Cookie check:', {
         accessToken: accessToken ? 'present' : 'missing',
@@ -112,8 +112,8 @@ useEffect(() => {
         status: error.response?.status
       });
       
-      Cookies.remove('accessToken');
-      Cookies.remove('refreshToken');
+      Cookies.remove('user_access_token');
+      Cookies.remove('user_refresh_token');
     }
   };
 
@@ -153,8 +153,8 @@ const handleSubmit = async (e) => {
     const { status, message, user, role,accessToken,refreshToken } = response.data;
     if (status === "VERIFIED" && user) {
 
-      Cookies.set('accessToken', accessToken, COOKIE_OPTIONS);
-      Cookies.set('refreshToken', refreshToken, COOKIE_OPTIONS);
+      Cookies.set('user_access_token', accessToken, COOKIE_OPTIONS);
+      Cookies.set('user_refresh_token', refreshToken, COOKIE_OPTIONS);
       
       setTimeout(() => {
         dispatch(login({ 

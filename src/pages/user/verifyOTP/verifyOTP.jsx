@@ -114,8 +114,8 @@ export default function VerifyOTP() {
           const { status, message, user, role,accessToken,refreshToken } = response.data;
          if (status === "VERIFIED" && user) {
          
-               localStorage.setItem('accessToken', accessToken);
-                 localStorage.setItem('refreshToken', refreshToken);
+               localStorage.setItem('user_access_token', accessToken);
+                 localStorage.setItem('user_refresh_token', refreshToken);
          
                toast.success("OTP verified successfully", {
                  position: "top-right",

@@ -53,7 +53,7 @@ const processQueue = (error, token = null) => {
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = Cookies.get('accessToken');
+    const accessToken = Cookies.get('user_access_token');
     if (accessToken) {
       config.headers['Authorization'] = `Bearer ${accessToken}`;
     }
@@ -66,8 +66,8 @@ axiosInstance.interceptors.request.use(
 
 const handleLogout = () => {
   store.dispatch(logout());
-  Cookies.remove('accessToken');
-  Cookies.remove('refreshToken');
+  Cookies.remove('user_access_token');
+  Cookies.remove('user_refresh_token');
   toast.error('Session expired. Please log in again.');
   window.location.href = '/user/login';
 };
@@ -97,12 +97,12 @@ axiosInstance.interceptors.response.use(
         const { accessToken, refreshToken } = response.data;
 
         if (accessToken && refreshToken) {
-          Cookies.set('accessToken', accessToken, {
+          Cookies.set('user_access_token', accessToken, {
             secure: true,
             sameSite: 'lax',
             path: '/'
           });
-          Cookies.set('refreshToken', refreshToken, {
+          Cookies.set('user_refresh_token', refreshToken, {
             secure: true,
             sameSite: 'lax',
             path: '/'

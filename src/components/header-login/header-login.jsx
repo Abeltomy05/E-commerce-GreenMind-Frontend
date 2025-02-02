@@ -50,25 +50,25 @@ const HeaderLogin = () => {
 
   const handleLogout = async () => {
     try {
-      const accessToken = Cookies.get('accessToken');
+      const accessToken = Cookies.get('user_access_token');
 
       await axiosInstance.post('/auth/logout', {}, {
         withCredentials: true,
         headers: {
-          'Authorization': `Bearer ${Cookies.get('accessToken')}`
+          'Authorization': `Bearer ${Cookies.get('user_access_token')}`
         }
       });
 
-      Cookies.remove('accessToken', { path: '/' });
-      Cookies.remove('refreshToken', { path: '/' });
+      Cookies.remove('user_access_token', { path: '/' });
+      Cookies.remove('user_refresh_token', { path: '/' });
       dispatch(logout());
       await persistor.purge();
 
       navigate('/user/login');
     } catch (error) {
       console.error('Logout error:', error);
-      Cookies.remove('accessToken', { path: '/' });
-      Cookies.remove('refreshToken', { path: '/' });
+      Cookies.remove('user_access_token', { path: '/' });
+      Cookies.remove('user_refresh_token', { path: '/' });
       dispatch(logout());
       await persistor.purge();
     navigate('/user/login');
