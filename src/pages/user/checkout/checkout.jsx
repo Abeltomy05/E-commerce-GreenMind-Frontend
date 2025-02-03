@@ -272,8 +272,7 @@ const CheckoutPage = () => {
 
   const handleRetryPayment = async () => {
     setPaymentFailureData(null);
-    if (paymentMethod === 'razorpay') {
-      // Re-initialize Razorpay payment with the same order data
+    if (paymentMethod === 'razorpay') {   
       const orderData = {
         userId: user.id,
         products: selectedItems.map(item => ({
@@ -287,7 +286,23 @@ const CheckoutPage = () => {
         couponCode: couponCode || null,
         totalPrice: subtotal - appliedDiscount
       };
+
+       try {
+      const stockVerification = await axioInstence.post('/user/verifyStock', {
+        products: orderData.products
+      });
+      
+      if (!stockVerification.data.success) {
+        const error = new Error(stockVerification.data.message || 'Some items are out of stock');
+        handlePaymentFailure(error);
+        return;
+      }
+      
       await initializeRazorpayPayment(orderData);
+    } catch (error) {
+      handlePaymentFailure(error);
+    }
+    
     } else if (paymentMethod === 'cod') {
       // Retry COD order placement
       handleSubmit(new Event('submit'));
