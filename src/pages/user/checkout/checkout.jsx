@@ -532,16 +532,8 @@ const CheckoutPage = () => {
       });
 
       if (!stockVerification.data.success) {
-        setPaymentFailureData({
-          orderId: null,
-          totalAmount: subtotal - appliedDiscount,
-          paymentMethod: paymentMethod,
-          errorMessage: stockVerification.data.message || 'Some items are out of stock'
-        });
-
-        setIsOrderProcessing(true);
-        setTimeout(() => setIsOrderProcessing(false), 100);
-       
+        error = new Error(stockVerification.data.message || 'Some items are out of stock');
+        handlePaymentFailure(error);
         return;
       }
 
