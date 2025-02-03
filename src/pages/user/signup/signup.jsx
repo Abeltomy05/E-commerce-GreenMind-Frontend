@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import loginImg1 from "../../../assets/images/side1.jpg";
 import loginImg2 from "../../../assets/images/side2.jpg";
 import loginImg3 from "../../../assets/images/side3.jpg";
+import bgImage from "../../../assets/images/bg1.jpg";
 import Footer from "../../../components/footer/footer"
 import HeaderLogin from "../../../components/header-login/header-login"
 import axios from "axios";
@@ -159,7 +160,7 @@ function UserSignup() {
     <HeaderLogin/>
     <div className="min-h-[90vh] w-full bg-cover bg-center p-2 flex items-center justify-center" 
          style={{ 
-           backgroundImage: `url('/src/assets/images/bg1.jpg')`,
+           backgroundImage: `url(${bgImage})`,
            backgroundColor: 'rgba(0, 0, 0, 0.5)',
            backgroundBlendMode: 'overlay',
            backgroundSize: 'cover',
