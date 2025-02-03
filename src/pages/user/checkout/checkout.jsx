@@ -538,6 +538,10 @@ const CheckoutPage = () => {
           paymentMethod: paymentMethod,
           errorMessage: stockVerification.data.message || 'Some items are out of stock'
         });
+
+        setIsOrderProcessing(true);
+        setTimeout(() => setIsOrderProcessing(false), 100);
+       
         return;
       }
 
