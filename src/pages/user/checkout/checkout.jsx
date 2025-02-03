@@ -526,6 +526,16 @@ const CheckoutPage = () => {
     
 
     try {
+     //final check for stock before placing order
+      const stockVerification = await axioInstence.post('/user/verifyStock', {
+        products: orderData.products
+      });
+
+      if (!stockVerification.data.success) {
+        toast.error(stockVerification.data.message || 'Some items are out of stock');
+        return;
+      }
+
       const amountResponse = await axioInstence.post('/user/calculateOrderAmount', {
         products: orderData.products,
         couponCode: orderData.couponCode
