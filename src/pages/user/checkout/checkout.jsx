@@ -566,9 +566,7 @@ const CheckoutPage = () => {
        console.log('Credit card payment method selected');
       }
     } catch (error) {
-      if (!error.response || error.response.status !== 400) {
         handlePaymentFailure(error);
-      }
     }
 
   };
