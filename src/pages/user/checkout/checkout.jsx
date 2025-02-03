@@ -532,7 +532,12 @@ const CheckoutPage = () => {
       });
 
       if (!stockVerification.data.success) {
-        toast.error(stockVerification.data.message || 'Some items are out of stock');
+        setPaymentFailureData({
+          orderId: null,
+          totalAmount: subtotal - appliedDiscount,
+          paymentMethod: paymentMethod,
+          errorMessage: stockVerification.data.message || 'Some items are out of stock'
+        });
         return;
       }
 
