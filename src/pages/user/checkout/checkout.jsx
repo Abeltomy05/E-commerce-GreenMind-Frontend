@@ -530,7 +530,7 @@ const CheckoutPage = () => {
       const stockVerification = await axioInstence.post('/user/verifyStock', {
         products: orderData.products
       });
-
+      console.log(stockVerification.data);
       if (!stockVerification.data.success) {
         error = new Error(stockVerification.data.message || 'Some items are out of stock');
         handlePaymentFailure(error);
