@@ -357,7 +357,7 @@ const AdminDashboard = () => {
   
     // Combine headers and data
     const salesSheetData = [headers, ...salesRows];
-  
+  console.log("Sales sheet data:", salesSheetData);
     // Create the sales worksheet
     const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
   
@@ -375,7 +375,7 @@ const AdminDashboard = () => {
 
     XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
   
-    // Save the file
+   
     try {
       const date = new Date().toISOString().split('T')[0];
       const filename = `sales_report_${date}.xlsx`;
