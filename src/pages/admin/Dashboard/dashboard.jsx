@@ -328,49 +328,48 @@ const AdminDashboard = () => {
   
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
     
-    summaryWS['!cols'] = [
-      { wch: 20 },
-      { wch: 20 }
+    // Set column widths for summary sheet
+    summaryWS['!cols'] = [{ wch: 20 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
+  
+    // 2. Create Sales Details Sheet
+    // First create the headers
+    const headers = [
+      { v: 'Date', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
+      { v: 'Order ID', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
+      { v: 'Products', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
+      { v: 'User', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
+      { v: 'Amount', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
+      { v: 'Discount', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
+      { v: 'Status', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } }
     ];
   
-    XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
-    
-    const headers = [
-      'Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status'
-    ].map(header => ({
-      v: header,
-      s: {
-        font: { bold: true, color: { rgb: "FFFFFF" } },
-        fill: { fgColor: { rgb: "47645A" } },
-        alignment: { horizontal: "center" }
-      }
-    }));
-  
+    // Create data rows with proper formatting
     const salesRows = salesData.map(sale => [
       { v: new Date(sale.date).toLocaleDateString(), s: { alignment: { horizontal: "left" } } },
       { v: sale.orderId, s: { alignment: { horizontal: "left" } } },
-      { v: sale.products.map(p => `${p.name} (${p.quantity})`).join(', '), s: { alignment: { horizontal: "left" } } },
+      { v: sale.products.map(p => `${p.name} (${p.quantity})`).join(', '), s: { alignment: { horizontal: "left" }, wrapText: true } },
       { v: sale.userName, s: { alignment: { horizontal: "left" } } },
-      { v: sale.amount.toString(), s: { alignment: { horizontal: "right" } } },
-      { v: sale.discount.toString(), s: { alignment: { horizontal: "right" } } },
+      { v: formatIndianRupee(sale.amount), s: { alignment: { horizontal: "right" } } },
+      { v: formatIndianRupee(sale.discount), s: { alignment: { horizontal: "right" } } },
       { v: sale.status, s: { alignment: { horizontal: "center" } } }
     ]);
-  console.log("Sales Rows:", salesRows);
-
+  
+    // Combine headers and data
     const salesSheetData = [headers, ...salesRows];
-    
+  
     // Create the sales worksheet
     const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
-    console.log("Sales WS:", salesWS);
- 
+  
+    // Set column widths
     salesWS['!cols'] = [
-      { wch: 15 }, 
-      { wch: 25 }, 
-      { wch: 40 }, 
-      { wch: 25 },  
-      { wch: 15 },  
-      { wch: 15 },  
-      { wch: 15 }  
+      { wch: 15 },  // Date
+      { wch: 25 },  // Order ID
+      { wch: 40 },  // Products
+      { wch: 25 },  // User
+      { wch: 15 },  // Amount
+      { wch: 15 },  // Discount
+      { wch: 15 }   // Status
     ];
   
     // Add the sales worksheet to the workbook
