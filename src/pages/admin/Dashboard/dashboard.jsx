@@ -363,16 +363,16 @@ const AdminDashboard = () => {
   
     // Set column widths
     salesWS['!cols'] = [
-      { wch: 15 },  // Date
-      { wch: 25 },  // Order ID
-      { wch: 40 },  // Products
-      { wch: 25 },  // User
-      { wch: 15 },  // Amount
-      { wch: 15 },  // Discount
-      { wch: 15 }   // Status
+      { wch: 15 },  
+      { wch: 25 },  
+      { wch: 40 }, 
+      { wch: 25 },  
+      { wch: 15 },
+      { wch: 15 }, 
+      { wch: 15 }   
     ];
   
-    // Add the sales worksheet to the workbook
+
     XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
   
     // Save the file
