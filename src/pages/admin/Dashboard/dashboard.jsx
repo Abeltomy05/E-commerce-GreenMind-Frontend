@@ -316,10 +316,10 @@ const AdminDashboard = () => {
     
     // 1. Create Summary Sheet
     const summaryData = [
-      [{ v: 'Sales Report', s: { font: { bold: true, sz: 16 } } }],
-      [{ v: `Generated on: ${new Date().toLocaleDateString()}`, s: { font: { sz: 12 } } }],
+      ['Sales Report'],
+      [`Generated on: ${new Date().toLocaleDateString()}`],
       [''],
-      [{ v: 'Summary Statistics', s: { font: { bold: true, sz: 14 } } }],
+      ['Summary Statistics'],
       [''],
       ['Total Orders', totalSales],
       ['Total Revenue', formatIndianRupee(totalAmount)],
@@ -333,53 +333,72 @@ const AdminDashboard = () => {
     XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
   
     // 2. Create Sales Details Sheet
-    // First create the headers
+    // Create headers with minimal styling
     const headers = [
-      { v: 'Date', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
-      { v: 'Order ID', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
-      { v: 'Products', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
-      { v: 'User', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
-      { v: 'Amount', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
-      { v: 'Discount', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } },
-      { v: 'Status', s: { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "47645A" } }, alignment: { horizontal: "center" } } }
+      'Date',
+      'Order ID',
+      'Products',
+      'User',
+      'Amount',
+      'Discount',
+      'Status'
     ];
   
-    // Create data rows with proper formatting
+    // Create data rows with minimal formatting
     const salesRows = salesData.map(sale => [
-      { v: new Date(sale.date).toLocaleDateString(), s: { alignment: { horizontal: "left" } } },
-      { v: sale.orderId, s: { alignment: { horizontal: "left" } } },
-      { v: sale.products.map(p => `${p.name} (${p.quantity})`).join(', '), s: { alignment: { horizontal: "left" }, wrapText: true } },
-      { v: sale.userName, s: { alignment: { horizontal: "left" } } },
-      { v: formatIndianRupee(sale.amount), s: { alignment: { horizontal: "right" } } },
-      { v: formatIndianRupee(sale.discount), s: { alignment: { horizontal: "right" } } },
-      { v: sale.status, s: { alignment: { horizontal: "center" } } }
+      new Date(sale.date).toLocaleDateString(),
+      sale.orderId,
+      sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
+      sale.userName,
+      formatIndianRupee(sale.amount),
+      formatIndianRupee(sale.discount),
+      sale.status
     ]);
   
     // Combine headers and data
     const salesSheetData = [headers, ...salesRows];
-  console.log("Sales sheet data:", salesSheetData);
+    console.log("Sales sheet data:", salesSheetData);
+  
     // Create the sales worksheet
     const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
   
     // Set column widths
     salesWS['!cols'] = [
-      { wch: 15 },  
-      { wch: 25 },  
-      { wch: 40 }, 
-      { wch: 25 },  
-      { wch: 15 },
-      { wch: 15 }, 
-      { wch: 15 }   
+      { wch: 15 },  // Date
+      { wch: 25 },  // Order ID
+      { wch: 40 },  // Products
+      { wch: 25 },  // User
+      { wch: 15 },  // Amount
+      { wch: 15 },  // Discount
+      { wch: 15 }   // Status
     ];
   
-
     XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
   
-   
     try {
       const date = new Date().toISOString().split('T')[0];
       const filename = `sales_report_${date}.xlsx`;
-      XLSX.writeFile(wb, filename);
+      
+      // Write to binary string
+      const wbout = XLSX.write(wb, { 
+        bookType: 'xlsx', 
+        type: 'binary',
+        cellStyles: true
+      });
+  
+      // Convert binary string to ArrayBuffer
+      const buf = new ArrayBuffer(wbout.length);
+      const view = new Uint8Array(buf);
+      for (let i = 0; i < wbout.length; i++) {
+        view[i] = wbout.charCodeAt(i) & 0xFF;
+      }
+  
+      // Create Blob and use FileSaver
+      const blob = new Blob([buf], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      saveAs(blob, filename);
+  
       console.log("Excel file generated successfully with both sheets");
     } catch (error) {
       console.error("Error generating Excel file:", error);
