@@ -361,7 +361,7 @@ const AdminDashboard = () => {
     
     // Create the sales worksheet
     const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
-    connsole.log("Sales WS:", salesWS);
+    console.log("Sales WS:", salesWS);
  
     salesWS['!cols'] = [
       { wch: 15 }, 
