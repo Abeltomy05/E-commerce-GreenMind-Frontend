@@ -18,7 +18,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import TopItemsSection from './bestsellingitems';
 import api from '../../../utils/adminAxiosConfig';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 
 ChartJS.register(
   CategoryScale,
@@ -309,17 +309,17 @@ const AdminDashboard = () => {
   };
 
   const handleExcelDownload = () => {
-    console.log("Starting Excel export with data:", salesData); // Debug log
+    console.log("Starting Excel export with data:", salesData);
     
     // Create workbook
     const wb = XLSX.utils.book_new();
     
     // 1. Create Summary Sheet
     const summaryData = [
-      ['Sales Report'],
-      [`Generated on: ${new Date().toLocaleDateString()}`],
+      [{ v: 'Sales Report', s: { font: { bold: true, sz: 16 } } }],
+      [{ v: `Generated on: ${new Date().toLocaleDateString()}`, s: { font: { sz: 12 } } }],
       [''],
-      ['Summary Statistics'],
+      [{ v: 'Summary Statistics', s: { font: { bold: true, sz: 14 } } }],
       [''],
       ['Total Orders', totalSales],
       ['Total Revenue', formatIndianRupee(totalAmount)],
@@ -327,32 +327,46 @@ const AdminDashboard = () => {
     ];
   
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
-    console.log("Summary sheet added successfully"); // Debug log
-  
-    // 2. Create Sales Details Sheet
-    // First create the headers
-    const headers = ['Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status'];
     
-    // Then prepare the data rows
+    // Set column widths for summary sheet
+    summaryWS['!cols'] = [
+      { wch: 20 },
+      { wch: 20 }
+    ];
+  
+    XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
+    
+    // 2. Create Sales Details Sheet
+    // Create headers with styles
+    const headers = [
+      'Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status'
+    ].map(header => ({
+      v: header,
+      s: {
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "47645A" } },
+        alignment: { horizontal: "center" }
+      }
+    }));
+  
+    // Prepare the data rows with styles
     const salesRows = salesData.map(sale => [
-      new Date(sale.date).toLocaleDateString(),
-      sale.orderId,
-      sale.products.map(p => `${p.name} (${p.quantity})`).join(', '),
-      sale.userName,
-      sale.amount.toString(),
-      sale.discount.toString(),
-      sale.status
+      { v: new Date(sale.date).toLocaleDateString(), s: { alignment: { horizontal: "left" } } },
+      { v: sale.orderId, s: { alignment: { horizontal: "left" } } },
+      { v: sale.products.map(p => `${p.name} (${p.quantity})`).join(', '), s: { alignment: { horizontal: "left" } } },
+      { v: sale.userName, s: { alignment: { horizontal: "left" } } },
+      { v: sale.amount.toString(), s: { alignment: { horizontal: "right" } } },
+      { v: sale.discount.toString(), s: { alignment: { horizontal: "right" } } },
+      { v: sale.status, s: { alignment: { horizontal: "center" } } }
     ]);
   
     // Combine headers and rows
     const salesSheetData = [headers, ...salesRows];
-    console.log("Prepared sales data:", salesSheetData); // Debug log
-  
+    
     // Create the sales worksheet
     const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
     
-    // Set column widths
+    // Set column widths for sales sheet
     salesWS['!cols'] = [
       { wch: 15 },  // Date
       { wch: 25 },  // Order ID
@@ -365,13 +379,11 @@ const AdminDashboard = () => {
   
     // Add the sales worksheet to the workbook
     XLSX.utils.book_append_sheet(wb, salesWS, 'Sales Details');
-    console.log("Sales sheet added successfully"); // Debug log
   
     // Save the file
     try {
       const date = new Date().toISOString().split('T')[0];
       const filename = `sales_report_${date}.xlsx`;
-      console.log("Attempting to save file:", filename); // Debug log
       XLSX.writeFile(wb, filename);
       console.log("Excel file generated successfully with both sheets");
     } catch (error) {
