@@ -328,7 +328,6 @@ const AdminDashboard = () => {
   
     const summaryWS = XLSX.utils.aoa_to_sheet(summaryData);
     
-    // Set column widths for summary sheet
     summaryWS['!cols'] = [
       { wch: 20 },
       { wch: 20 }
@@ -336,8 +335,6 @@ const AdminDashboard = () => {
   
     XLSX.utils.book_append_sheet(wb, summaryWS, 'Summary');
     
-    // 2. Create Sales Details Sheet
-    // Create headers with styles
     const headers = [
       'Date', 'Order ID', 'Products', 'User', 'Amount', 'Discount', 'Status'
     ].map(header => ({
@@ -349,7 +346,6 @@ const AdminDashboard = () => {
       }
     }));
   
-    // Prepare the data rows with styles
     const salesRows = salesData.map(sale => [
       { v: new Date(sale.date).toLocaleDateString(), s: { alignment: { horizontal: "left" } } },
       { v: sale.orderId, s: { alignment: { horizontal: "left" } } },
@@ -359,22 +355,22 @@ const AdminDashboard = () => {
       { v: sale.discount.toString(), s: { alignment: { horizontal: "right" } } },
       { v: sale.status, s: { alignment: { horizontal: "center" } } }
     ]);
-  
-    // Combine headers and rows
+  console.log("Sales Rows:", salesRows);
+
     const salesSheetData = [headers, ...salesRows];
     
     // Create the sales worksheet
     const salesWS = XLSX.utils.aoa_to_sheet(salesSheetData);
-    
-    // Set column widths for sales sheet
+    connsole.log("Sales WS:", salesWS);
+ 
     salesWS['!cols'] = [
-      { wch: 15 },  // Date
-      { wch: 25 },  // Order ID
-      { wch: 40 },  // Products
-      { wch: 25 },  // User
-      { wch: 15 },  // Amount
-      { wch: 15 },  // Discount
-      { wch: 15 }   // Status
+      { wch: 15 }, 
+      { wch: 25 }, 
+      { wch: 40 }, 
+      { wch: 25 },  
+      { wch: 15 },  
+      { wch: 15 },  
+      { wch: 15 }  
     ];
   
     // Add the sales worksheet to the workbook
