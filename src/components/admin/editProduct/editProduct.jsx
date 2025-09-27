@@ -147,7 +147,7 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
   const handleCropConfirm = async () => {
     try {
       const croppedBlob = await getCroppedImg(temporaryImage, croppedAreaPixels);
-      const { data } = await axios.get('https://backend.abeltomy.site/admin/generate-upload-url');
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/admin/generate-upload-url`);
       const { signature, timestamp, uploadPreset, apiKey, cloudName } = data;
 
       const formData = new FormData();
@@ -196,7 +196,7 @@ const EditProduct = ({ product, onCancel, onUpdateSuccess}) => {
     if (files.length === 0) return;
   
     try {
-      const { data } = await axios.get('https://backend.abeltomy.site/admin/generate-upload-url');
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/admin/generate-upload-url`);
       const { signature, timestamp, uploadPreset, apiKey, cloudName } = data;
   
       const imageUrls = await Promise.all(files.map(async (file) => {

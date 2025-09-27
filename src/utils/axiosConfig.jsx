@@ -3,15 +3,9 @@ import axios from 'axios';
 import { store } from '../redux/store';
 import { logout } from '../redux/userSlice';
 import { toast } from 'react-toastify';
-import Cookies from 'js-cookie';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL ;
 
-const COOKIE_OPTIONS = {
-  secure: true,
-  sameSite: 'lax',
-  path: '/'
-};
 
 const axiosInstance = axios.create({
   baseURL: BACKEND_URL,
@@ -20,7 +14,6 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false;
 let failedQueue = [];
-let logoutTimer = null;
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => {
@@ -32,24 +25,6 @@ const processQueue = (error, token = null) => {
   });
   failedQueue = [];
 };
-
-// const handleAuthError = () => {
-//   if (logoutTimer) {
-//     clearTimeout(logoutTimer);
-//   }
-  
-//   logoutTimer = setTimeout(() => {
-//     console.log('Logging out due to auth error');
-//     store.dispatch(logout());
-    
-//     Cookies.remove('accessToken');
-//     Cookies.remove('refreshToken');
-    
-//     toast.error('Session expired. Please log in again.');
-    
-//     window.location.href = '/user/login';
-//   }, 100); // Small delay to prevent multiple toasts and redirects
-// };
 
 axiosInstance.interceptors.request.use(
   (config) => {
@@ -66,8 +41,6 @@ axiosInstance.interceptors.request.use(
 
 const handleLogout = () => {
   store.dispatch(logout());
-  Cookies.remove('user_access_token');
-  Cookies.remove('user_refresh_token');
   toast.error('Session expired. Please log in again.');
   window.location.href = '/user/login';
 };

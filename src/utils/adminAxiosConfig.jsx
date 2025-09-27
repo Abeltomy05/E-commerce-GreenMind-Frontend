@@ -40,7 +40,7 @@ api.interceptors.response.use(
       try {
         // Call refresh token endpoint
         const response = await axios.post(
-          'https://backend.abeltomy.site/admin/refresh-token',
+          `${import.meta.env.VITE_API_URL}}/admin/refresh-token`,
           {},
           { withCredentials: true }
         );

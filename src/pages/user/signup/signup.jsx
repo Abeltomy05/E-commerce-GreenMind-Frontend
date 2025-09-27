@@ -97,7 +97,7 @@ function UserSignup() {
   }
 
   const googleAuth = () => {
-    window.open("https://backend.abeltomy.site/auth/google/callback", "_self");
+    window.open(`${import.meta.env.VITE_API_URL}/auth/google`, "_self");
   }
 
   const handleSubmit = async (e) => {

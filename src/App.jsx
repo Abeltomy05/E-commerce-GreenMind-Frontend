@@ -13,15 +13,22 @@ import LandingShop from './pages/user/landingpages/landingshoppage';
 import LandingProductView from './pages/user/landingpages/productdetailslanding';
 import AboutContent from './pages/user/about/about';
 import ContactPage from './pages/user/contact/contact';
+import { UserService } from './services/userService';
+import { useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 
 function App() {
- 
-
+  const dispatch = useDispatch();
+  useEffect(() => {
+    UserService.checkAuth(dispatch);
+  }, [dispatch]);
   return (
     <>
      <Routes>
       <Route path="/user/*" element={<UserRoute />} />
       <Route path="/admin/*" element={<AdminRoute />} />
+
+      
       <Route path="/" element={<LandingHomePage />} />
       <Route path="/shop" element={<LandingShop />} />
       <Route path="/about" element={<AboutContent />} />
@@ -29,7 +36,10 @@ function App() {
       <Route path="/product/:productId" element={<LandingProductView />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
-    <ToastContainer />
+    <ToastContainer 
+     autoClose={3000}
+     closeOnClick
+    />
     </>
    
   )

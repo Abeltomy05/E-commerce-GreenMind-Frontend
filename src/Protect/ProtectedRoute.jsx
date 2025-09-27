@@ -1,26 +1,23 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet  } from 'react-router-dom';
+import Spinner from '../components/spinner/spinner';
 
  const ProtectedRoute = () => {
 
+  const { isUserAuthenticated, loading } = useSelector((state) => state.user);
 
-  const { isUserAuthenticated} = useSelector((state) => state.user);
-  console.log(isUserAuthenticated);
-
-
+  if (loading) {
+    return(
+       <div className="spinner-loader-layout">
+        <Spinner/>
+       </div>
+    )
+  }
 
   if (!isUserAuthenticated) {
     return <Navigate to="/user/login"  replace />;
   }
-
-  // if (!userData) {
-  //   return <Navigate to="/login"  replace />;
-  // }
-
-  // if (allowedRoles && !allowedRoles.includes(userData.role)) {
-  //   return <Navigate to="/" replace />;
-  // }
 
   return <Outlet />;
 };
@@ -32,15 +29,6 @@ import { Navigate, Outlet  } from 'react-router-dom';
   if (isUserAuthenticated && role == 'user' ) {
     return <Navigate to="/user/home"  replace />;
   }
-
-  // if (!userData) {
-  //   return <Navigate to="/login"  replace />;
-  // }
-
-  // if (allowedRoles && !allowedRoles.includes(userData.role)) {
-  //   return <Navigate to="/" replace />;
-  // }
-
   return <Outlet />;
 };
 

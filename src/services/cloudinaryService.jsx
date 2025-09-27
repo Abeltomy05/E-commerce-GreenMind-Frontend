@@ -4,7 +4,7 @@ import axios from "axios";
 
   const uploadImageToCloudinary = async (files)=>{
      try {
-       const {data} = await axios.get('https://backend.abeltomy.site/admin/generate-upload-url')
+       const {data} = await axios.get(`${import.meta.env.VITE_API_URL}}/admin/generate-upload-url`)
        const {signature, timestamp, uploadPreset,apiKey,cloudName}=data
        
        

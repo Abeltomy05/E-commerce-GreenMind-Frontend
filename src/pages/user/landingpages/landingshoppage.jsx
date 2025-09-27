@@ -54,8 +54,8 @@ export default function LandingShop() {
   const fetchProducts = async () => {
     try {
       const [productResponse, offersResponse] = await Promise.all([
-        axios.get('https://backend.abeltomy.site/user/getproductdatalandingpage'),
-        axios.get('https://backend.abeltomy.site/user/getactiveofferslandingpage')
+        axios.get(`${import.meta.env.VITE_API_URL}/user/getproductdatalandingpage`),
+        axios.get(`${import.meta.env.VITE_API_URL}}/user/getactiveofferslandingpage`)
       ]);
 
       const fetchedProducts = productResponse.data;
@@ -96,7 +96,7 @@ export default function LandingShop() {
         await fetchProducts();
       } else {
         isSearching.current = true;
-        const response = await axios.get(`https://backend.abeltomy.site/user/searchlandingpage?query=${encodeURIComponent(term)}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/searchlandingpage?query=${encodeURIComponent(term)}`);
         const productsWithOffers = applyOffersToProducts(response.data, activeOffers);
         setProducts(productsWithOffers);
       }

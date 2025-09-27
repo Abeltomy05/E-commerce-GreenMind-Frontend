@@ -548,7 +548,7 @@ const CheckoutPage = () => {
       console.log(stockVerification.data);
       if (!stockVerification.data.success) {
         toast.info('Some items are out of stock');
-        error = new Error(stockVerification.data.message || 'Some items are out of stock');
+        setError(new Error(stockVerification.data.message || 'Some items are out of stock'));
         handlePaymentFailure(error);
         return;
       }

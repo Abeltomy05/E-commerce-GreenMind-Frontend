@@ -60,13 +60,8 @@ function UserLogin() {
   }
 
   const googleAuth = () => {
-
-    Cookies.remove('user_access_token', { path: '/', domain: '.abeltomy.site' });
-    Cookies.remove('user_refresh_token', { path: '/', domain: '.abeltomy.site' });
-
-    console.log('Redirecting to:', `${import.meta.env.VITE_API_URL}/auth/google`);
     window.open(`${import.meta.env.VITE_API_URL}/auth/google`, "_self");
-}
+  }
 
 useEffect(() => {
   const checkLoginStatus = async () => {
@@ -147,11 +142,6 @@ useEffect(() => {
 }, [dispatch, Navigate]);
 
 
-const COOKIE_OPTIONS = {
-  secure: true, // Only transmitted over HTTPS
-  sameSite: 'lax', // Protects against CSRF
-  path: '/' // Available across all pages
-};
 
 const handleSubmit = async (e) => {
   e.preventDefault();
