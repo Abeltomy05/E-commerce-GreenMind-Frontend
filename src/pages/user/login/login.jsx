@@ -3,7 +3,6 @@ import { FcGoogle,FcLock, FcInvite } from 'react-icons/fc';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
-import Cookies from 'js-cookie';
 import 'react-toastify/dist/ReactToastify.css';
 import loginImg1 from "../../../assets/images/side1.jpg";
 import loginImg2 from "../../../assets/images/side2.jpg";
@@ -63,84 +62,6 @@ function UserLogin() {
     window.open(`${import.meta.env.VITE_API_URL}/auth/google`, "_self");
   }
 
-useEffect(() => {
-  const checkLoginStatus = async () => {
-    try {
-      console.log("Starting login status check...");
-
-      const accessToken = Cookies.get('user_access_token');
-      const refreshToken = Cookies.get('user_refresh_token');
-
-      console.log('Cookie check:', {
-        accessToken: accessToken ? 'present' : 'missing',
-        refreshToken: refreshToken ? 'present' : 'missing'
-      });
-
-      if (!accessToken && !refreshToken) {
-        console.log('No tokens found');
-        return;
-      }
-
-      // Trying with access token first
-      if (accessToken) {
-        try {
-          const response = await axioInstence.get("/auth/login/success", {
-            withCredentials: true,
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Accept': 'application/json',
-            }
-          });
-
-          if (response.data.user) {
-            dispatch(login({ 
-              user: response.data.user, 
-              role: response.data.role || 'user' 
-            }));
-            Navigate('/user/home');
-            return;
-          }
-        } catch (error) {
-          console.log('Access token verification failed, trying refresh token');
-          
-          if (refreshToken) {
-            try {
-              // Using your actual refresh token endpoint
-              const refreshResponse = await axioInstence.get("/user/refresh-token");
-
-              if (refreshResponse.data.status === "VERIFIED") {
-                dispatch(login({ 
-                  user: refreshResponse.data.user, 
-                  role: refreshResponse.data.role 
-                }));
-                Navigate('/user/home');
-                return;
-              }
-            } catch (refreshError) {
-              console.error("Refresh token error:", refreshError);
-              Cookies.remove('user_access_token', { path: '/', domain: '.abeltomy.site' });
-              Cookies.remove('user_refresh_token', { path: '/', domain: '.abeltomy.site' });
-              Navigate('/user/login');
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Login check error details:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
-      
-      Cookies.remove('user_access_token', { path: '/', domain: '.abeltomy.site' });
-      Cookies.remove('user_refresh_token', { path: '/', domain: '.abeltomy.site' });
-      Navigate('/user/login');
-    }
-  };
-
-  checkLoginStatus();
-}, [dispatch, Navigate]);
-
 
 
 const handleSubmit = async (e) => {
@@ -168,9 +89,6 @@ const handleSubmit = async (e) => {
 
     const { status, message, user, role} = response.data;
     if (status === "VERIFIED" && user) {
-
-      // Cookies.set('user_access_token', accessToken, COOKIE_OPTIONS);
-      // Cookies.set('user_refresh_token', refreshToken, COOKIE_OPTIONS);
       
       setTimeout(() => {
         dispatch(login({ 
@@ -200,8 +118,6 @@ const handleSubmit = async (e) => {
     const errorMessage = error.response?.data?.message || "Something went wrong";
 
     toast.error(errorMessage);
-  setEmail('');
-  setPassword('');
 
   }
 }

@@ -7,7 +7,6 @@ import axios from "axios";
 import Badge from '@mui/material/Badge';
 import "./header-login.scss";
 import axiosInstance from "../../utils/axiosConfig";
-import Cookies from 'js-cookie';
 import {persistor} from '../../redux/store'
 
 const HeaderLogin = () => {
@@ -50,25 +49,16 @@ const HeaderLogin = () => {
 
   const handleLogout = async () => {
     try {
-      const accessToken = Cookies.get('user_access_token');
 
       await axiosInstance.post('/auth/logout', {}, {
         withCredentials: true,
-        headers: {
-          'Authorization': `Bearer ${Cookies.get('user_access_token')}`
-        }
       });
-
-      Cookies.remove('user_access_token', { path: '/' });
-      Cookies.remove('user_refresh_token', { path: '/' });
       dispatch(logout());
       await persistor.purge();
 
       navigate('/user/login');
     } catch (error) {
       console.error('Logout error:', error);
-      Cookies.remove('user_access_token', { path: '/' });
-      Cookies.remove('user_refresh_token', { path: '/' });
       dispatch(logout());
       await persistor.purge();
     navigate('/user/login');

@@ -34,10 +34,10 @@ import Spinner from '../components/spinner/spinner';
 
 const AdminProtectRoute = () => {
 
-  const {isAdminAuthenticated} = useSelector((state) => state.admin);
+  const {isAdminAuthenticated,user} = useSelector((state) => state.admin);
 
  
-  if (!isAdminAuthenticated) {
+  if (!isAdminAuthenticated && user === null) {
     return <Navigate to="/admin/login" replace />;
   }
 
@@ -46,10 +46,10 @@ const AdminProtectRoute = () => {
 };
 
 const AdminProtectRouteLogin= () => {
-  const { isAdminAuthenticated, role } = useSelector((state) => state.admin);
+  const { isAdminAuthenticated, user, role } = useSelector((state) => state.admin);
   
   
-  if (isAdminAuthenticated && role == 'admin' ) {
+  if (isAdminAuthenticated && user !== null && role == 'admin' ) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 

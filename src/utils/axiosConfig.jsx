@@ -26,18 +26,6 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const accessToken = Cookies.get('user_access_token');
-    if (accessToken) {
-      config.headers['Authorization'] = `Bearer ${accessToken}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 const handleLogout = () => {
   store.dispatch(logout());
@@ -53,10 +41,9 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         try {
-          const token = await new Promise((resolve, reject) => {
+          await new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
           });
-          originalRequest.headers['Authorization'] = `Bearer ${token}`;
           return axiosInstance(originalRequest);
         } catch (err) {
           return Promise.reject(err);
@@ -66,30 +53,12 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await axiosInstance.get('/user/refresh-token');
-        const { accessToken, refreshToken } = response.data;
-
-        if (accessToken && refreshToken) {
-          Cookies.set('user_access_token', accessToken, {
-            secure: true,
-            sameSite: 'lax',
-            path: '/'
-          });
-          Cookies.set('user_refresh_token', refreshToken, {
-            secure: true,
-            sameSite: 'lax',
-            path: '/'
-          });
-
-          axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-          processQueue(null, accessToken);
-          
-          return axiosInstance(originalRequest);
-        } else {
-          throw new Error('Token refresh failed');
-        }
+        const data = await axiosInstance.post('/user/refresh-token');
+        console.log(data)
+        processQueue(null);
+        return axiosInstance(originalRequest);  
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         handleLogout();
         return Promise.reject(refreshError);
       } finally {

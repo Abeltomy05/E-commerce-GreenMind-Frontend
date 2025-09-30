@@ -18,10 +18,10 @@ import { useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 
 function App() {
-  const dispatch = useDispatch();
-  useEffect(() => {
-    UserService.checkAuth(dispatch);
-  }, [dispatch]);
+  // const dispatch = useDispatch();
+  // useEffect(() => {
+  //   UserService.checkAuth(dispatch);
+  // }, [dispatch]);
   return (
     <>
      <Routes>
