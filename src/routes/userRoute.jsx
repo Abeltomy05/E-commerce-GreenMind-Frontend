@@ -17,7 +17,8 @@ import OrderDetails from '../pages/user/orderdetails/orderdetails';
 import Wishlist from '../pages/user/wishlist/wishlist';
 import ReturnProductPage from '../pages/user/returnpage/returnpage';
 import WalletComponent from '../pages/user/wallet/wallet';
-import NotFoundPage from '../pages/notfound/notfound';
+import NotFoundPage from '../pages/shared/notfound';
+import AuthCallBack from '../pages/shared/authCheck';
 
 function UserRoute() {
  
@@ -28,6 +29,7 @@ function UserRoute() {
         <Route path="/signup" element={<UserSignup />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/verify-otp/:userId/:email" element={<VerifyOTP />} />
+        <Route path="/auth-check" element={<AuthCallBack />} />
         <Route path="/*" element={<NotFoundPage />} />
       </Route>
 

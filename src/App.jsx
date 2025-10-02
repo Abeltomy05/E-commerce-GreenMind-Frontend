@@ -7,21 +7,14 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import UserRoute from './routes/userRoute';
 import AdminRoute from './routes/adminRoute';
-import NotFoundPage from './pages/notfound/notfound';
+import NotFoundPage from './pages/shared/notfound';
 import LandingHomePage from './pages/user/landingpages/landinghomepage';
 import LandingShop from './pages/user/landingpages/landingshoppage';
 import LandingProductView from './pages/user/landingpages/productdetailslanding';
 import AboutContent from './pages/user/about/about';
 import ContactPage from './pages/user/contact/contact';
-import { UserService } from './services/userService';
-import { useDispatch } from 'react-redux';
-import { useEffect } from 'react';
 
 function App() {
-  // const dispatch = useDispatch();
-  // useEffect(() => {
-  //   UserService.checkAuth(dispatch);
-  // }, [dispatch]);
   return (
     <>
      <Routes>

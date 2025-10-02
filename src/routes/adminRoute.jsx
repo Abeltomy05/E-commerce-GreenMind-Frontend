@@ -13,10 +13,9 @@ import Settings from '../pages/admin/settings/settings';
 import LogoutPage from '../pages/admin/logout/logout';
 import {AdminProtectRoute,AdminProtectRouteLogin} from "../Protect/ProtectedRoute"
 import OfferManagement from '../pages/admin/offer/offerManagement';
-import NotFoundPage from '../pages/notfound/notfound';
+import NotFoundPage from '../pages/shared/notfound';
 
 function AdminRoute() {
- 
 
     return (
       <Routes>
