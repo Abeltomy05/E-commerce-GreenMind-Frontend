@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Filter, Calendar, MoreVertical, Loader } from 'lucide-react';
-import axios from 'axios'; 
+import {MoreVertical, Loader } from 'lucide-react';
 import { toast } from 'react-toastify';
 import BasicPagination from '../../../components/pagination/pagination';
-import AdminBreadcrumbs from '../../../components/breadcrumbs/breadcrumbs';
 import ReturnRequests from './returnrequest';
 import api from '../../../utils/adminAxiosConfig';
+import { getStatusColor } from '../../../utils/constants/status-color';
+import OrderDetailsModal from './orderDetails';
 
 const Orders = () => {
   const [selectedStatus, setSelectedStatus] = useState('All Status');
@@ -17,6 +17,8 @@ const Orders = () => {
   const [page, setPage] = useState(1);
   const [ordersPerPage] = useState(4);
   const [showReturnRequests, setShowReturnRequests] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
   useEffect(() => {
     dropdownRef.current = {};
@@ -49,7 +51,7 @@ const Orders = () => {
       setLoading(true);
       setError(null);
       const response = await api.get('/admin/getorderdata');
-      console.log('order data:::',response.data)
+      // console.log('order data:::',response.data)
       if (response.data && Array.isArray(response.data)) {
         setOrders(response.data);
         console.log(response.data);
@@ -82,22 +84,6 @@ const Orders = () => {
   const startIndex = (page - 1) * ordersPerPage;
   const currentOrders = filteredOrders.slice(startIndex, startIndex + ordersPerPage);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'CONFIRMED':
-        return 'bg-blue-100 text-blue-800';
-      case 'ON THE ROAD':
-        return 'bg-purple-100 text-purple-800';
-      case 'DELIVERED':
-        return 'bg-green-100 text-green-800';
-      case 'CANCELED':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const handleStatusChange = async (e, orderId, newStatus) => {
     e.preventDefault(); 
@@ -140,6 +126,17 @@ const Orders = () => {
         toast.error('Failed to cancel order');
       }
     }
+  };
+
+  const handleViewDetails = (orderId) => {
+    setSelectedOrder(orderId);
+    setIsModalOpen(true);
+    setOpenDropdownId(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedOrder(null);
   };
 
   if (loading) {
@@ -226,7 +223,7 @@ const Orders = () => {
                     {order.user ? `${order.user.firstname} ${order.user.lastname}` : 'User Deleted'}
                   </div>
                   <div className="font-medium text-[#2b3632]">₹{order.totalPrice}</div>
-                  <div className="text-[#1c211f]">{order.paymentInfo.method}</div>
+                  <div className="text-[#1c211f]">{order.paymentInfo.method.toUpperCase()}</div>
                   <div>
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
@@ -253,6 +250,15 @@ const Orders = () => {
                     {openDropdownId === order._id && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-[#949599] z-10">
                         <div className="py-1">
+                          <button
+                             onClick={(e)=>{
+                                e.preventDefault();
+                                handleViewDetails(order._id);
+                             }}
+                            className="block w-full px-4 py-2 text-left text-sm text-[#1c211f] hover:bg-[#47645a] hover:bg-opacity-10"
+                          >
+                            View Order Details
+                          </button>
                           <button
                              onClick={(e) => handleStatusChange(e, order._id, 'PENDING')}
                             className="block w-full px-4 py-2 text-left text-sm text-[#1c211f] hover:bg-[#47645a] hover:bg-opacity-10"
@@ -298,6 +304,12 @@ const Orders = () => {
           )}
         </>
       )}
+
+      <OrderDetailsModal 
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        orderId={selectedOrder}
+      />
     </div>
   );
 };

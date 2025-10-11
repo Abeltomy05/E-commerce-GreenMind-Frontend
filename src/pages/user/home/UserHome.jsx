@@ -375,7 +375,7 @@ const formatOfferText = (offer) => {
     </section>
 
   {/* Categories Section */}
-  <div className="text-black text-3xl md:text-4xl lg:text-5xl font-bold my-5 md:my-8 lg:my-[50px] text-center font-extrabold">
+  <div className="text-black text-3xl md:text-4xl lg:text-5xl my-5 md:my-8 lg:my-[50px] text-center font-extrabold">
   <h2 className="text-grey-500 text-2xl md:text-2xl lg:text-3xl font-bold">Categories</h2>
       </div>
       <section className="py-8 md:py-12 lg:py-16 bg-[#4a6163] rounded-xl px-4 md:px-6 lg:px-8 my-8 md:my-12 lg:my-16">
