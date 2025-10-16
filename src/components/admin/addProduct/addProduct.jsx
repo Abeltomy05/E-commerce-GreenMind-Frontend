@@ -179,8 +179,8 @@ export default function AddProduct({ onSave, onUpdateSuccess, onCancel }) {
     try {
       let imageUrls = [];
       if (productData.images && productData.images.length > 0) {
-
         imageUrls = await uploadImageToCloudinary(productData.images);
+        console.log("Images urls: ",imageUrls)
       }
      
       const productPayload = {
