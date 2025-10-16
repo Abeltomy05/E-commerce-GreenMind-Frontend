@@ -429,33 +429,6 @@ const ProductView = () => {
           <div className="product-details">
             <h1 className="product-title">{product.name}</h1>
 
-            <div className="product-rating">
-              {[...Array(5)].map((_, index) => (
-                <FaStar key={index} className={index < 3 ? 'filled' : ''} />
-              ))}
-              <span className="rating-text">3.0 (0 REVIEWS)</span>
-            </div>
-
-            {/* {product.currentOffer && (
-              <div className="offer-banner">
-                <FiTag className="offer-icon" />
-                <div className="offer-details">
-                  <span className="offer-title">{product.currentOffer.name}</span>
-                  <span className="offer-value">
-                    {product.currentOffer.discountType === 'PERCENTAGE' 
-                      ? `${product.currentOffer.discountValue}% OFF`
-                      : `$${product.currentOffer.discountValue} OFF`
-                    }
-                  </span>
-                  <span className="offer-validity">
-                    Valid till {new Date(product.currentOffer.endDate).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            )} */}
-
-
-
             {selectedVariant && (
             <div className="product-price">
               {product?.currentOffer ? (
@@ -550,13 +523,6 @@ const ProductView = () => {
               </div>
             )}
             <div className="action-buttons">
-            {/* <button 
-                className="buy-now-btn" 
-                onClick={handleBuyNow}
-                disabled={!selectedVariant || selectedVariant.stock === 0}
-              >
-                BUY NOW
-              </button> */}
               <button 
                 className="add-to-cart-btn" 
                 onClick={handleAddToCart}
