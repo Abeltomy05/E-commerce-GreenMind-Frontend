@@ -220,24 +220,10 @@ const OrderDetails = () => {
           {
             title: 'Order Confirmed',
             description: 'Your order has been confirmed and is being prepared',
-            // date: addHours(new Date(order.createdAt), 1).toLocaleString('en-US', {
-            //   year: 'numeric',
-            //   month: 'long',
-            //   day: 'numeric',
-            //   hour: '2-digit',
-            //   minute: '2-digit'
-            // })
           },
           {
             title: 'On The Road',
             description: 'Your order is on the way for delivery',
-            // date: addHours(new Date(order.createdAt), 2).toLocaleString('en-US', {
-            //   year: 'numeric',
-            //   month: 'long',
-            //   day: 'numeric',
-            //   hour: '2-digit',
-            //   minute: '2-digit'
-            // })
           },
           {
             title: 'Delivered',
@@ -252,13 +238,6 @@ const OrderDetails = () => {
           {
             title: 'Order Confirmed',
             description: 'Your order has been confirmed and is being prepared',
-            // date: addHours(new Date(order.createdAt), 1).toLocaleString('en-US', {
-            //   year: 'numeric',
-            //   month: 'long',
-            //   day: 'numeric',
-            //   hour: '2-digit',
-            //   minute: '2-digit'
-            // })
           },
           {
             title: 'On The Road',
@@ -280,11 +259,6 @@ const OrderDetails = () => {
     return timeline;
   };
 
-  // const addHours = (date, hours) => {
-  //   const newDate = new Date(date);
-  //   newDate.setHours(newDate.getHours() + hours);
-  //   return newDate;
-  // };
 
   const renderProgressTracker = (status) => {
     const stages = ['Order Placed', 'Packaging', 'On The Road', 'Delivered'];
@@ -501,6 +475,12 @@ const OrderDetails = () => {
     );
   }
 
+  const subtotal = orderDetails.products.reduce((sum, p) => sum + p.price * p.quantity, 0);
+  const productOffers = orderDetails.products.reduce((sum, p) => sum + ((p.price - p.finalPrice) * p.quantity), 0);
+  const couponDiscount = orderDetails.couponDiscount || 0;
+  const shippingFee = orderDetails.shippingFee || 50;
+  const total = subtotal - productOffers - couponDiscount + shippingFee;
+
   const handleCancelOrder = async (reason) => {
     try {
       setIsSubmittingCancel(true);
@@ -641,7 +621,6 @@ const OrderDetails = () => {
               </div>
               {orderDetails.products.map((product) => {
                 const offerDiscount = (product.price - product.finalPrice) * product.quantity;
-                const totalDiscount = offerDiscount + product.couponDiscount;
                 
                 return (
                   <div 
@@ -662,10 +641,10 @@ const OrderDetails = () => {
                       <div>₹{product.price.toLocaleString()}</div>
                     </div>
                     <div className="text-sm text-right text-red-500">
-                      -₹{totalDiscount.toLocaleString()}
+                        -₹{offerDiscount.toLocaleString()}
                     </div>
                     <div className="text-sm font-medium text-right">
-                      ₹{((product.finalPrice * product.quantity) - product.couponDiscount).toLocaleString()}
+                        ₹{(product.finalPrice * product.quantity).toLocaleString()}
                     </div>
                   </div>
                 );
@@ -700,7 +679,7 @@ const OrderDetails = () => {
                   </div>
                   <div className="flex justify-between font-medium pt-2 border-t">
                     <span>Total</span>
-                    <span>{orderDetails.totalAmount}</span>
+                    <span>₹{total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

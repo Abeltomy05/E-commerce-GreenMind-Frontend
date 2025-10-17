@@ -182,10 +182,10 @@ const ReturnProductPage = () => {
                           <p className="text-[#375d51] text-sm">Size: {product.variantSize}</p>
                           <p className="text-[#375d51] text-sm">Quantity: {quantity}</p>
                           <p className="text-[#375d51] text-sm font-medium">
-                            Price per unit: ₹{finalPrice.toFixed(2)}
+                            Price per unit: ₹{Math.floor(finalPrice)}
                           </p>
                           <p className="text-[#3d5e52] text-sm font-semibold">
-                            Total: ₹{totalItemPrice.toFixed(2)}
+                            Total: ₹{Math.floor(totalItemPrice)}
                           </p>
                         </div>
                       </div>
