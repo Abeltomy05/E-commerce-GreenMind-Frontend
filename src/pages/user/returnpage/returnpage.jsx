@@ -70,7 +70,7 @@ const ReturnProductPage = () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(`/user/getorderforreturn/${orderId}`);
-      if (!response.data) throw new Error('No data received from server');
+      if (!response.data?.success) throw new Error('Invalid data received');
       setOrderData(response.data);
     } catch (error) {
       const message = error.response?.data?.message || 'Failed to fetch order details';
@@ -133,11 +133,11 @@ const ReturnProductPage = () => {
     return <div className="flex justify-center items-center min-h-screen">Order not found</div>;
   }
 
-  return (
+ return (
     <>
       <HeaderLogin />
-      <div className="flex flex-col min-h-100vh">
-        <div className="flex-grow bg-[#778e85]/10 py-6 px-4 sm:px-6 lg:px-8 flex justify-center items-start">
+      <div className="flex flex-col min-h-screen bg-[#f4f6f5]">
+        <div className="flex-grow py-6 px-4 sm:px-6 lg:px-8 flex justify-center items-start">
           <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="px-6 py-6">
               <div className="flex items-center justify-between mb-6">
@@ -148,115 +148,102 @@ const ReturnProductPage = () => {
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Order Details
                 </button>
-                <h1 className="text-3xl font-bold text-[#3d5e52] text-center flex-grow">Request to Return</h1>
+                <h1 className="text-3xl font-bold text-[#3d5e52] text-center flex-grow">
+                  Request Return
+                </h1>
               </div>
 
-              {orderData.products.map((orderProduct) => {
-                const product = orderProduct.product;
-                const variant = product.variants[0];
-                const returnStatus = getReturnStatus(orderProduct);
-                const originalPrice = variant.price;
-                const finalPrice = orderProduct.finalPrice;
-                const discount = originalPrice - finalPrice;
-                const discountPercentage = Math.round((discount / originalPrice) * 100);
-                
-                return (
-                  <div key={product._id} className="mb-8 pb-8 border-b border-gray-200 last:border-0">
-                    <div className="flex items-center mb-6">
-                      <img 
-                        src={product.images[0]} 
-                        alt={product.name} 
-                        className="w-24 h-24 object-cover rounded-md mr-6" 
-                      />
-                      <div className="flex-grow">
-                        <h2 className="text-xl font-semibold text-[#1a2c25] mb-1">{product.name}</h2>
-                        <p className="text-[#375d51] text-sm">Category: {product.category.name}</p>
-                        <div className="flex items-baseline gap-2">
-                          <p className="text-[#375d51] text-sm font-medium">
-                            Price: ₹{finalPrice}
-                          </p>
-                          {discount > 0 && (
-                            <>
-                              <p className="text-gray-500 text-sm line-through">₹{originalPrice}</p>
-                              <p className="text-green-600 text-sm">({discountPercentage}% off)</p>
-                            </>
-                          )}
-                        </div>
-                        <p className="text-[#375d51] text-sm">Size: {variant.size}</p>
+              {orderData.products.length === 0 ? (
+                <p className="text-center text-gray-600">No products available for return.</p>
+              ) : (
+                orderData.products.map((orderProduct) => {
+                  const { product, quantity, finalPrice, totalItemPrice, eligibleForReturn } = orderProduct;
+                  if (!product) {
+                    return (
+                      <div key={Math.random()} className="mb-6 p-4 bg-red-50 rounded-md">
+                        <p className="text-red-600 font-medium">
+                          This product is no longer available in our catalog.
+                        </p>
                       </div>
-                      {returnStatus && (
-                        <div className="ml-4">
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            returnStatus.status === 'pending' 
-                              ? 'bg-yellow-100 text-yellow-800' 
-                              : 'bg-green-100 text-green-800'
-                          }`}>
-                            {returnStatus.status === 'pending' ? 'Return Pending' : 'Return Confirmed'}
-                          </span>
+                    );
+                  }
+
+                  return (
+                    <div key={product._id} className="mb-8 pb-8 border-b border-gray-200 last:border-0">
+                      <div className="flex items-center mb-6">
+                        <img 
+                          src={product.images[0]} 
+                          alt={product.name} 
+                          className="w-24 h-24 object-cover rounded-md mr-6" 
+                        />
+                        <div className="flex-grow">
+                          <h2 className="text-xl font-semibold text-[#1a2c25] mb-1">{product.name}</h2>
+                          <p className="text-[#375d51] text-sm">Category: {product.category}</p>
+                          <p className="text-[#375d51] text-sm">Size: {product.variantSize}</p>
+                          <p className="text-[#375d51] text-sm">Quantity: {quantity}</p>
+                          <p className="text-[#375d51] text-sm font-medium">
+                            Price per unit: ₹{finalPrice.toFixed(2)}
+                          </p>
+                          <p className="text-[#3d5e52] text-sm font-semibold">
+                            Total: ₹{totalItemPrice.toFixed(2)}
+                          </p>
                         </div>
+                      </div>
+
+                      {eligibleForReturn ? (
+                        <>
+                          <h3 className="text-lg font-semibold text-[#3d5e52] mb-3">Reason for Return</h3>
+                          <div className="flex flex-wrap gap-3 mb-6">
+                            {reasons.map((reason) => (
+                              <button
+                                key={reason.id}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+                                  selectedReasons[product._id] === reason.id
+                                    ? 'bg-[#3d5e52] text-white'
+                                    : 'bg-[#778e85]/20 text-[#3d5e52] hover:bg-[#778e85]/30'
+                                }`}
+                                onClick={() => setSelectedReasons(prev => ({
+                                  ...prev,
+                                  [product._id]: reason.id
+                                }))}
+                              >
+                                {reason.text}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="mb-6">
+                            <label className="block text-sm font-medium text-[#1a2c25] mb-2">
+                              Other Reasons
+                            </label>
+                            <textarea
+                              rows="3"
+                              className="w-full px-3 py-2 text-[#333] text-sm border border-[#778e85] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3d5e52]"
+                              placeholder="Please provide reason"
+                              value={otherReasons[product._id] || ''}
+                              onChange={(e) => setOtherReasons(prev => ({
+                                ...prev,
+                                [product._id]: e.target.value
+                              }))}
+                            />
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              className="px-6 py-2 bg-[#3d5e52] text-white text-sm font-medium rounded-md hover:bg-[#1a2c25] transition-colors duration-200"
+                              onClick={() => handleReturnSubmit(product._id)}
+                            >
+                              Request Return
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <p className="text-gray-500 italic">This product is not eligible for return.</p>
                       )}
                     </div>
-
-                    {returnStatus ? (
-                      <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                        <p className="text-gray-700">{returnStatus.message}</p>
-                        {returnStatus.status === 'pending' && (
-                          <p className="text-sm text-gray-500 mt-2">
-                            Return reason: {orderProduct.returnStatus.returnReason}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        <h3 className="text-lg font-semibold text-[#3d5e52] mb-3">Reason for Return</h3>
-                        <div className="flex flex-wrap gap-3 mb-6">
-                          {reasons.map((reason) => (
-                            <button
-                              key={reason.id}
-                              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                                selectedReasons[product._id] === reason.id
-                                  ? 'bg-[#3d5e52] text-white'
-                                  : 'bg-[#778e85]/20 text-[#3d5e52] hover:bg-[#778e85]/30'
-                              }`}
-                              onClick={() => setSelectedReasons(prev => ({
-                                ...prev,
-                                [product._id]: reason.id
-                              }))}
-                            >
-                              {reason.text}
-                            </button>
-                          ))}
-                        </div>
-
-                        <div className="mb-6">
-                          <label className="block text-sm font-medium text-[#1a2c25] mb-2">
-                            Other Reasons
-                          </label>
-                          <textarea
-                            rows="3"
-                            className="w-full px-3 py-2 text-[#333] text-sm border border-[#778e85] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3d5e52]"
-                            placeholder="Please provide reason"
-                            value={otherReasons[product._id] || ''}
-                            onChange={(e) => setOtherReasons(prev => ({
-                              ...prev,
-                              [product._id]: e.target.value
-                            }))}
-                          />
-                        </div>
-
-                        <div className="flex justify-end">
-                          <button
-                            className="px-6 py-2 bg-[#3d5e52] text-white text-sm font-medium rounded-md hover:bg-[#1a2c25] transition-colors duration-200"
-                            onClick={() => handleReturnSubmit(product._id)}
-                          >
-                            Request Return
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
 
               <div className="flex justify-end mt-4">
                 <button
@@ -289,6 +276,7 @@ const ReturnProductPage = () => {
           </div>
         )}
       </div>
+
       <ConfirmDialog 
         isOpen={showConfirm}
         onClose={() => setShowConfirm(false)}

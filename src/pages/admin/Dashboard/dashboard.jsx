@@ -85,6 +85,7 @@ const AdminDashboard = () => {
           isDeleted: false
         }
       });
+      console.log("sales data",response.data)
 
       if (!Array.isArray(response.data)) {
         throw new Error('Invalid response format');
@@ -111,7 +112,7 @@ const AdminDashboard = () => {
               category: p.product?.category?.name || 'Uncategorized'
             })),
             userName: `${order.user?.firstname || ''} ${order.user?.lastname || ''}`.trim() || 'N/A',
-          amount: order.totalPrice || 0,
+          amount: order.totalPrice + order.shippingFee || 0,
           discount: order.discountAmount || 0,
           status: order.paymentInfo?.status || 'PENDING'
         }));

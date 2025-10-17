@@ -220,9 +220,11 @@ const Orders = () => {
                     {new Date(order.createdAt).toLocaleDateString()}
                   </div>
                   <div className="text-[#2b3632]">
-                    {order.user ? `${order.user.firstname} ${order.user.lastname}` : 'User Deleted'}
+                  {order.user 
+                  ? `${order.user.firstname || ''}${order.user.lastname ? ' ' + order.user.lastname : ''}`.trim() || 'Unknown User'
+                  : 'User Deleted'}
                   </div>
-                  <div className="font-medium text-[#2b3632]">₹{order.totalPrice}</div>
+                  <div className="font-medium text-[#2b3632]">₹{order.totalPrice + order.shippingFee}</div>
                   <div className="text-[#1c211f]">{order.paymentInfo.method.toUpperCase()}</div>
                   <div>
                     <span
