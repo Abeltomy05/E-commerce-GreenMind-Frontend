@@ -112,10 +112,11 @@ const AdminDashboard = () => {
               category: p.product?.category?.name || 'Uncategorized'
             })),
             userName: `${order.user?.firstname || ''} ${order.user?.lastname || ''}`.trim() || 'N/A',
-          amount: order.totalPrice + order.shippingFee || 0,
-          discount: order.discountAmount || 0,
-          status: order.paymentInfo?.status || 'PENDING'
+            amount: (order.computedTotal != null) ? Number(order.computedTotal) : ((order.totalPrice || 0) + (order.shippingFee || 0)),
+            discount: Number(order.discountAmount || 0),
+            status: order.paymentInfo?.status || 'PENDING'
         }));
+        console.log(transformedData)
 
       setSalesData(transformedData);
     } catch (err) {
@@ -149,8 +150,8 @@ const AdminDashboard = () => {
   };
 
   const totalSales = salesData.length;
-  const totalAmount = salesData.reduce((sum, sale) => sum + sale.amount, 0);
-  const totalDiscount = salesData.reduce((sum, sale) => sum + sale.discount, 0);
+  const totalAmount = salesData.reduce((sum, sale) => sum + (sale.amount || 0), 0);
+  const totalDiscount = salesData.reduce((sum, sale) => sum + (sale.discount || 0), 0);
 
   const processHourlyData = (data) => {
     const hourlyData = Array(24).fill(0);
