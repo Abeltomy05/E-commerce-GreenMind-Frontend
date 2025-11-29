@@ -30,6 +30,7 @@ function UserSignup() {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const images = [loginImg2, loginImg3, loginImg1];
    useEffect(() => {
@@ -110,6 +111,7 @@ function UserSignup() {
     }
   
     try {
+       setIsLoading(true);
       const userData = {
         firstname,
         lastname,
@@ -152,6 +154,8 @@ function UserSignup() {
       console.error("Error response:", error.response);
       console.error("Error message:", error.message);
       console.error("Error config:", error.config);
+    }finally{
+      setIsLoading(false);
     }
   }
 
@@ -370,9 +374,11 @@ function UserSignup() {
               {/* Signup button */}
               <button
                 type="submit"
-                className="w-full bg-[#47645a] text-white py-1.5 rounded-md hover:bg-[#2f4640] mt-3"
+                disabled={isLoading}
+                className={`w-full bg-[#47645a] text-white py-1.5 rounded-md mt-3
+                  ${isLoading ? "opacity-60 cursor-not-allowed" : "hover:bg-[#2f4640]"}`}
               >
-                Sign Up
+                {isLoading ? "Signing up..." : "Sign Up"}
               </button>
   
               {/* Divider */}
